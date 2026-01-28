@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(sudo apt update:*)",
+      "Bash(sudo apt install:*)",
+      "Bash(gh auth:*)",
+      "Bash(gh api:*)",
+      "Bash(git config:*)",
+      "Bash(gh repo list:*)",
+      "Bash(vercel project:*)",
+      "Bash(vercel list:*)",
+      "Bash(npm i:*)",
+      "Bash(tree:*)",
+      "Bash(find:*)"
+    ]
+  }
+}

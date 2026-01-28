@@ -1,79 +1,165 @@
-import { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import type { ReactNode } from 'react';
-import { storageService } from '@/services/storage.service';
-import { pointsService } from '@/services/points.service';
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+  ReactNode,
+} from "react";
+import { authApi, userApi, getErrorMessage } from "@/api";
+import type { User, AuthResponse } from "@/types/api.types";
 
 interface UserContextType {
-  userId: string;
-  points: number;
-  isInitialized: boolean;
+  user: User | null;
+  isAuthenticated: boolean;
+  isLoading: boolean;
+  error: string | null;
+  login: (email: string, password: string) => Promise<void>;
+  signup: (data: {
+    email: string;
+    password: string;
+    nickname: string;
+    age: number;
+    region: string;
+    gender: "MALE" | "FEMALE";
+  }) => Promise<void>;
+  logout: () => Promise<void>;
+  refreshUser: () => Promise<void>;
   updatePoints: (points: number) => void;
-  deductPoints: (amount: number) => boolean;
-  checkRecharge: () => { recharged: boolean; points: number };
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export function UserProvider({ children }: { children: ReactNode }) {
-  const [userId, setUserId] = useState<string>('');
-  const [points, setPoints] = useState<number>(500);
-  const [isInitialized, setIsInitialized] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
+  // Check if user is already logged in on mount
   useEffect(() => {
-    // Initialize user on mount
-    const { userId: id, points: initialPoints } = storageService.initializeUser();
-    setUserId(id);
-    setPoints(initialPoints);
+    const initializeAuth = async () => {
+      const token = localStorage.getItem("accessToken");
 
-    // Check if recharge is needed
-    const { recharged, points: newPoints } = pointsService.checkAndRecharge();
-    if (recharged) {
-      setPoints(newPoints);
-    }
-
-    setIsInitialized(true);
-
-    // Check for recharge every minute
-    const interval = setInterval(() => {
-      const { recharged: wasRecharged, points: updatedPoints } = pointsService.checkAndRecharge();
-      if (wasRecharged) {
-        setPoints(updatedPoints);
+      if (!token) {
+        setIsLoading(false);
+        return;
       }
-    }, 60000); // Check every minute
 
-    return () => clearInterval(interval);
+      try {
+        const userData = await userApi.getMe();
+        setUser(userData);
+      } catch (err) {
+        console.error("Failed to fetch user:", err);
+        // Token might be invalid, clear it
+        localStorage.removeItem("accessToken");
+        localStorage.removeItem("refreshToken");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    initializeAuth();
   }, []);
 
-  const updatePoints = useCallback((newPoints: number) => {
-    setPoints(newPoints);
-    storageService.setPoints(newPoints);
-  }, []);
+  const login = useCallback(async (email: string, password: string) => {
+    setIsLoading(true);
+    setError(null);
 
-  const deductPoints = useCallback((amount: number) => {
-    const success = storageService.deductPoints(amount);
-    if (success) {
-      setPoints(storageService.getPoints());
+    try {
+      const response: AuthResponse = await authApi.login({ email, password });
+
+      // Save tokens
+      localStorage.setItem("accessToken", response.accessToken);
+      localStorage.setItem("refreshToken", response.refreshToken);
+
+      // Set user
+      setUser(response.user);
+    } catch (err) {
+      const errorMsg = getErrorMessage(err);
+      setError(errorMsg);
+      throw new Error(errorMsg);
+    } finally {
+      setIsLoading(false);
     }
-    return success;
   }, []);
 
-  const checkRecharge = useCallback(() => {
-    const result = pointsService.checkAndRecharge();
-    if (result.recharged) {
-      setPoints(result.points);
+  const signup = useCallback(
+    async (data: {
+      email: string;
+      password: string;
+      nickname: string;
+      age: number;
+      region: string;
+      gender: "MALE" | "FEMALE";
+    }) => {
+      setIsLoading(true);
+      setError(null);
+
+      try {
+        const response: AuthResponse = await authApi.signup(data);
+
+        // Save tokens
+        localStorage.setItem("accessToken", response.accessToken);
+        localStorage.setItem("refreshToken", response.refreshToken);
+
+        // Set user
+        setUser(response.user);
+      } catch (err) {
+        const errorMsg = getErrorMessage(err);
+        setError(errorMsg);
+        throw new Error(errorMsg);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [],
+  );
+
+  const logout = useCallback(async () => {
+    try {
+      await authApi.logout();
+    } catch (err) {
+      console.error("Logout error:", err);
+    } finally {
+      // Clear tokens and user regardless of API call success
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("refreshToken");
+      setUser(null);
     }
-    return result;
+  }, []);
+
+  const refreshUser = useCallback(async () => {
+    if (!localStorage.getItem("accessToken")) {
+      return;
+    }
+
+    try {
+      const userData = await userApi.getMe();
+      setUser(userData);
+    } catch (err) {
+      console.error("Failed to refresh user:", err);
+    }
+  }, []);
+
+  const updatePoints = useCallback((points: number) => {
+    setUser((prev) => {
+      if (!prev) return null;
+      return { ...prev, points };
+    });
   }, []);
 
   return (
     <UserContext.Provider
       value={{
-        userId,
-        points,
-        isInitialized,
+        user,
+        isAuthenticated: !!user,
+        isLoading,
+        error,
+        login,
+        signup,
+        logout,
+        refreshUser,
         updatePoints,
-        deductPoints,
-        checkRecharge,
       }}
     >
       {children}
@@ -84,7 +170,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
 export function useUser() {
   const context = useContext(UserContext);
   if (!context) {
-    throw new Error('useUser must be used within a UserProvider');
+    throw new Error("useUser must be used within a UserProvider");
   }
   return context;
 }

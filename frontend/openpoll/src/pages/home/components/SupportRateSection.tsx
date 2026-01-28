@@ -1,15 +1,16 @@
-import { memo, useState } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import type { PartyData } from '@/types/party.types';
-import { VoteButton } from '@/components/atoms';
-import { useUser } from '@/contexts/UserContext';
-import { AlertCircle } from 'lucide-react';
+import { memo, useState } from "react";
+import { motion, AnimatePresence } from "motion/react";
+import type { PartyData } from "@/types/party.types";
+import { VoteButton } from "@/components/atoms";
+import { useUser } from "@/contexts/UserContext";
+import { AlertCircle } from "lucide-react";
 
 interface SupportRateSectionProps {
   partyData: readonly PartyData[] | PartyData[];
   totalParticipants: number;
   selectedParty: string | null;
   onVote: (partyId: string) => void;
+  points: number;
 }
 
 export const SupportRateSection = memo(function SupportRateSection({
@@ -17,8 +18,8 @@ export const SupportRateSection = memo(function SupportRateSection({
   totalParticipants,
   selectedParty,
   onVote,
+  points,
 }: SupportRateSectionProps) {
-  const { points } = useUser();
   const [loadingParty, setLoadingParty] = useState<string | null>(null);
 
   const handleVote = async (partyId: string) => {
@@ -45,9 +46,15 @@ export const SupportRateSection = memo(function SupportRateSection({
     >
       <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-12">
         <div className="text-center mb-6 sm:mb-8">
-          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-2 sm:mb-3">실시간 지지율</h2>
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-2 sm:mb-3">
+            실시간 지지율
+          </h2>
           <p className="text-gray-400 text-sm sm:text-base lg:text-lg">
-            총 <span className="text-white font-semibold">{totalParticipants.toLocaleString()}명</span>이 참여했습니다
+            총{" "}
+            <span className="text-white font-semibold">
+              {totalParticipants.toLocaleString()}명
+            </span>
+            이 참여했습니다
           </p>
         </div>
 
@@ -56,7 +63,7 @@ export const SupportRateSection = memo(function SupportRateSection({
           {hasInsufficientPoints && (
             <motion.div
               initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
+              animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
               className="mb-6 overflow-hidden"
             >
@@ -86,9 +93,13 @@ export const SupportRateSection = memo(function SupportRateSection({
             >
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-2 sm:mb-3 gap-2">
                 <div className="flex items-center space-x-2 sm:space-x-3">
-                  <div className="text-2xl sm:text-3xl lg:text-4xl">{party.logo}</div>
+                  <div className="text-2xl sm:text-3xl lg:text-4xl">
+                    {party.logo}
+                  </div>
                   <div>
-                    <div className="font-bold text-sm sm:text-base lg:text-lg">{party.name}</div>
+                    <div className="font-bold text-sm sm:text-base lg:text-lg">
+                      {party.name}
+                    </div>
                     <div className="text-xs sm:text-sm text-gray-400">
                       {party.totalVotes.toLocaleString()}표
                     </div>
@@ -121,7 +132,11 @@ export const SupportRateSection = memo(function SupportRateSection({
                   style={{ backgroundColor: party.color }}
                   initial={{ width: 0 }}
                   animate={{ width: `${party.percentage}%` }}
-                  transition={{ delay: 0.7 + index * 0.1, duration: 1, ease: 'easeOut' }}
+                  transition={{
+                    delay: 0.7 + index * 0.1,
+                    duration: 1,
+                    ease: "easeOut",
+                  }}
                 />
               </div>
             </motion.div>
