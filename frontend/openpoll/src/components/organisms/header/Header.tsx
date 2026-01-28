@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { ThemeToggle } from '@/components/atoms/themeToggle/ThemeToggle';
 import { ROUTES } from '@/shared/constants';
 import { getSession, logout } from '@/shared/utils/localAuth';
+import { useUser } from '@/contexts/UserContext';
 
 type SessionUser = {
   nickname: string;
@@ -17,8 +18,9 @@ export interface HeaderProps {
   isLoggedIn?: boolean;
 }
 
-export function Header({ points = 500, isLoggedIn = false }: HeaderProps) {
+export function Header({ points: propPoints = 500, isLoggedIn = false }: HeaderProps) {
   const [session, setSession] = useState<SessionUser | null>(() => getSession() as SessionUser | null);
+  const { points: userContextPoints } = useUser();
 
   useEffect(() => {
     const sync = () => setSession(getSession() as SessionUser | null);
@@ -27,7 +29,18 @@ export function Header({ points = 500, isLoggedIn = false }: HeaderProps) {
   }, []);
 
   const computedIsLoggedIn = !!session || isLoggedIn;
-  const computedPoints = session?.points ?? points;
+  // Use UserContext points (real-time) if available, otherwise fallback to session or props
+  const computedPoints = userContextPoints ?? session?.points ?? propPoints;
+
+  // Color coding based on points
+  const isLowPoints = computedPoints < 25;
+  const isCriticalPoints = computedPoints < 5;
+
+  const getPointsColor = () => {
+    if (isCriticalPoints) return 'text-red-600 dark:text-red-400';
+    if (isLowPoints) return 'text-yellow-600 dark:text-yellow-400';
+    return '';
+  };
 
   const handleLogout = () => {
     logout();
@@ -85,23 +98,29 @@ export function Header({ points = 500, isLoggedIn = false }: HeaderProps) {
                 </button>
 
                 <motion.div
-                  className="flex items-center space-x-1.5 sm:space-x-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full transition-all duration-300 hover-lift"
-                  style={{
+                  className={`flex items-center space-x-1.5 sm:space-x-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full transition-all duration-300 hover-lift ${
+                    isCriticalPoints
+                      ? 'bg-red-100 dark:bg-red-900/20 border border-red-300 dark:border-red-700'
+                      : isLowPoints
+                      ? 'bg-yellow-100 dark:bg-yellow-900/20 border border-yellow-300 dark:border-yellow-700'
+                      : ''
+                  }`}
+                  style={!isLowPoints && !isCriticalPoints ? {
                     backgroundColor: 'var(--color-secondary)',
                     color: 'var(--color-secondary-foreground)'
-                  }}
+                  } : {}}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
-                  <Coins className="w-3.5 h-3.5 sm:w-4 sm:h-4 transition-transform duration-300 hover:rotate-12" />
+                  <Coins className={`w-3.5 h-3.5 sm:w-4 sm:h-4 transition-transform duration-300 hover:rotate-12 ${getPointsColor()}`} />
                   <motion.span
                     key={computedPoints}
-                    className="text-xs sm:text-sm font-semibold"
+                    className={`text-xs sm:text-sm font-semibold ${getPointsColor()}`}
                     initial={{ scale: 1 }}
                     animate={{ scale: [1, 1.2, 1] }}
                     transition={{ duration: 0.3 }}
                   >
-                    {computedPoints}P
+                    {computedPoints.toLocaleString()}P
                   </motion.span>
                 </motion.div>
               </>

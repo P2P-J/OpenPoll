@@ -10,7 +10,7 @@ export function MainLayout() {
   return (
     <div className={`min-h-screen ${isAuthPage ? 'bg-black' : 'bg-white'}`}>
       {!isAuthPage && (
-        
+        <a
           href="#main-content"
           className="sr-only focus:not-sr-only focus:absolute focus:top-0 focus:left-0 focus:z-50 focus:px-4 focus:py-3 focus:bg-black focus:text-white focus:rounded-br-lg"
         >

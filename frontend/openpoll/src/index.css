@@ -2805,3 +2805,27 @@ body {
     scroll-behavior: auto !important;
   }
 }
+
+/* Text Selection Styles - 드래그 시 하얀색 배경 */
+::selection {
+  background-color: rgba(255, 255, 255, 0.99);
+  color: #000;
+}
+
+::-moz-selection {
+  background-color: rgba(255, 255, 255, 0.99);
+  color: #000;
+}
+
+/* Input fields selection - 입력 필드 드래그 시 */
+input::selection,
+textarea::selection {
+  background-color: rgba(255, 255, 255, 0.99);
+  color: #000;
+}
+
+input::-moz-selection,
+textarea::-moz-selection {
+  background-color: rgba(255, 255, 255, 0.99);
+  color: #000;
+}
