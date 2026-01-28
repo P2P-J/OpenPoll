@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Coins } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { ThemeToggle } from '@/components/atoms/themeToggle/ThemeToggle';
 import { ROUTES } from '@/shared/constants';
 import { getSession, logout } from '@/shared/utils/localAuth';
 
@@ -33,37 +35,43 @@ export function Header({ points = 500, isLoggedIn = false }: HeaderProps) {
   };
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-100">
+    <header className="fixed top-0 left-0 right-0 z-50 glass-effect border-b transition-all duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-14 sm:h-16">
-          <Link to={ROUTES.HOME} className="flex items-center space-x-2">
-            <div className="w-7 h-7 sm:w-8 sm:h-8 bg-black rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-base sm:text-lg">P</span>
+        <div className="flex items-center justify-between h-16">
+          <Link
+            to={ROUTES.HOME}
+            className="flex items-center space-x-2 group"
+            aria-label="OpenPoll 홈으로 이동"
+          >
+            <div className="w-7 h-7 sm:w-8 sm:h-8 bg-gradient-primary rounded-lg flex items-center justify-center transition-transform duration-300 group-hover:scale-110 shadow-smooth">
+              <span className="text-white font-bold text-base sm:text-lg" aria-hidden="true">O</span>
             </div>
-            <span className="text-lg sm:text-xl font-bold tracking-tight">Politicus</span>
+            <span className="text-lg sm:text-xl font-bold tracking-tight transition-colors duration-300">
+              OpenPoll
+            </span>
           </Link>
 
-          <div className="flex items-center space-x-4 sm:space-x-6">
+          <div className="flex items-center gap-3 sm:gap-4">
             {!computedIsLoggedIn ? (
               <div className="flex items-center space-x-3">
                 <Link
                   to={ROUTES.LOGIN}
-                  className="text-sm font-semibold text-gray-800 hover:opacity-80"
+                  className="text-sm font-semibold hover:opacity-80 transition-opacity"
                 >
                   로그인
                 </Link>
                 <Link
                   to={ROUTES.REGISTER}
-                  className="px-4 py-2 rounded-full bg-black text-white text-sm font-semibold hover:bg-gray-900"
+                  className="px-4 py-2 rounded-full bg-black text-white text-sm font-semibold hover:bg-gray-900 transition-colors dark:bg-white dark:text-black dark:hover:bg-gray-100"
                 >
                   회원가입
                 </Link>
               </div>
             ) : (
-              <div className="flex items-center space-x-3">
+              <>
                 <Link
                   to={ROUTES.PROFILE}
-                  className="text-sm font-semibold text-gray-800 hover:opacity-80"
+                  className="text-sm font-semibold hover:opacity-80 transition-opacity"
                 >
                   내 정보
                 </Link>
@@ -71,19 +79,36 @@ export function Header({ points = 500, isLoggedIn = false }: HeaderProps) {
                 <button
                   type="button"
                   onClick={handleLogout}
-                  className="text-sm font-semibold text-gray-800 hover:opacity-80"
+                  className="text-sm font-semibold hover:opacity-80 transition-opacity"
                 >
                   로그아웃
                 </button>
 
-                <div className="flex items-center space-x-1.5 sm:space-x-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-gray-50 rounded-full">
-                  <Coins className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-700" />
-                  <span className="text-xs sm:text-sm font-semibold">{computedPoints}P</span>
-                </div>
-              </div>
+                <motion.div
+                  className="flex items-center space-x-1.5 sm:space-x-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full transition-all duration-300 hover-lift"
+                  style={{
+                    backgroundColor: 'var(--color-secondary)',
+                    color: 'var(--color-secondary-foreground)'
+                  }}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <Coins className="w-3.5 h-3.5 sm:w-4 sm:h-4 transition-transform duration-300 hover:rotate-12" />
+                  <motion.span
+                    key={computedPoints}
+                    className="text-xs sm:text-sm font-semibold"
+                    initial={{ scale: 1 }}
+                    animate={{ scale: [1, 1.2, 1] }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    {computedPoints}P
+                  </motion.span>
+                </motion.div>
+              </>
             )}
-          </div>
 
+            <ThemeToggle />
+          </div>
         </div>
       </div>
     </header>
