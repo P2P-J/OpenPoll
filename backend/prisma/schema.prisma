@@ -1,0 +1,114 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  password     String
+  nickname     String
+  age          Int
+  region       String
+  gender       String
+  points       Int      @default(0)
+  hasTakenDos  Boolean  @default(false) // DOS 검사 여부(포인트 지급용)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  pointHistory PointHistory[]
+  votes        Vote[]
+  attendances  Attendance[]
+
+  @@map("users")
+}
+
+model Party {
+  id        Int     @id @default(autoincrement())
+  name      String  @unique
+  color     String  // 정당 대표 색상 (HEX)
+  logoUrl   String? // 로고 이미지 URL
+  isActive  Boolean @default(true)
+  order     Int     @default(0)
+  voteCount Int     @default(0) // 누적 투표 수
+
+  votes Vote[]
+
+  @@map("parties")
+}
+
+model Vote {
+  id        Int      @id @default(autoincrement())
+  userId    String
+  partyId   Int
+  createdAt DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  party Party @relation(fields: [partyId], references: [id], onDelete: Cascade)
+
+  @@index([partyId])
+  @@index([createdAt])
+  @@index([userId, createdAt])
+  @@map("votes")
+}
+
+model PointHistory {
+  id          Int      @id @default(autoincrement())
+  userId      String
+  type        String   // SIGNUP, DOS, BALANCE_GAME, NEWS_READ, DAILY_ATTENDANCE, CONSECUTIVE_ATTENDANCE_BONUS, PARTY_VOTE
+  amount      Int
+  description String?
+  createdAt   DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@map("point_history")
+}
+
+model Attendance {
+  id              Int      @id @default(autoincrement())
+  userId          String
+  date            DateTime @db.Date
+  consecutiveDays Int      @default(1)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, date])
+  @@map("attendances")
+}
+
+// DOS(DNA Of Society) 검사 질문
+model DosQuestion {
+  id        Int    @id @default(autoincrement())
+  question  String
+  axis      String // distribution(분배), rights(권리), change(변화), development(발전)
+  direction Int    @default(1) // 1: 정방향(1-3이 첫번째 문자), -1: 역방향(1-3이 두번째 문자)
+  weight    Float  @default(1.0)
+  order     Int    @default(0)
+
+  @@map("dos_questions")
+}
+
+// DOS 결과 유형
+model DosResultType {
+  id          String @id // MFCD, EOSN 등 4자리 조합
+  name        String // 유형 이름
+  description String @db.Text
+  traits      String @db.Text
+
+  @@map("dos_result_types")
+}
+
+// DOS 통계
+model DosStatistics {
+  resultType String   @id
+  count      Int      @default(0)
+  updatedAt  DateTime @updatedAt
+
+  @@map("dos_statistics")
+}
