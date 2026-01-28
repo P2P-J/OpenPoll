@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowRight, Mail, Lock, Gift } from 'lucide-react';
+import { ArrowRight, Mail, Lock, Gift, Home } from 'lucide-react';
 import { motion } from 'motion/react';
 import { ROUTES } from '@/shared/constants';
 import { loginUser } from '@/shared/utils/localAuth';
@@ -148,9 +148,10 @@ export function Login() {
             <div className="flex justify-center pt-2">
               <Link
                 to={ROUTES.HOME}
-                className="h-11 px-10 rounded-xl border border-white/15 bg-white/5 hover:bg-white/10 transition-colors flex items-center justify-center font-semibold text-sm"
+                className="group w-full h-16 rounded-xl bg-gradient-to-r from-gray-800 to-gray-900 hover:from-gray-700 hover:to-gray-800 border border-white/20 hover:border-white/30 transition-all duration-300 flex items-center justify-center gap-3 font-bold text-base shadow-lg hover:shadow-xl hover:scale-[1.02]"
               >
-                홈으로 돌아가기
+                <Home className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                <span>홈으로 돌아가기</span>
               </Link>
             </div>
           </form>

@@ -53,9 +53,7 @@ export function Home() {
     try {
       await castVote(partyId);
       setSelectedParty(partyId);
-      setToastMessage('투표가 완료되었습니다! (-5 포인트)');
-      setToastType('success');
-      setShowToast(true);
+      // Success message removed - points update in navbar is sufficient
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : '투표에 실패했습니다.';
       setToastMessage(errorMessage);

@@ -1,7 +1,9 @@
-import { memo } from 'react';
-import { motion } from 'motion/react';
-import { Check } from 'lucide-react';
+import { memo, useState } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import type { PartyData } from '@/types/party.types';
+import { VoteButton } from '@/components/atoms';
+import { useUser } from '@/contexts/UserContext';
+import { AlertCircle } from 'lucide-react';
 
 interface SupportRateSectionProps {
   partyData: readonly PartyData[] | PartyData[];
@@ -16,6 +18,24 @@ export const SupportRateSection = memo(function SupportRateSection({
   selectedParty,
   onVote,
 }: SupportRateSectionProps) {
+  const { points } = useUser();
+  const [loadingParty, setLoadingParty] = useState<string | null>(null);
+
+  const handleVote = async (partyId: string) => {
+    if (points < 5) {
+      return; // Button will be disabled anyway
+    }
+
+    setLoadingParty(partyId);
+    try {
+      await onVote(partyId);
+    } finally {
+      setTimeout(() => setLoadingParty(null), 600);
+    }
+  };
+
+  const hasInsufficientPoints = points < 5;
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -30,6 +50,30 @@ export const SupportRateSection = memo(function SupportRateSection({
             총 <span className="text-white font-semibold">{totalParticipants.toLocaleString()}명</span>이 참여했습니다
           </p>
         </div>
+
+        {/* Insufficient Points Warning */}
+        <AnimatePresence>
+          {hasInsufficientPoints && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="mb-6 overflow-hidden"
+            >
+              <div className="p-3 sm:p-4 bg-red-500/10 border border-red-500/30 rounded-xl">
+                <div className="flex items-center gap-2 text-red-400">
+                  <AlertCircle className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+                  <p className="text-xs sm:text-sm font-semibold">
+                    포인트가 부족합니다! 투표하려면 5P가 필요합니다.
+                  </p>
+                </div>
+                <p className="text-xs text-gray-400 mt-1 ml-6 sm:ml-7">
+                  포인트는 매일 자동으로 충전됩니다.
+                </p>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         <div className="space-y-4 sm:space-y-6">
           {partyData.map((party, index) => (
@@ -61,23 +105,12 @@ export const SupportRateSection = memo(function SupportRateSection({
                   >
                     {party.percentage.toFixed(1)}%
                   </motion.span>
-                  <button
-                    onClick={() => onVote(party.id)}
-                    className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg font-semibold text-xs sm:text-sm transition-all ${
-                      selectedParty === party.id
-                        ? 'bg-white text-black'
-                        : 'bg-white/10 hover:bg-white/20 text-white border border-white/20'
-                    }`}
-                  >
-                    {selectedParty === party.id ? (
-                      <span className="flex items-center space-x-1">
-                        <Check className="w-3 h-3 sm:w-4 sm:h-4" />
-                        <span>선택됨</span>
-                      </span>
-                    ) : (
-                      '투표하기 (5P)'
-                    )}
-                  </button>
+                  <VoteButton
+                    isSelected={selectedParty === party.id}
+                    isLoading={loadingParty === party.id}
+                    disabled={hasInsufficientPoints}
+                    onClick={() => handleVote(party.id)}
+                  />
                 </div>
               </div>
 
@@ -94,21 +127,6 @@ export const SupportRateSection = memo(function SupportRateSection({
             </motion.div>
           ))}
         </div>
-
-        {selectedParty && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="mt-4 sm:mt-6 p-3 sm:p-4 bg-green-500/10 border border-green-500/20 rounded-xl text-center"
-          >
-            <p className="text-green-400 font-semibold text-sm sm:text-base">
-              ✅ 투표가 완료되었습니다!
-            </p>
-            <p className="text-xs sm:text-sm text-gray-400 mt-1">
-              투표할 때마다 5P가 차감됩니다
-            </p>
-          </motion.div>
-        )}
 
         <motion.div
           initial={{ opacity: 0 }}

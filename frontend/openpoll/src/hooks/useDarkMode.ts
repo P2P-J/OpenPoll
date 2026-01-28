@@ -9,10 +9,10 @@ type Theme = 'light' | 'dark' | 'system';
  */
 export function useDarkMode() {
   const [theme, setThemeState] = useState<Theme>(() => {
-    if (typeof window === 'undefined') return 'system';
+    if (typeof window === 'undefined') return 'light';
 
     const savedTheme = localStorage.getItem('theme') as Theme | null;
-    return savedTheme || 'system';
+    return savedTheme || 'light';
   });
 
   const [isDark, setIsDark] = useState(false);

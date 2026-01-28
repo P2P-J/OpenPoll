@@ -4,3 +4,5 @@ export * from './badge';
 export * from './card';
 export * from './icon';
 export * from './progressBar';
+export * from './voteButton';
+export * from './pointsDisplay';
