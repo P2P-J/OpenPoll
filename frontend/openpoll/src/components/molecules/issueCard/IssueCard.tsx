@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { Users, MessageCircle, ChevronRight, CheckCircle } from 'lucide-react';
@@ -15,7 +16,7 @@ export interface IssueCardProps {
   animationDelay?: number;
 }
 
-export function IssueCard({
+export const IssueCard = memo(function IssueCard({
   id,
   emoji,
   title,
@@ -29,8 +30,9 @@ export function IssueCard({
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: animationDelay }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ delay: animationDelay, duration: 0.3 }}
     >
       <Link to={`/balance/${id}`} className="block group">
         <Card variant="gradient" hoverable className="shadow-lg">
@@ -98,4 +100,4 @@ export function IssueCard({
       </Link>
     </motion.div>
   );
-}
+});

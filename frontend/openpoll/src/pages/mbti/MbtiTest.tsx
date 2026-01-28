@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
@@ -36,7 +36,7 @@ export function MbtiTest() {
   const canGoNext = answers[questions[currentQuestion].id] !== undefined;
 
   const handleAnswer = (value: number) => {
-    setAnswers({ ...answers, [questions[currentQuestion].id]: value });
+    setAnswers(prev => ({ ...prev, [questions[currentQuestion].id]: value }));
   };
 
   const handleNext = () => {
@@ -58,6 +58,31 @@ export function MbtiTest() {
 
   const question = questions[currentQuestion];
   const currentAnswer = answers[question.id];
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      // Arrow keys for navigation
+      if (e.key === 'ArrowLeft' && currentQuestion > 0) {
+        handlePrev();
+      }
+      if (e.key === 'ArrowRight' && canGoNext) {
+        handleNext();
+      }
+      // Number keys 1-7 for quick selection
+      if (e.key >= '1' && e.key <= '7') {
+        const index = parseInt(e.key) - 1;
+        handleAnswer(index - 3); // Convert to -3 to 3 scale
+      }
+      // Enter key to proceed
+      if (e.key === 'Enter' && canGoNext) {
+        handleNext();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, [currentQuestion, canGoNext, handleNext, handlePrev, handleAnswer]);
 
   return (
     <div className="min-h-screen bg-black text-white flex flex-col">
@@ -110,9 +135,9 @@ export function MbtiTest() {
               transition={{ duration: 0.3 }}
               className="text-center"
             >
-              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-8 sm:mb-12 lg:mb-16 leading-relaxed px-2">
+              <h1 id="question-text" className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-8 sm:mb-12 lg:mb-16 leading-relaxed px-2">
                 {question.text}
-              </h2>
+              </h1>
 
               {/* Scale */}
               <div className="space-y-2 sm:space-y-3 max-w-2xl mx-auto">
@@ -159,15 +184,28 @@ export function MbtiTest() {
 
       {/* Navigation */}
       <div className="p-4 sm:p-6 pb-safe">
-        <div className="max-w-3xl mx-auto">
-          <button
-            onClick={handleNext}
-            disabled={!canGoNext}
-            className="w-full py-3 sm:py-4 bg-white text-black rounded-full font-bold text-base sm:text-lg hover:bg-gray-100 transition-colors disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
-          >
-            <span>{currentQuestion === questions.length - 1 ? '결과 보기' : '다음'}</span>
-            <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
-          </button>
+        <div className="max-w-3xl mx-auto relative">
+          <div className="relative group">
+            <button
+              onClick={handleNext}
+              disabled={!canGoNext}
+              className="w-full py-3 sm:py-4 bg-white text-black rounded-full font-bold text-base sm:text-lg hover:bg-gray-100 transition-colors disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+              aria-label={!canGoNext ? '답변을 선택해주세요' : undefined}
+            >
+              <span>{currentQuestion === questions.length - 1 ? '결과 보기' : '다음'}</span>
+              <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" aria-hidden="true" />
+            </button>
+            {/* Tooltip for disabled button */}
+            {!canGoNext && (
+              <div className="absolute -top-12 left-1/2 -translate-x-1/2 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+                답변을 선택해주세요
+              </div>
+            )}
+          </div>
+          {/* Keyboard shortcuts hint */}
+          <p className="text-center text-xs text-white/50 mt-3">
+            키보드: 1-7 (선택), ← → (이동), Enter (다음)
+          </p>
         </div>
       </div>
     </div>
