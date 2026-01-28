@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { ExternalLink, Sparkles } from 'lucide-react';
@@ -13,9 +14,10 @@ export interface NewsCardProps {
   publishedAt: string;
   isNeutralized?: boolean;
   animationDelay?: number;
+  sourceUrl?: string;
 }
 
-export function NewsCard({
+export const NewsCard = memo(function NewsCard({
   id,
   category,
   title,
@@ -25,12 +27,14 @@ export function NewsCard({
   publishedAt,
   isNeutralized = true,
   animationDelay = 0,
+  sourceUrl,
 }: NewsCardProps) {
   return (
     <motion.article
       initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: animationDelay }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ delay: animationDelay, duration: 0.3 }}
     >
       <Card variant="gradient" hoverable className="shadow-lg">
         {/* Header */}
@@ -90,13 +94,20 @@ export function NewsCard({
             >
               전문 보기
             </Link>
-            <button className="flex items-center justify-center space-x-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg font-semibold text-xs sm:text-sm hover:bg-gray-200 transition-colors">
-              <span>원문 보기</span>
-              <ExternalLink className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-            </button>
+            {sourceUrl && (
+              <a
+                href={sourceUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-center space-x-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg font-semibold text-xs sm:text-sm hover:bg-gray-200 transition-colors"
+              >
+                <span>원문 보기</span>
+                <ExternalLink className="w-3 h-3 sm:w-3.5 sm:h-3.5" aria-hidden="true" />
+              </a>
+            )}
           </div>
         </div>
       </Card>
     </motion.article>
   );
-}
+});
