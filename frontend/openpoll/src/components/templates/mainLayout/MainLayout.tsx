@@ -9,10 +9,22 @@ export function MainLayout() {
 
   return (
     <div className={`min-h-screen ${isAuthPage ? 'bg-black' : 'bg-white'}`}>
+      {!isAuthPage && (
+        
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:absolute focus:top-0 focus:left-0 focus:z-50 focus:px-4 focus:py-3 focus:bg-black focus:text-white focus:rounded-br-lg"
+        >
+          본문으로 건너뛰기
+        </a>
+      )}
+      
       {!isAuthPage && <Header />}
       {!isAuthPage && <Navigation />}
-
-      <main className={isAuthPage ? '' : 'pb-20'}>
+      
+      <main 
+        id="main-content" 
+        className={isAuthPage ? '' : 'pb-20 sm:pb-0'}
+      >
         <Outlet />
       </main>
     </div>

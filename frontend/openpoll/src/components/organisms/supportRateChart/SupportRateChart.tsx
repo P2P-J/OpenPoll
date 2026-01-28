@@ -1,6 +1,6 @@
 import { motion } from 'motion/react';
 import { Card } from '@/components/atoms';
-import { PartyVoteItem, PartyData } from '@/components/molecules';
+import { PartyVoteItem, type PartyData } from '@/components/molecules';
 
 export interface SupportRateChartProps {
   partyData: PartyData[];
@@ -67,21 +67,6 @@ export function SupportRateChart({
             </button>
             <p className="text-xs sm:text-sm text-gray-500 mt-2 sm:mt-3">
               로그인하면 지지하는 정당에 투표할 수 있어요
-            </p>
-          </motion.div>
-        )}
-
-        {selectedParty && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="mt-4 sm:mt-6 p-3 sm:p-4 bg-green-500/10 border border-green-500/20 rounded-xl text-center"
-          >
-            <p className="text-green-400 font-semibold text-sm sm:text-base">
-              ✅ {partyData.find(p => p.id === selectedParty)?.name}에 투표하셨습니다
-            </p>
-            <p className="text-xs sm:text-sm text-gray-400 mt-1">
-              변경 시 200P가 차감됩니다
             </p>
           </motion.div>
         )}
