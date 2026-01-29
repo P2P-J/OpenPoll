@@ -54,13 +54,22 @@ export const castVote = async (userId, partyId) => {
       data: { voteCount: { increment: 1 } },
     });
 
-    return vote;
+    // 업데이트된 포인트 조회
+    const updatedUser = await tx.user.findUnique({
+      where: { id: userId },
+      select: { points: true },
+    });
+
+    return { vote, remainingPoints: updatedUser.points };
   });
 
   await invalidateStatsCache(); // redis 캐시 삭제
   await broadcastVoteUpdate(); // SSE로 모든 클라이언트에 알림
 
-  return result;
+  return {
+    ...result.vote,
+    remainingPoints: result.remainingPoints,
+  };
 };
 
 // 캐시 무효화(삭제)

@@ -6,6 +6,7 @@ import type {
   UserVoteStats,
   ApiResponse,
   PaginatedResponse,
+  PaginatedApiResponse,
   PaginationParams,
 } from "@/types/api.types";
 
@@ -34,10 +35,14 @@ export const updateMe = async (data: UpdateUserRequest): Promise<User> => {
 export const getPointHistory = async (
   params?: PaginationParams,
 ): Promise<PaginatedResponse<PointRecord>> => {
-  const response = await apiClient.get<
-    ApiResponse<PaginatedResponse<PointRecord>>
-  >("/users/me/points", { params });
-  return response.data.data;
+  const response = await apiClient.get<PaginatedApiResponse<PointRecord>>(
+    "/users/me/points",
+    { params },
+  );
+  return {
+    data: response.data.data,
+    pagination: response.data.pagination,
+  };
 };
 
 /**
