@@ -47,6 +47,12 @@ npm run dev
 근데 사실 만약에 컨테이너를 따로 안 껐다면(stop이든 재부팅이든) 그냥 서버만 조작해도 됨(컨테이너는 켜져있는게 디폴트니까)
 
 
+너무 복잡하게 설명했는데, 그냥 정리하자면 최초 실행 아닐때는
+docker ps 입력해서 컨테이너 살아있나 확인
+살아있으면 바로 npm run dev
+아무것도 안 뜬다 == 죽어있다 => docker start로 sql이랑 redis 켜고 npm run dev
+
+
 ---- 추가로 참고할만한 명령어 혹은 사항들 ----
 docker ps => 상태 확인(어떤 컨테이너 있고 이런거)
 docker exec -it openpoll-postgres psql -U postgres -d openpoll => DB 직접적으로 접속(데이터 체크나 디버깅 할 때?)
