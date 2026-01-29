@@ -1,4 +1,4 @@
-import { LucideIcon, LucideProps } from 'lucide-react';
+import type { LucideIcon, LucideProps } from 'lucide-react';
 import { cn } from '@/shared/utils/cn';
 
 export interface IconProps extends LucideProps {

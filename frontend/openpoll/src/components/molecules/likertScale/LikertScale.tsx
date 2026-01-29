@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { motion } from 'motion/react';
 
 export interface LikertScaleProps {
@@ -16,13 +17,13 @@ const defaultLabels = [
   '매우 찬성',
 ];
 
-export function LikertScale({ 
-  value, 
-  onChange, 
-  labels = defaultLabels 
+export const LikertScale = memo(function LikertScale({
+  value,
+  onChange,
+  labels = defaultLabels
 }: LikertScaleProps) {
   return (
-    <div className="space-y-2 sm:space-y-3 max-w-2xl mx-auto">
+    <div role="radiogroup" aria-label="의견 선택" className="space-y-2 sm:space-y-3 max-w-2xl mx-auto">
       {labels.map((label, index) => {
         const scaleValue = index - 3; // -3 to 3
         const isSelected = value === scaleValue;
@@ -30,6 +31,8 @@ export function LikertScale({
         return (
           <button
             key={index}
+            role="radio"
+            aria-checked={isSelected}
             onClick={() => onChange(scaleValue)}
             className={`w-full p-3 sm:p-4 rounded-xl transition-all ${
               isSelected
@@ -60,4 +63,4 @@ export function LikertScale({
       })}
     </div>
   );
-}
+});
