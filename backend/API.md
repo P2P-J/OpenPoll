@@ -306,7 +306,8 @@ Base URL: `http://localhost:3000/api`
     "party": {
       "name": "더불어민주당",
       "color": "#004EA2"
-    }
+    },
+    "remainingPoints": 495
   }
 }
 ```

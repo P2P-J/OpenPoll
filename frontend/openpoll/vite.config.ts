@@ -17,6 +17,6 @@ export default defineConfig({
   },
   // Optimize dependencies
   optimizeDeps: {
-    include: ['react', 'react-dom', 'react-router-dom', 'motion/react', 'lucide-react'],
+    include: ['react', 'react-dom', 'react-router-dom', 'motion/react', 'lucide-react', 'axios'],
   },
 });

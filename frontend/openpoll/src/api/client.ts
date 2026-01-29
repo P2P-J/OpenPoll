@@ -1,4 +1,5 @@
-import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
+import axios, { AxiosError } from "axios";
+import type { AxiosRequestConfig } from "axios";
 
 const API_BASE_URL = "http://localhost:3000/api";
 
@@ -13,7 +14,7 @@ export const apiClient = axios.create({
 
 // Request interceptor - Add auth token to requests
 apiClient.interceptors.request.use(
-  (config: InternalAxiosRequestConfig) => {
+  (config) => {
     const token = localStorage.getItem("accessToken");
 
     if (token && config.headers) {
@@ -33,7 +34,7 @@ apiClient.interceptors.response.use(
     return response;
   },
   async (error: AxiosError) => {
-    const originalRequest = error.config as InternalAxiosRequestConfig & {
+    const originalRequest = error.config as AxiosRequestConfig & {
       _retry?: boolean;
     };
 
