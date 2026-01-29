@@ -20,6 +20,18 @@ export interface PaginatedResponse<T> {
   };
 }
 
+// Paginated API response (success + data + pagination at root level)
+export interface PaginatedApiResponse<T> {
+  success: boolean;
+  data: T[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+}
+
 // ============ Auth Types ============
 
 export interface SignupRequest {
