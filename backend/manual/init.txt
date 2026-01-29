@@ -1,0 +1,62 @@
+서버 구동법! Pocket Pay때처럼 npm run dev만 하면 되는게 아니라서 따로 파일 만들게 됐습니다.
+조만간 Makefile이나 스크립트 파일 만들어서 한번에 할 수 있게끔 할 예정입니다.
+추가로 궁금한 것 있으면 말해주세요~
+당연하지만 일단 .env 미리 잘 채워두시고, npm install도 해둡시다
+
+---- 서버 최초 실행 시 ----
+(최초 실행 아니면 아래로 내려갑시다)
+1. PostgreSQL 도커 컨테이너 생성 및 실행(로컬에서 하실분들은 로컬에서 하세요)
+docker run -d \
+  --name openpoll-postgres \
+  -e POSTGRES_USER=postgres \
+  -e POSTGRES_PASSWORD=비밀번호 \
+  -e POSTGRES_DB=openpoll \
+  -p 5432:5432 \
+  postgres:16
+=> 잘 되면 무슨 이상한 값이 출력될건데 그게 컨테이너 ID임(기억할 필요는 없음)
+
+혹시나 해서 써놓지만.... 당연하지만 도커 및 PostgreSQL 세팅(설치)은 기본적으로 돼있어야 합니다(로컬이면 알아서 하시고용).
+이거까지는 안 쓸게요! 다 아시죠...? ^^
+
+2. Redis 컨테이너 생성 및 실행
+docker run -d \
+  --name openpoll-redis \
+  -p 6379:6379 \
+  redis:7
+
+3. Prisma 마이그레이션(DB 테이블 적용/생성)
+npx prisma migrate deploy
+(혹시 개발용일 경우 npx prisma migrate dev --name init으로 해야 되는데 이건 사실상 다 제가 할겁니다)
+
+4. 시드 데이터(초기 고정 데이터) 삽입
+npx prisma db seed
+
+5. 서버 실행
+npm run dev
+
+잘 됐나 확인하려면 그 http://localhost:3000/health 여기 들어가시면 됩니데이
+들어갔는데 {"status":"ok","timestamp":"..."} 이렇게 나오면 된거임
+터미널 기준으로는 GET /health 200 2.070 ms - 54 이런거 뜨면 된거에요
+(그 막 에러 어쩌구 뜨는데 그거는 그냥 favicon 에러라서 무시하면 됩니더)
+
+---- 최초 실행이 아님 ----
+docker start openpoll-postgres(끄고 싶으면 docker stop openpoll-postgres)
+docker start openpoll-redis(끄고 싶으면 docker stop openpoll-redis)
+npm run dev
+
+근데 사실 만약에 컨테이너를 따로 안 껐다면(stop이든 재부팅이든) 그냥 서버만 조작해도 됨(컨테이너는 켜져있는게 디폴트니까)
+
+
+너무 복잡하게 설명했는데, 그냥 정리하자면 최초 실행 아닐때는
+docker ps 입력해서 컨테이너 살아있나 확인
+살아있으면 바로 npm run dev
+아무것도 안 뜬다 == 죽어있다 => docker start로 sql이랑 redis 켜고 npm run dev
+
+
+---- 추가로 참고할만한 명령어 혹은 사항들 ----
+docker ps => 상태 확인(어떤 컨테이너 있고 이런거)
+docker exec -it openpoll-postgres psql -U postgres -d openpoll => DB 직접적으로 접속(데이터 체크나 디버깅 할 때?)
+그 3, 4번에 있는 prisma 관련된 npx 명령어들 쟤네도 사실 최초 1회만 하면 되는거는 맞는데,
+DB가 변경될 경우 3번 다시 해야되고, 시드 데이터 변경될 경우 4번 다시 해야 됨!
+그 3번에서 init은 생성이고, deploy는 적용인데, 어차피 prisma 관련 파일들을 다 제가 수정하니까 init도 제가 할거라서 웬만하면 deploy만 하시는겁니다
+server.js에 구현돼있는 graceful shutdown 때문에 컨테이너도 꺼지는 거 아님? => 응 아니야. 연결만 끊기는 겁니더
