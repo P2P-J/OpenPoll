@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Gift, Mail, Lock, User, Calendar, Users, MapPin, Home } from 'lucide-react';
 import { motion } from 'motion/react';
 import { ROUTES } from '@/shared/constants';
-import { registerUser } from '@/shared/utils/localAuth';
+import { useUser } from '@/contexts/UserContext';
 
 type RegisterErrors = {
   nickname?: string;
@@ -18,6 +18,7 @@ type RegisterErrors = {
 
 export function Register() {
   const navigate = useNavigate();
+  const { signup, isLoading } = useUser();
 
   const [nickname, setNickname] = useState('');
   const [email, setEmail] = useState('');
@@ -86,30 +87,27 @@ export function Register() {
     return Object.keys(next).length === 0;
   };
 
-  const onSubmit = (e: React.FormEvent) => {
+  const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setHasSubmitted(true);
 
     const ok = validate();
     if (!ok) return;
 
-    const result = registerUser({
-      nickname: nickname.trim(),
-      email: email.trim(),
-      password,
-      age: Number(age),
-      gender: gender as 'male' | 'female',
-      region,
-    });
-
-    if (!result.ok) {
-      setErrors((prev) => ({ ...prev, [result.errorField]: result.message }));
-      return;
+    try {
+      await signup({
+        nickname: nickname.trim(),
+        email: email.trim(),
+        password,
+        age: Number(age),
+        gender: gender as 'MALE' | 'FEMALE',
+        region,
+      });
+      navigate(ROUTES.HOME);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : '회원가입에 실패했습니다.';
+      setErrors((prev) => ({ ...prev, email: errorMessage }));
     }
-
-    alert(`회원가입 성공!\n환영합니다. 500P가 지급되었습니다. (+${result.awardedPoints}P)`);
-    window.dispatchEvent(new Event('storage'));
-    navigate(ROUTES.HOME);
   };
 
   const showError = (key: keyof RegisterErrors) => hasSubmitted && !!errors[key];
@@ -287,8 +285,8 @@ export function Register() {
                     }}
                   >
                     <option value="" className="bg-black">선택하세요</option>
-                    <option value="male" className="bg-black">남성</option>
-                    <option value="female" className="bg-black">여성</option>
+                    <option value="MALE" className="bg-black">남성</option>
+                    <option value="FEMALE" className="bg-black">여성</option>
                   </select>
                 </div>
                 {showError('gender') && (
@@ -315,23 +313,23 @@ export function Register() {
                   }}
                 >
                   <option value="" className="bg-black">거주 지역을 선택하세요</option>
-                  <option value="seoul" className="bg-black">서울</option>
-                  <option value="busan" className="bg-black">부산</option>
-                  <option value="daegu" className="bg-black">대구</option>
-                  <option value="incheon" className="bg-black">인천</option>
-                  <option value="gwangju" className="bg-black">광주</option>
-                  <option value="daejeon" className="bg-black">대전</option>
-                  <option value="ulsan" className="bg-black">울산</option>
-                  <option value="sejong" className="bg-black">세종</option>
-                  <option value="gyeonggi" className="bg-black">경기</option>
-                  <option value="gangwon" className="bg-black">강원</option>
-                  <option value="chungbuk" className="bg-black">충북</option>
-                  <option value="chungnam" className="bg-black">충남</option>
-                  <option value="jeonbuk" className="bg-black">전북</option>
-                  <option value="jeonnam" className="bg-black">전남</option>
-                  <option value="gyeongbuk" className="bg-black">경북</option>
-                  <option value="gyeongnam" className="bg-black">경남</option>
-                  <option value="jeju" className="bg-black">제주</option>
+                  <option value="서울" className="bg-black">서울</option>
+                  <option value="부산" className="bg-black">부산</option>
+                  <option value="대구" className="bg-black">대구</option>
+                  <option value="인천" className="bg-black">인천</option>
+                  <option value="광주" className="bg-black">광주</option>
+                  <option value="대전" className="bg-black">대전</option>
+                  <option value="울산" className="bg-black">울산</option>
+                  <option value="세종" className="bg-black">세종</option>
+                  <option value="경기" className="bg-black">경기</option>
+                  <option value="강원" className="bg-black">강원</option>
+                  <option value="충북" className="bg-black">충북</option>
+                  <option value="충남" className="bg-black">충남</option>
+                  <option value="전북" className="bg-black">전북</option>
+                  <option value="전남" className="bg-black">전남</option>
+                  <option value="경북" className="bg-black">경북</option>
+                  <option value="경남" className="bg-black">경남</option>
+                  <option value="제주" className="bg-black">제주</option>
                 </select>
               </div>
               {showError('region') && (
