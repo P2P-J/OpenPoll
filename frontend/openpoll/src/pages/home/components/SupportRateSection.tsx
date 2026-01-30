@@ -21,12 +21,9 @@ export const SupportRateSection = memo(function SupportRateSection({
   points,
 }: SupportRateSectionProps) {
   const [loadingParty, setLoadingParty] = useState<string | null>(null);
+  const { isAuthenticated } = useUser();
 
   const handleVote = async (partyId: string) => {
-    if (points < 5) {
-      return; // Button will be disabled anyway
-    }
-
     setLoadingParty(partyId);
     try {
       await onVote(partyId);
@@ -35,7 +32,8 @@ export const SupportRateSection = memo(function SupportRateSection({
     }
   };
 
-  const hasInsufficientPoints = points < 5;
+  // Only check points for authenticated users
+  const hasInsufficientPoints = isAuthenticated && points < 5;
 
   return (
     <motion.div
