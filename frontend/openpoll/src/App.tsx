@@ -1,7 +1,6 @@
 import { lazy, Suspense } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { MainLayout } from "@/components/templates";
-import { ProtectedRoute } from "@/components/templates/ProtectedRoute";
 import { ErrorBoundary } from "@/components/templates/errorBoundary/ErrorBoundary";
 import { LoadingSpinner } from "@/components/atoms/loadingSpinner/LoadingSpinner";
 import { ThemeProvider } from "@/contexts/ThemeContext";
@@ -51,22 +50,22 @@ export default function App() {
                 {/* Public routes */}
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/signup" element={<SignupPage />} />
+                <Route path="/register" element={<SignupPage />} /> {/* Redirect for backward compatibility */}
+                <Route path="/mbti/test" element={<MbtiTest />} />
+                <Route path="/mbti/result/:type" element={<MbtiResult />} />
 
-                {/* Protected routes */}
+                {/* Public routes with MainLayout */}
                 <Route
                   path="/"
                   element={
-                    <ProtectedRoute>
-                      <VotingProvider>
-                        <MainLayout />
-                      </VotingProvider>
-                    </ProtectedRoute>
+                    <VotingProvider>
+                      <MainLayout />
+                    </VotingProvider>
                   }
                 >
+                  {/* All pages are now public */}
                   <Route index element={<Home />} />
                   <Route path="/mbti" element={<MbtiIntro />} />
-                  <Route path="/mbti/test" element={<MbtiTest />} />
-                  <Route path="/mbti/result/:type" element={<MbtiResult />} />
                   <Route path="/news" element={<NewsList />} />
                   <Route path="/news/:id" element={<NewsDetail />} />
                   <Route path="/balance" element={<IssueList />} />

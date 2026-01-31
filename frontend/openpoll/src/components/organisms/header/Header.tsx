@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Coins } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { ThemeToggle } from '@/components/atoms/themeToggle/ThemeToggle';
 import { ROUTES } from '@/shared/constants';
-import { getSession, logout } from '@/shared/utils/localAuth';
+import { getSession } from '@/shared/utils/localAuth';
 import { useUser } from '@/contexts/UserContext';
 
 type SessionUser = {
@@ -19,8 +19,9 @@ export interface HeaderProps {
 }
 
 export function Header({ points: propPoints = 500, isLoggedIn = false }: HeaderProps) {
+  const navigate = useNavigate();
   const [session, setSession] = useState<SessionUser | null>(() => getSession() as SessionUser | null);
-  const { points: userContextPoints } = useUser();
+  const { user, logout } = useUser();
 
   useEffect(() => {
     const sync = () => setSession(getSession() as SessionUser | null);
@@ -28,9 +29,11 @@ export function Header({ points: propPoints = 500, isLoggedIn = false }: HeaderP
     return () => window.removeEventListener('storage', sync);
   }, []);
 
-  const computedIsLoggedIn = !!session || isLoggedIn;
+  const computedIsLoggedIn = !!user || !!session || isLoggedIn;
   // Use UserContext points (real-time) if available, otherwise fallback to session or props
-  const computedPoints = userContextPoints ?? session?.points ?? propPoints;
+  const computedPoints = user?.points ?? session?.points ?? propPoints;
+  // Use UserContext nickname if available, otherwise fallback to session
+  const userNickname = user?.nickname ?? session?.nickname;
 
   // Color coding based on points
   const isLowPoints = computedPoints < 25;
@@ -42,9 +45,17 @@ export function Header({ points: propPoints = 500, isLoggedIn = false }: HeaderP
     return '';
   };
 
-  const handleLogout = () => {
-    logout();
-    window.dispatchEvent(new Event('storage'));
+  const handleLogout = async () => {
+    try {
+      await logout();
+      // Clear local session
+      setSession(null);
+      window.dispatchEvent(new Event('storage'));
+      // Redirect to home page
+      navigate(ROUTES.HOME);
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
   };
 
   return (
@@ -82,20 +93,11 @@ export function Header({ points: propPoints = 500, isLoggedIn = false }: HeaderP
               </div>
             ) : (
               <>
-                <Link
-                  to={ROUTES.PROFILE}
-                  className="text-sm font-semibold hover:opacity-80 transition-opacity"
-                >
-                  내 정보
-                </Link>
-
-                <button
-                  type="button"
-                  onClick={handleLogout}
-                  className="text-sm font-semibold hover:opacity-80 transition-opacity"
-                >
-                  로그아웃
-                </button>
+                {userNickname && (
+                  <span className="text-sm font-semibold hidden sm:inline">
+                    {userNickname}님
+                  </span>
+                )}
 
                 <motion.div
                   className={`flex items-center space-x-1.5 sm:space-x-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full transition-all duration-300 hover-lift ${
@@ -123,6 +125,14 @@ export function Header({ points: propPoints = 500, isLoggedIn = false }: HeaderP
                     {computedPoints.toLocaleString()}P
                   </motion.span>
                 </motion.div>
+
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className="text-sm font-semibold hover:opacity-80 transition-opacity"
+                >
+                  로그아웃
+                </button>
               </>
             )}
 

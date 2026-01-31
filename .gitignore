@@ -1,0 +1,10 @@
+# Claude Code settings
+.claude/
+
+# AI Agent skills (local installation)
+.agent/
+.agents/
+.codex/
+.gemini/
+.opencode/
+.windsurf/
