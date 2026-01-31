@@ -1,13 +1,31 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 import { motion } from 'motion/react';
 import { ArrowRight, Clock, Award, Share2, Brain } from 'lucide-react';
+import { useUser } from '@/contexts/UserContext';
+import { Toast } from '@/components/molecules/toast/Toast';
 
 export function MbtiIntro() {
+  const navigate = useNavigate();
+  const { isAuthenticated } = useUser();
+  const [showToast, setShowToast] = useState(false);
+
+  const handleStartTest = () => {
+    if (!isAuthenticated) {
+      setShowToast(true);
+      setTimeout(() => {
+        navigate('/login');
+      }, 1500);
+      return;
+    }
+    navigate('/mbti/test');
+  };
+
   const axes = [
-    { name: '경제 축', left: '평등', right: '시장', description: '경제적 분배와 시장 자유' },
-    { name: '외교 축', left: '국가', right: '세계', description: '국가 우선 vs 국제 협력' },
-    { name: '시민 축', left: '자유', right: '권위', description: '개인 자유 vs 사회 질서' },
-    { name: '사회 축', left: '전통', right: '진보', description: '전통 가치 vs 사회 변화' },
+    { name: '변화 인식 축', left: '안정 Stability', right: '변화 Change', description: '안정된 문화와 변화하는 미래' },
+    { name: '분배 인식 축', left: '경쟁 Merit', right: '평등 Equality', description: '노력에 따른 성취 보상과 평등한 분배' },
+    { name: '권리 인식 축', left: '자유 Freedom', right: '규율 Order', description: '개인의 자유와 사회 질서' },
+    { name: '발전 인식 축', left: '환경 Nature', right: '개발 Development', description: '환경 보존과 사회 발전' },
   ];
 
   return (
@@ -35,7 +53,7 @@ export function MbtiIntro() {
         {/* Info Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mb-12 sm:mb-16">
           {[
-            { icon: Clock, title: '소요 시간', value: '약 7-10분', description: '36개 질문' },
+            { icon: Clock, title: '소요 시간', value: '약 10분', description: '32개 질문' },
             { icon: Award, title: '획득 포인트', value: '+300P', description: '완료 시 지급' },
             { icon: Share2, title: '결과 공유', value: '가능', description: 'SNS 공유' },
           ].map((item, index) => (
@@ -109,18 +127,25 @@ export function MbtiIntro() {
           transition={{ delay: 0.7 }}
           className="text-center"
         >
-          <Link
-            to="/mbti/test"
+          <button
+            onClick={handleStartTest}
             className="inline-flex items-center space-x-2 sm:space-x-3 px-10 sm:px-12 py-4 sm:py-5 bg-white text-black rounded-full font-bold text-base sm:text-lg hover:bg-gray-100 transition-colors group"
           >
             <span>테스트 시작하기</span>
             <ArrowRight className="w-5 h-5 sm:w-6 sm:h-6 group-hover:translate-x-1 transition-transform" />
-          </Link>
+          </button>
           <p className="mt-3 sm:mt-4 text-xs sm:text-sm text-gray-400">
             약 10분이면 나의 정치 성향을 알 수 있어요
           </p>
         </motion.div>
       </div>
+
+      <Toast
+        message="로그인이 필요한 서비스입니다"
+        type="info"
+        isVisible={showToast}
+        onClose={() => setShowToast(false)}
+      />
     </div>
   );
 }
