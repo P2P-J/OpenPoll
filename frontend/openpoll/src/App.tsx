@@ -50,6 +50,7 @@ export default function App() {
                 {/* Public routes */}
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/signup" element={<SignupPage />} />
+                <Route path="/register" element={<SignupPage />} /> {/* Redirect for backward compatibility */}
                 <Route path="/mbti/test" element={<MbtiTest />} />
                 <Route path="/mbti/result/:type" element={<MbtiResult />} />
 
