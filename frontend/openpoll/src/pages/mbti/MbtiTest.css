@@ -1,0 +1,213 @@
+/* 전역 배경색 설정 - 하단 흰색 빈 공간 방지 */
+html {
+    background-color: #000 !important;
+    height: 100%;
+}
+
+body {
+    background-color: #000 !important;
+    min-height: 100%;
+}
+
+#root {
+    background-color: #000 !important;
+    min-height: 100vh;
+}
+
+/* ========== Swiper 기본 CSS (필수) ========== */
+.swiper {
+    margin-left: auto;
+    margin-right: auto;
+    position: relative;
+    overflow: visible;
+    list-style: none;
+    padding: 0;
+    z-index: 1;
+    display: block;
+}
+
+.swiper-wrapper {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    display: flex;
+    transition-property: transform;
+    transition-timing-function: var(--swiper-wrapper-transition-timing-function, initial);
+    box-sizing: content-box;
+}
+
+.swiper-slide {
+    flex-shrink: 0;
+    width: 100%;
+    height: 100%;
+    position: relative;
+    transition-property: transform;
+    display: block;
+}
+
+/* ========== Swiper Coverflow Effect ========== */
+.swiper-3d .swiper-slide-shadow,
+.swiper-3d .swiper-slide-shadow-left,
+.swiper-3d .swiper-slide-shadow-right,
+.swiper-3d .swiper-slide-shadow-top,
+.swiper-3d .swiper-slide-shadow-bottom {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 10;
+}
+
+.swiper-3d .swiper-wrapper {
+    transform-style: preserve-3d;
+}
+
+.swiper-3d .swiper-slide {
+    transform-style: preserve-3d;
+}
+
+/* ========== 커스텀 스타일 ========== */
+.mbti-swiper {
+    width: 100%;
+    height: 100%;
+    padding: 12px 0;
+}
+
+/* @media (min-width: 640px) {
+  .mbti-swiper {
+    min-height: 560px;
+    padding: 20px 0;
+  }
+}
+
+@media (min-width: 768px) {
+  .mbti-swiper {
+    min-height: 600px;
+    padding: 25px 0;
+  }
+} */
+
+.mbti-slide {
+    width: 90%;
+    max-width: 700px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 질문 카드 스타일 */
+.question-card {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    padding: 1.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    width: 100%;
+    max-width: 600px;
+    transform-style: preserve-3d;
+}
+
+@media (min-width: 640px) {
+    .question-card {
+        border-radius: 24px;
+        padding: 2rem;
+    }
+}
+
+@media (min-width: 768px) {
+    .question-card {
+        padding: 2.5rem;
+    }
+}
+
+/* 활성화된 카드 - 가운데로 튀어나온 효과 */
+.question-card-active {
+    border-color: rgba(255, 255, 255, 0.2);
+    box-shadow: 0 25px 50px -12px rgba(255, 255, 255, 0.15);
+    transform: scale(1.05) translateZ(50px);
+}
+
+/* 비활성 슬라이드 스타일 */
+.mbti-slide:not(.swiper-slide-active) .question-card {
+    opacity: 0.4;
+    transform: scale(0.6);
+    pointer-events: none;
+}
+
+/* 화살표 버튼 위치 */
+.carousel-arrow {
+    position: absolute !important;
+    top: 50%;
+    transform: translateY(-50%);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+    z-index: 20 !important;
+}
+
+.carousel-arrow-left {
+    left: calc(50% - 400px);
+}
+
+.carousel-arrow-right {
+    right: calc(50% - 400px);
+}
+
+/* 반응형 화살표 위치 */
+@media (max-width: 1200px) {
+    .carousel-arrow-left {
+        left: 20px;
+    }
+
+    .carousel-arrow-right {
+        right: 20px;
+    }
+}
+
+@media (max-width: 768px) {
+    .carousel-arrow-left {
+        left: 10px;
+    }
+
+    .carousel-arrow-right {
+        right: 10px;
+    }
+}
+
+@media (max-width: 640px) {
+    .mbti-swiper {
+        height: 420px;
+    }
+
+    .question-card {
+        padding: 1.25rem;
+    }
+
+    .carousel-arrow-left {
+        left: 5px;
+    }
+
+    .carousel-arrow-right {
+        right: 5px;
+    }
+}
+
+/* Swiper 슬라이드 전환 애니메이션 개선 */
+.swiper-slide {
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 활성 슬라이드 강조 */
+.swiper-slide-active {
+    z-index: 10;
+}
+
+/* 이전/다음 슬라이드 */
+.swiper-slide-prev,
+.swiper-slide-next {
+    z-index: 5;
+}
