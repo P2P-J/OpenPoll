@@ -1,2 +1,2 @@
-export { IssueList } from './IssueList';
-export { IssueDetail } from './IssueDetail';
+export * from "./IssueList";
+export * from "./IssueDetail";
