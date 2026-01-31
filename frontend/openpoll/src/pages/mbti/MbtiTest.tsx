@@ -1,92 +1,161 @@
-import { useState, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion } from 'motion/react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { EffectCoverflow } from 'swiper/modules';
+import type { Swiper as SwiperType } from 'swiper';
+import { dosApi } from '@/api';
+import type { DosQuestion } from '@/types/api.types';
+import { Toast } from '@/components/molecules/toast/Toast';
+import './MbtiTest.css';
 
-// Sample questions - in real app, this would be much longer
-const questions = [
-  { id: 1, text: '경제 성장을 위해서는 기업에 대한 규제를 줄여야 한다', axis: 'economic' },
-  { id: 2, text: '모든 국민에게 기본소득을 지급해야 한다', axis: 'economic' },
-  { id: 3, text: '국가 안보는 국제 협력보다 우선되어야 한다', axis: 'diplomatic' },
-  { id: 4, text: '이민자 수용을 확대해야 한다', axis: 'diplomatic' },
-  { id: 5, text: '정부는 시민의 표현의 자유를 최대한 보장해야 한다', axis: 'civil' },
-  { id: 6, text: '공공 안전을 위해서는 일부 자유를 제한할 수 있다', axis: 'civil' },
-  { id: 7, text: '전통적인 가족 가치를 보존하는 것이 중요하다', axis: 'social' },
-  { id: 8, text: '사회는 지속적으로 변화하고 진보해야 한다', axis: 'social' },
-  // ... 28 more questions would go here
-];
+
 
 const scaleLabels = [
-  '매우 반대',
-  '반대',
-  '약간 반대',
-  '중립',
-  '약간 찬성',
-  '찬성',
-  '매우 찬성',
+  '전혀 그렇지 않다',
+  '그렇지 않다',
+  '약간 그렇지 않다',
+  '보통이다',
+  '약간 그렇다',
+  '그렇다',
+  '매우 그렇다',
 ];
 
 export function MbtiTest() {
   const navigate = useNavigate();
+  const [questions, setQuestions] = useState<DosQuestion[]>([]);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState<Record<number, number>>({});
-  const [direction, setDirection] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+  const [toastType, setToastType] = useState<'info' | 'success' | 'error'>('info');
+  const swiperRef = useRef<SwiperType | null>(null);
 
-  const progress = ((currentQuestion + 1) / questions.length) * 100;
-  const canGoNext = answers[questions[currentQuestion].id] !== undefined;
+  // Fetch questions on mount
+  useEffect(() => {
+    const fetchQuestions = async () => {
+      try {
+        const data = await dosApi.getQuestions();
+        setQuestions(data);
+      } catch (error) {
+        console.error('Failed to fetch questions:', error);
+        setToastMessage('질문을 불러오는데 실패했습니다');
+        setToastType('error');
+        setShowToast(true);
+        setTimeout(() => navigate('/mbti'), 2000);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchQuestions();
+  }, [navigate]);
 
-  const handleAnswer = (value: number) => {
-    setAnswers(prev => ({ ...prev, [questions[currentQuestion].id]: value }));
+  const progress = questions.length > 0 ? ((currentQuestion + 1) / questions.length) * 100 : 0;
+  const canGoNext = questions.length > 0 && answers[questions[currentQuestion]?.id] !== undefined;
+
+  const handleAnswer = (questionId: number, value: number) => {
+    setAnswers((prev) => ({ ...prev, [questionId]: value }));
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (currentQuestion < questions.length - 1) {
-      setDirection(1);
-      setCurrentQuestion(currentQuestion + 1);
+      swiperRef.current?.slideNext();
     } else {
-      // Calculate result and navigate
-      navigate('/mbti/result/ENLA');
+      // Submit answers and calculate result
+      setIsSubmitting(true);
+      try {
+        // Convert answers from frontend format (-3 to 3) to backend format (1 to 7)
+        const formattedAnswers = Object.entries(answers).map(([questionId, value]) => ({
+          questionId: parseInt(questionId),
+          score: value + 4, // -3 -> 1, -2 -> 2, ..., 0 -> 4, ..., 3 -> 7
+        }));
+
+        const result = await dosApi.calculateResult({ answers: formattedAnswers });
+
+        // Navigate to result page with calculated type
+        navigate(`/mbti/result/${result.resultType}`, {
+          state: { result }, // Pass result data to result page
+        });
+      } catch (error) {
+        console.error('Failed to calculate result:', error);
+        setToastMessage('결과 계산에 실패했습니다');
+        setToastType('error');
+        setShowToast(true);
+      } finally {
+        setIsSubmitting(false);
+      }
     }
   };
 
   const handlePrev = () => {
     if (currentQuestion > 0) {
-      setDirection(-1);
-      setCurrentQuestion(currentQuestion - 1);
+      swiperRef.current?.slidePrev();
     }
   };
 
-  const question = questions[currentQuestion];
-  const currentAnswer = answers[question.id];
+  const handleSlideChange = (swiper: SwiperType) => {
+    setCurrentQuestion(swiper.activeIndex);
+  };
 
-  // Keyboard shortcuts
+  // 키보드 단축키 이벤트 리스너
   useEffect(() => {
-    const handleKeyPress = (e: KeyboardEvent) => {
-      // Arrow keys for navigation
-      if (e.key === 'ArrowLeft' && currentQuestion > 0) {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // 방향키로 질문 이동
+      if (event.key === 'ArrowLeft') {
+        event.preventDefault();
         handlePrev();
+      } else if (event.key === 'ArrowRight') {
+        event.preventDefault();
+        if (canGoNext) {
+          handleNext();
+        }
       }
-      if (e.key === 'ArrowRight' && canGoNext) {
-        handleNext();
-      }
-      // Number keys 1-7 for quick selection
-      if (e.key >= '1' && e.key <= '7') {
-        const index = parseInt(e.key) - 1;
-        handleAnswer(index - 3); // Convert to -3 to 3 scale
-      }
-      // Enter key to proceed
-      if (e.key === 'Enter' && canGoNext) {
-        handleNext();
+      // 숫자 1-7로 답변 선택
+      else if (event.key >= '1' && event.key <= '7') {
+        event.preventDefault();
+        const numValue = parseInt(event.key);
+        const answerValue = numValue - 4; // 1->-3, 2->-2, 3->-1, 4->0, 5->1, 6->2, 7->3
+        handleAnswer(questions[currentQuestion].id, answerValue);
       }
     };
 
-    window.addEventListener('keydown', handleKeyPress);
-    return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [currentQuestion, canGoNext, handleNext, handlePrev, handleAnswer]);
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [currentQuestion, canGoNext, answers]);
+
+  // 스크롤 잠금 (이 페이지에서만)
+  useEffect(() => {
+    // 페이지 진입 시 스크롤 잠금
+    document.body.style.overflow = 'hidden';
+    document.documentElement.style.overflow = 'hidden';
+
+    // 페이지 이탈 시 스크롤 복원
+    return () => {
+      document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
+    };
+  }, []);
+
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className="h-screen bg-black text-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-block w-12 h-12 border-4 border-white/20 border-t-white rounded-full animate-spin mb-4" />
+          <p className="text-lg text-gray-400">질문을 불러오는 중...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col">
-      {/* Progress Bar */}
+    <div className="h-screen bg-black text-white flex flex-col overflow-hidden">
+      {/* 프로그레스바 */}
       <div className="fixed top-0 left-0 right-0 h-1 bg-white/10 z-50">
         <motion.div
           className="h-full bg-white"
@@ -96,23 +165,15 @@ export function MbtiTest() {
         />
       </div>
 
-      {/* Header */}
-      <div className="pt-16 sm:pt-20 pb-6 sm:pb-8 px-4">
-        <div className="max-w-3xl mx-auto">
-          <div className="flex items-center justify-between mb-3 sm:mb-4">
-            <button
-              onClick={handlePrev}
-              disabled={currentQuestion === 0}
-              className="p-2 hover:bg-white/10 rounded-lg transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-            >
-              <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6" />
-            </button>
-            <span className="text-xs sm:text-sm font-semibold text-gray-400">
+      {/* 헤더 */}
+      <div className="pt-3 sm:pt-4 md:pt-6 pb-1 sm:pb-2 md:pb-3 px-4">
+        <div className="max-w-5xl mx-auto">
+          <div className="flex items-center justify-center mb-2 sm:mb-3 md:mb-4">
+            <span className="text-xs sm:text-sm md:text-base font-semibold text-gray-400">
               {currentQuestion + 1} / {questions.length}
             </span>
-            <div className="w-9 sm:w-10" /> {/* Spacer */}
           </div>
-          <div className="h-1.5 sm:h-2 bg-white/10 rounded-full overflow-hidden">
+          <div className="h-1.5 sm:h-2 bg-white/10 rounded-full overflow-hidden max-w-3xl mx-auto">
             <motion.div
               className="h-full bg-white rounded-full"
               animate={{ width: `${progress}%` }}
@@ -122,90 +183,187 @@ export function MbtiTest() {
         </div>
       </div>
 
-      {/* Question */}
-      <div className="flex-1 flex items-center justify-center px-4 py-8">
-        <div className="max-w-3xl w-full">
-          <AnimatePresence mode="wait" custom={direction}>
-            <motion.div
-              key={currentQuestion}
-              custom={direction}
-              initial={{ opacity: 0, x: direction > 0 ? 100 : -100 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: direction > 0 ? -100 : 100 }}
-              transition={{ duration: 0.3 }}
-              className="text-center"
+      {/* 스와이퍼 캐러셀 */}
+      <div className="flex-1 px-4 pt-4 sm:pt-6 md:pt-8 relative flex items-start justify-center max-h-[calc(100vh-260px)]">
+        <div className="w-full max-w-6xl relative">
+          {/* Left Arrow - 선택된 카드 왼쪽에 위치 (첫 질문에서는 숨김) */}
+          {currentQuestion > 0 && (
+            <button
+              onClick={handlePrev}
+              className="carousel-arrow carousel-arrow-left z-20 p-3 sm:p-4 md:p-5 bg-white/10 hover:bg-white/20 rounded-full transition-all backdrop-blur-sm"
+              aria-label="이전 질문"
             >
-              <h1 id="question-text" className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-8 sm:mb-12 lg:mb-16 leading-relaxed px-2">
-                {question.text}
-              </h1>
+              <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7" />
+            </button>
+          )}
 
-              {/* Scale */}
-              <div className="space-y-2 sm:space-y-3 max-w-2xl mx-auto">
-                {scaleLabels.map((label, index) => {
-                  const value = index - 3; // -3 to 3
-                  const isSelected = currentAnswer === value;
-                  
-                  return (
-                    <button
-                      key={index}
-                      onClick={() => handleAnswer(value)}
-                      className={`w-full p-3 sm:p-4 rounded-xl transition-all ${
-                        isSelected
-                          ? 'bg-white text-black scale-105'
-                          : 'bg-white/5 hover:bg-white/10 border border-white/10'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="font-semibold text-sm sm:text-base">{label}</span>
-                        <div className={`w-5 h-5 sm:w-6 sm:h-6 rounded-full border-2 transition-all ${
-                          isSelected
-                            ? 'bg-black border-black'
-                            : 'border-white/30'
-                        }`}>
-                          {isSelected && (
-                            <motion.div
-                              initial={{ scale: 0 }}
-                              animate={{ scale: 1 }}
-                              className="w-full h-full rounded-full bg-black flex items-center justify-center"
-                            >
-                              <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-white rounded-full" />
-                            </motion.div>
-                          )}
-                        </div>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-            </motion.div>
-          </AnimatePresence>
+          {/* Right Arrow - 선택된 카드 오른쪽에 위치 (마지막 질문에서는 숨김) */}
+          {currentQuestion < questions.length - 1 && (
+            <button
+              onClick={handleNext}
+              disabled={!canGoNext}
+              className="carousel-arrow carousel-arrow-right z-20 p-3 sm:p-4 md:p-5 bg-white/10 hover:bg-white/20 rounded-full transition-all disabled:opacity-20 disabled:cursor-not-allowed backdrop-blur-sm"
+              aria-label="다음 질문"
+            >
+              <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7" />
+            </button>
+          )}
+
+          <div className="w-full">
+            <Swiper
+              modules={[EffectCoverflow]}
+              onSwiper={(swiper) => (swiperRef.current = swiper)}
+              onSlideChange={handleSlideChange}
+              effect="coverflow"
+              grabCursor={false}
+              centeredSlides={true}
+              slidesPerView="auto"
+              coverflowEffect={{
+                rotate: 25,
+                stretch: 0,
+                depth: 250,
+                modifier: 1,
+                slideShadows: false,
+              }}
+              speed={600}
+              allowTouchMove={false}
+              className="mbti-swiper"
+            >
+              {questions.map((q) => (
+                <SwiperSlide key={q.id} className="mbti-slide">
+                  {({ isActive }) => (
+                    <QuestionCard
+                      question={q}
+                      answer={answers[q.id]}
+                      onAnswer={handleAnswer}
+                      isActive={isActive}
+                    />
+                  )}
+                </SwiperSlide>
+              ))}
+            </Swiper>
+          </div>
         </div>
       </div>
 
       {/* Navigation */}
-      <div className="p-4 sm:p-6 pb-safe">
-        <div className="max-w-3xl mx-auto relative">
-          <div className="relative group">
+      <div className="px-4 sm:px-6 pt-1 pb-2 shrink-0">
+        <div className="max-w-3xl mx-auto">
+          {/* Previous / Counter / Next Buttons */}
+          <div className="flex items-center gap-2 sm:gap-3 md:gap-4 mb-2 sm:mb-3">
+            {/* Previous Button - 첫 질문에서는 숨김 */}
+            {currentQuestion > 0 ? (
+              <button
+                onClick={handlePrev}
+                className="flex-1 py-3 sm:py-4 md:py-5 bg-white/10 text-white rounded-full font-bold text-sm sm:text-base md:text-lg hover:bg-white/20 transition-colors flex items-center justify-center space-x-1 sm:space-x-2 border border-white/20"
+              >
+                <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" />
+                <span>이전</span>
+              </button>
+            ) : (
+              <div className="flex-1" /> /* 빈 공간 유지 */
+            )}
+
+            {/* Question Counter */}
+            <div className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 md:py-5 bg-white/5 rounded-full border border-white/10">
+              <span className="text-sm sm:text-base md:text-lg font-bold whitespace-nowrap">
+                {currentQuestion + 1}/{questions.length}
+              </span>
+            </div>
+
+            {/* Next Button */}
             <button
               onClick={handleNext}
               disabled={!canGoNext}
-              className="w-full py-3 sm:py-4 bg-white text-black rounded-full font-bold text-base sm:text-lg hover:bg-gray-100 transition-colors disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
-              aria-label={!canGoNext ? '답변을 선택해주세요' : undefined}
+              className="flex-1 py-3 sm:py-4 md:py-5 bg-white text-black rounded-full font-bold text-sm sm:text-base md:text-lg hover:bg-gray-100 transition-colors disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center space-x-1 sm:space-x-2"
             >
               <span>{currentQuestion === questions.length - 1 ? '결과 보기' : '다음'}</span>
-              <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" aria-hidden="true" />
+              <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" />
             </button>
-            {/* Tooltip for disabled button */}
-            {!canGoNext && (
-              <div className="absolute -top-12 left-1/2 -translate-x-1/2 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
-                답변을 선택해주세요
-              </div>
-            )}
           </div>
-          {/* Keyboard shortcuts hint */}
-          <p className="text-center text-xs text-white/50 mt-3">
-            키보드: 1-7 (선택), ← → (이동), Enter (다음)
-          </p>
+
+          {/* Keyboard Shortcuts Guide */}
+          <div className="text-center text-xs sm:text-sm md:text-base text-gray-500">
+            <p>키보드 1-7 입력 답안 선택 · ←, → 다음 질문 이전 질문 이동</p>
+          </div>
+        </div>
+      </div>
+
+      <Toast
+        message={toastMessage}
+        type={toastType}
+        isVisible={showToast}
+        onClose={() => setShowToast(false)}
+      />
+    </div>
+  );
+}
+
+// 질문 카드 컴포넌트
+function QuestionCard({
+  question,
+  answer,
+  onAnswer,
+  isActive,
+}: {
+  question: DosQuestion;
+  answer: number | undefined;
+  onAnswer: (questionId: number, value: number) => void;
+  isActive: boolean;
+}) {
+  return (
+    <div className="w-full h-full flex items-center justify-center px-4">
+      <div
+        className={`question-card ${isActive ? 'question-card-active' : ''}`}
+      >
+        <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-6 sm:mb-8 lg:mb-10 leading-relaxed text-center min-h-[4rem] sm:min-h-[5rem] flex items-center justify-center">
+          {question.question}
+        </h2>
+
+        {/* Scale */}
+        <div className="space-y-2 sm:space-y-3">
+          {scaleLabels.map((label, labelIndex) => {
+            const value = labelIndex - 3; // -3 to 3
+            const isSelected = answer === value;
+
+            return (
+              <button
+                key={labelIndex}
+                onClick={() => {
+                  if (isActive) {
+                    onAnswer(question.id, value);
+                  }
+                }}
+                disabled={!isActive}
+                className={`w-full p-3 sm:p-4 rounded-xl transition-all ${isSelected
+                  ? 'bg-white text-black scale-105'
+                  : 'bg-white/5 hover:bg-white/10 border border-white/10'
+                  } ${!isActive ? 'cursor-default' : ''}`}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="font-semibold text-sm sm:text-base">
+                    {label}
+                  </span>
+                  <div
+                    className={`w-5 h-5 sm:w-6 sm:h-6 rounded-full border-2 transition-all ${isSelected
+                      ? 'bg-black border-black'
+                      : 'border-white/30'
+                      }`}
+                  >
+                    {isSelected && (
+                      <motion.div
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        className="w-full h-full rounded-full bg-black flex items-center justify-center"
+                      >
+                        <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-white rounded-full" />
+                      </motion.div>
+                    )}
+                  </div>
+                </div>
+              </button>
+            );
+          })}
         </div>
       </div>
     </div>

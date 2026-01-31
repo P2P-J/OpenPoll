@@ -50,7 +50,8 @@ export default function App() {
                 {/* Public routes */}
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/signup" element={<SignupPage />} />
-                <Route path="/register" element={<SignupPage />} /> {/* Redirect for backward compatibility */}
+                <Route path="/mbti/test" element={<MbtiTest />} />
+                <Route path="/mbti/result/:type" element={<MbtiResult />} />
 
                 {/* Public routes with MainLayout */}
                 <Route
@@ -64,8 +65,6 @@ export default function App() {
                   {/* All pages are now public */}
                   <Route index element={<Home />} />
                   <Route path="/mbti" element={<MbtiIntro />} />
-                  <Route path="/mbti/test" element={<MbtiTest />} />
-                  <Route path="/mbti/result/:type" element={<MbtiResult />} />
                   <Route path="/news" element={<NewsList />} />
                   <Route path="/news/:id" element={<NewsDetail />} />
                   <Route path="/balance" element={<IssueList />} />
