@@ -90,7 +90,6 @@ model DosQuestion {
   axis      String // distribution(분배), rights(권리), change(변화), development(발전)
   direction Int    @default(1) // 1: 정방향(1-3이 첫번째 문자), -1: 역방향(1-3이 두번째 문자)
   weight    Float  @default(1.0)
-  order     Int    @default(0)
 
   @@map("dos_questions")
 }
