@@ -1,4 +1,5 @@
 import { useState, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { Brain, Scale, Newspaper } from "lucide-react";
 import {
   HeroSection,
@@ -9,6 +10,7 @@ import {
   CTASection,
 } from "./components";
 import { Toast } from "@/components/molecules/toast/Toast";
+import { LoginModal } from "@/components/molecules/loginModal";
 import { useVoting } from "@/contexts/VotingContext";
 import { useUser } from "@/contexts/UserContext";
 
@@ -44,23 +46,37 @@ const STATS_DATA = [
 ] as const;
 
 export function Home() {
-  const { parties, stats, castVote } = useVoting();
-  const { user } = useUser();
+  const navigate = useNavigate();
+  const { parties, stats, castVote, sseStatus } = useVoting();
+  const { user, isAuthenticated } = useUser();
   const [selectedParty, setSelectedParty] = useState<number | null>(null);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
   const [toastType, setToastType] = useState<"success" | "error" | "info">(
     "info",
   );
+  const [showLoginModal, setShowLoginModal] = useState(false);
 
   const handleVote = useCallback(
     async (partyId: number) => {
+      // Check if user is logged in before voting
+      if (!isAuthenticated) {
+        setShowLoginModal(true);
+        return;
+      }
+
+      // Check if user has enough points
+      const userPoints = user?.points || 0;
+      if (userPoints < 5) {
+        setToastMessage("포인트가 부족합니다! 투표하려면 5P가 필요합니다.");
+        setToastType("error");
+        setShowToast(true);
+        return;
+      }
+
       try {
         await castVote(partyId);
         setSelectedParty(partyId);
-        setToastMessage("투표가 완료되었습니다!");
-        setToastType("success");
-        setShowToast(true);
       } catch (error) {
         const errorMessage =
           error instanceof Error ? error.message : "투표에 실패했습니다.";
@@ -69,20 +85,22 @@ export function Home() {
         setShowToast(true);
       }
     },
-    [castVote],
+    [castVote, isAuthenticated, user?.points],
   );
 
   // Convert API Party data to PartyData format for display
-  const partyData = parties.map((party) => ({
-    id: party.id.toString(),
-    name: party.name,
-    color: party.color,
-    logo: "🏛️", // Default logo, can be customized per party
-    totalVotes: party.voteCount,
-    percentage: stats
-      ? stats.stats.find((s) => s.partyId === party.id)?.percentage || 0
-      : 0,
-  }));
+  // SSE에서 실시간으로 받은 stats 데이터를 우선 사용
+  const partyData = parties.map((party) => {
+    const partyStat = stats?.stats.find((s) => s.partyId === party.id);
+    return {
+      id: party.id.toString(),
+      name: party.name,
+      color: party.color,
+      logo: "🏛️", // Default logo, can be customized per party
+      totalVotes: partyStat?.count ?? party.voteCount, // SSE에서 받은 count 우선 사용
+      percentage: partyStat?.percentage ?? 0,
+    };
+  });
 
   return (
     <>
@@ -92,6 +110,13 @@ export function Home() {
         isVisible={showToast}
         onClose={() => setShowToast(false)}
       />
+
+      <LoginModal
+        isOpen={showLoginModal}
+        onClose={() => setShowLoginModal(false)}
+        onLogin={() => navigate("/login")}
+      />
+
       <div className="pt-16">
         {/* Hero Section with Support Rate */}
         <section className="relative overflow-hidden bg-black text-white">
@@ -115,6 +140,7 @@ export function Home() {
               selectedParty={selectedParty?.toString() || null}
               onVote={(partyId) => handleVote(parseInt(partyId))}
               points={user?.points || 0}
+              sseStatus={sseStatus}
             />
 
             <CTAButtons />
