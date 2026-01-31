@@ -46,12 +46,12 @@ export const checkAttendance = async (userId) => {
     });
 
     if (consecutiveDays === 7) {
-      totalPoints += config.points.streakBonus;
+      totalPoints += config.points.consecutiveAttendanceBonus;
       pointRecords.push({
         userId,
-        type: POINT_TYPES.STREAK_BONUS,
-        amount: config.points.streakBonus,
-        description: POINT_TYPE_DESCRIPTIONS[POINT_TYPES.STREAK_BONUS],
+        type: POINT_TYPES.CONSECUTIVE_ATTENDANCE_BONUS,
+        amount: config.points.consecutiveAttendanceBonus,
+        description: POINT_TYPE_DESCRIPTIONS[POINT_TYPES.CONSECUTIVE_ATTENDANCE_BONUS],
       });
     }
 

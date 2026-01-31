@@ -81,7 +81,6 @@ export const getMyVoteStats = async (userId) => {
       _count: { id: true },
     }),
     prisma.party.findMany({
-      where: { isActive: true },
       orderBy: { order: 'asc' },
     }),
   ]);

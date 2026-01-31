@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client';
+import bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
 
@@ -23,7 +24,7 @@ async function main() {
   console.log('Parties seeded');
 
   // DOS 질문 시드
-  // direction: 1 => 정방향(1-3이 첫번째 문자/높은%방향), -1 => 역방향(1-3이 두번째 문자/낮은%방향)
+  // direction: 1 => 정방향(1~3이 첫번째 문자/높은%방향), -1 => 역방향(1~3이 두번째 문자/낮은%방향)
   // 분배축: M(Merit) vs E(Equality) - 높은% = M
   // 권리축: F(Freedom) vs O(Order) - 높은% = F  
   // 변화축: C(Change) vs S(Stability) - 높은% = C
@@ -80,8 +81,6 @@ async function main() {
   }
   console.log(`DOS questions seeded: ${dosQuestions.length} questions`);
 
-  // DOS 결과 유형 시드 (축 순서: 변화 → 분배 → 권리 → 발전)
-  // C/S: 변화/안정, M/E: 경쟁/평등, F/O: 자유/규율, D/N: 개발/환경
   const dosResultTypes = [
     { id: 'CMFD', name: '진보적 자유주의자', description: '변화를 추구하며 개인의 자유와 경쟁을 중시하고, 발전을 위한 개발에 긍정적인 유형입니다.', traits: JSON.stringify(['혁신 지향', '개인주의', '성장 중심', '자유 옹호']) },
     { id: 'CMFN', name: '녹색 진보주의자', description: '변화와 자유를 중시하되, 환경 보존에 높은 가치를 두는 유형입니다.', traits: JSON.stringify(['혁신 지향', '개인주의', '환경 친화', '자유 옹호']) },
@@ -109,6 +108,28 @@ async function main() {
     });
   }
   console.log(`DOS result types seeded: ${dosResultTypes.length} types`);
+
+  // 관리자 계정 시드(그냥 미리 만들어둠)
+  if (process.env.ADMIN_PASSWORD) {
+    const adminPassword = await bcrypt.hash(process.env.ADMIN_PASSWORD, 12);
+    await prisma.user.upsert({
+      where: { email: 'admin@test.com' },
+      update: { role: 'ADMIN' },
+      create: {
+        email: 'admin@test.com',
+        password: adminPassword,
+        nickname: '운영자',
+        age: 100,
+        region: '서울',
+        gender: 'MALE',
+        role: 'ADMIN',
+        points: 500,
+      },
+    });
+    console.log('Admin user seeded');
+  } else {
+    console.log('ADMIN_PASSWORD not set, skipping admin user seed');
+  }
 
   console.log('Seeding completed!');
 }
