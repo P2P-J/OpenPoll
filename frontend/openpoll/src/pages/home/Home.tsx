@@ -77,9 +77,6 @@ export function Home() {
       try {
         await castVote(partyId);
         setSelectedParty(partyId);
-        setToastMessage("투표가 완료되었습니다!");
-        setToastType("success");
-        setShowToast(true);
       } catch (error) {
         const errorMessage =
           error instanceof Error ? error.message : "투표에 실패했습니다.";
