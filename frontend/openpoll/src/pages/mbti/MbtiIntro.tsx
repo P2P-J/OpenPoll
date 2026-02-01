@@ -1,5 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { ArrowRight, Clock, Award, Share2, Brain } from 'lucide-react';
 import { useUser } from '@/contexts/UserContext';
@@ -14,7 +14,7 @@ export function MbtiIntro() {
     if (!isAuthenticated) {
       setShowToast(true);
       setTimeout(() => {
-        navigate('/login');
+        navigate('/login', { state: { from: '/mbti' } });
       }, 1500);
       return;
     }
@@ -27,6 +27,11 @@ export function MbtiIntro() {
     { name: '권리 인식 축', left: '자유 Freedom', right: '규율 Order', description: '개인의 자유와 사회 질서' },
     { name: '발전 인식 축', left: '환경 Nature', right: '개발 Development', description: '환경 보존과 사회 발전' },
   ];
+
+  // 페이지 진입 시 스크롤을 맨 위로
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   return (
     <div className="pt-16 min-h-screen bg-black text-white">

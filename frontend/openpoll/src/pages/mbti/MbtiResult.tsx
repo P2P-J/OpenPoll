@@ -2,6 +2,7 @@ import { useParams, Link, useLocation, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { Share2, Download, RotateCcw, Home } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
 import { dosApi } from '@/api';
 import type { DosResult, DosResultType } from '@/types/api.types';
 
@@ -178,7 +179,26 @@ export function MbtiResult() {
           {traits.length > 0 ? (
             <div className="text-gray-300 text-sm sm:text-base leading-relaxed space-y-3 sm:space-y-4">
               {traits.map((trait: string, index: number) => (
-                <p key={index}>{trait}</p>
+                <div key={index} className="markdown-content">
+                  <ReactMarkdown
+                    components={{
+                      p: ({ children }) => <p className="mb-3 sm:mb-4 text-gray-300">{children}</p>,
+                      strong: ({ children }) => <strong className="font-bold text-white">{children}</strong>,
+                      em: ({ children }) => <em className="italic text-gray-200">{children}</em>,
+                      ul: ({ children }) => <ul className="list-disc list-inside space-y-1 sm:space-y-2 ml-2 text-gray-300">{children}</ul>,
+                      ol: ({ children }) => <ol className="list-decimal list-inside space-y-1 sm:space-y-2 ml-2 text-gray-300">{children}</ol>,
+                      li: ({ children }) => <li className="text-gray-300">{children}</li>,
+                      h1: ({ children }) => <h1 className="text-xl sm:text-2xl font-bold mb-2 sm:mb-3 text-white">{children}</h1>,
+                      h2: ({ children }) => <h2 className="text-lg sm:text-xl font-bold mb-2 text-white">{children}</h2>,
+                      h3: ({ children }) => <h3 className="text-base sm:text-lg font-bold mb-1 sm:mb-2 text-white">{children}</h3>,
+                      code: ({ children }) => <code className="bg-white/10 px-1.5 py-0.5 rounded text-sm font-mono text-gray-200">{children}</code>,
+                      blockquote: ({ children }) => <blockquote className="border-l-4 border-white/20 pl-4 italic text-gray-400 my-2">{children}</blockquote>,
+                      hr: () => <hr className="my-4 sm:my-6 border-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />,
+                    }}
+                  >
+                    {trait}
+                  </ReactMarkdown>
+                </div>
               ))}
             </div>
           ) : (

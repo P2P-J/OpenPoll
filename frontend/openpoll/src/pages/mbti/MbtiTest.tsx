@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ArrowLeft } from 'lucide-react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { EffectCoverflow } from 'swiper/modules';
 import type { Swiper as SwiperType } from 'swiper';
@@ -39,7 +39,13 @@ export function MbtiTest() {
     const fetchQuestions = async () => {
       try {
         const data = await dosApi.getQuestions();
-        setQuestions(data);
+        // Fisher-Yates shuffle algorithm to randomize question order
+        const shuffled = [...data];
+        for (let i = shuffled.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+        setQuestions(shuffled);
       } catch (error) {
         console.error('Failed to fetch questions:', error);
         setToastMessage('질문을 불러오는데 실패했습니다');
@@ -103,6 +109,9 @@ export function MbtiTest() {
   // 키보드 단축키 이벤트 리스너
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
+      // 질문이 로드되지 않았으면 무시
+      if (!questions.length || currentQuestion >= questions.length) return;
+
       // 방향키로 질문 이동
       if (event.key === 'ArrowLeft') {
         event.preventDefault();
@@ -126,7 +135,7 @@ export function MbtiTest() {
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [currentQuestion, canGoNext, answers]);
+  }, [currentQuestion, canGoNext, answers, questions]);
 
   // 스크롤 잠금 (이 페이지에서만)
   useEffect(() => {
@@ -141,6 +150,20 @@ export function MbtiTest() {
     };
   }, []);
 
+  // 페이지 로드 시 자동 포커스 (키보드 입력 활성화)
+  useEffect(() => {
+    // 로딩이 완료되고 질문이 있을 때만 포커스 설정
+    if (!isLoading && questions.length > 0) {
+      const focusableDiv = document.getElementById('mbti-test-container');
+      if (focusableDiv) {
+        // 약간의 지연을 두어 DOM이 완전히 렌더링된 후 포커스
+        setTimeout(() => {
+          focusableDiv.focus();
+        }, 100);
+      }
+    }
+  }, [isLoading, questions.length]);
+
   // Show loading state
   if (isLoading) {
     return (
@@ -154,7 +177,11 @@ export function MbtiTest() {
   }
 
   return (
-    <div className="h-screen bg-black text-white flex flex-col overflow-hidden">
+    <div
+      id="mbti-test-container"
+      tabIndex={0}
+      className="h-screen bg-black text-white flex flex-col overflow-hidden outline-none"
+    >
       {/* 프로그레스바 */}
       <div className="fixed top-0 left-0 right-0 h-1 bg-white/10 z-50">
         <motion.div
@@ -167,6 +194,13 @@ export function MbtiTest() {
 
       {/* 헤더 */}
       <div className="pt-3 sm:pt-4 md:pt-6 pb-1 sm:pb-2 md:pb-3 px-4">
+        <button
+          onClick={() => navigate('/mbti')}
+          className="fixed top-6 left-4 z-50 p-3 sm:p-4 bg-white/10 hover:bg-white/20 rounded-full transition-all backdrop-blur-sm"
+          aria-label="테스트 나가기"
+        >
+          <ArrowLeft className="w-6 h-6 sm:w-7 sm:h-7" />
+        </button>
         <div className="max-w-5xl mx-auto">
           <div className="flex items-center justify-center mb-2 sm:mb-3 md:mb-4">
             <span className="text-xs sm:text-sm md:text-base font-semibold text-gray-400">
@@ -265,7 +299,7 @@ export function MbtiTest() {
             )}
 
             {/* Question Counter */}
-            <div className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 md:py-5 bg-white/5 rounded-full border border-white/10">
+            <div className="px-3 sm:px-4 md:px-6">
               <span className="text-sm sm:text-base md:text-lg font-bold whitespace-nowrap">
                 {currentQuestion + 1}/{questions.length}
               </span>
