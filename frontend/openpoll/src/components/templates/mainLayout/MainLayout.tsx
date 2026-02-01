@@ -17,13 +17,13 @@ export function MainLayout() {
           본문으로 건너뛰기
         </a>
       )}
-      
+
       {!isAuthPage && <Header />}
-      {!isAuthPage && <Navigation />}
-      
-      <main 
-        id="main-content" 
-        className={isAuthPage ? '' : 'pb-20 sm:pb-0'}
+      {!isAuthPage && location.pathname !== '/mbti' && <Navigation />}
+
+      <main
+        id="main-content"
+        className={isAuthPage || location.pathname === '/mbti' ? '' : 'pb-20 sm:pb-0'}
       >
         <Outlet />
       </main>
