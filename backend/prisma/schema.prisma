@@ -157,3 +157,18 @@ model BalanceComment {
   @@index([gameId, createdAt])
   @@map("balance_comments")
 }
+
+model Article {
+  id            Int      @id @default(autoincrement())
+  naverUrl      String   @unique
+  originalUrl   String  
+
+  refinedTitle   String  
+  refinedSummary String  
+  shortSummary   String  
+  relatedTags    String[]
+
+  createdAt     DateTime @default(now())
+
+  @@map("articles")
+}
