@@ -1,0 +1,11 @@
+[입력]
+제목: {{title}}
+본문: {{body}}
+
+[출력 형식 - JSON만 반환]
+{
+  "refinedTitle": "",
+  "refinedSummary": "",
+  "shortSummary": "",
+  "relatedTags": []
+}
