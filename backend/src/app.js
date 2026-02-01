@@ -13,6 +13,7 @@ import voteRouter from './modules/vote/vote.route.js';
 import dashboardRouter from './modules/dashboard/dashboard.route.js';
 import dosRouter from './modules/dos/dos.route.js';
 import balanceRouter from './modules/balance/balance.route.js';
+import newsRouter from './modules/news/news.route.js';
 
 const app = express();
 
@@ -41,6 +42,7 @@ app.use('/api/votes', voteRouter);
 app.use('/api/dashboard', dashboardRouter);
 app.use('/api/dos', dosRouter);
 app.use('/api/balance', balanceRouter);
+app.use('/api/news', newsRouter);
 
 // 404 에러 핸들러
 app.all('*', (req, res, next) => {
