@@ -23,7 +23,7 @@ docker run -d \
 
 3. Prisma 마이그레이션(DB 테이블 적용/생성)
 npx prisma migrate deploy
-(혹시 개발용일 경우 npx prisma migrate dev --name init으로 해야 되는데 이건 사실상 다 제가 할겁니다)
+(혹시 개발용일 경우 npx prisma migrate dev --name 변경내용 으로 해야 되는데 이건 사실상 다 제가 할겁니다)
 
 4. 시드 데이터(초기 고정 데이터) 삽입
 npx prisma db seed
@@ -50,10 +50,12 @@ docker ps 입력해서 컨테이너 살아있나 확인
 아무것도 안 뜬다 == 죽어있다 => docker start로 sql이랑 redis 켜고 npm run dev
 
 
----- 추가로 참고할만한 명령어 혹은 사항들 ----
+---- 추가로 확인해야 할 명령어 혹은 사항들 ----
 docker ps => 상태 확인(어떤 컨테이너 있고 이런거)
 docker exec -it openpoll-postgres psql -U postgres -d openpoll => DB 직접적으로 접속(데이터 체크나 디버깅 할 때?)
 그 3, 4번에 있는 prisma 관련된 npx 명령어들 쟤네도 사실 최초 1회만 하면 되는거는 맞는데,
 DB가 변경될 경우 3번 다시 해야되고, 시드 데이터 변경될 경우 4번 다시 해야 됨!
 그 3번에서 init은 생성이고, deploy는 적용인데, 어차피 prisma 관련 파일들을 다 제가 수정하니까 init도 제가 할거라서 웬만하면 deploy만 하시는겁니다
+3, 4번은 반드시 docker 컨테이너를 켜고 진행해야 됨(그러니까 최초 실행 아니라고 치면 docker start로 컨테이너 켜고 나서 명령어 입력)
+그리고 3, 4번 모두 명령어를 backend 디렉토리에 들어가서 실행해야 됩니다
 server.js에 구현돼있는 graceful shutdown 때문에 컨테이너도 꺼지는 거 아님? => 응 아니야. 연결만 끊기는 겁니더

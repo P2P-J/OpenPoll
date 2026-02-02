@@ -670,6 +670,8 @@ data: {"type":"vote_update","stats":{"totalVotes":101,"stats":[...]}}
 ### 댓글 목록 조회
 `GET /balance/:id/comments`
 
+[인증 선택] (로그인 시 isLiked 포함)
+
 **Response (200):**
 ```json
 {
@@ -679,12 +681,16 @@ data: {"type":"vote_update","stats":{"totalVotes":101,"stats":[...]}}
       "id": 1,
       "content": "저는 찬성입니다.",
       "createdAt": "2024-01-01T00:00:00.000Z",
+      "likeCount": 5,
+      "isLiked": true,
       "user": { "id": "uuid", "nickname": "닉네임", "isAgree": true },
       "replies": [
         {
           "id": 2,
           "content": "저도요!",
           "createdAt": "2024-01-01T00:01:00.000Z",
+          "likeCount": 2,
+          "isLiked": false,
           "user": { "id": "uuid2", "nickname": "닉네임2", "isAgree": false }
         }
       ]
@@ -696,6 +702,11 @@ data: {"type":"vote_update","stats":{"totalVotes":101,"stats":[...]}}
 | user 필드 | 설명 |
 |------------|------|
 | isAgree | 작성자의 투표 결과 (`true`: 찬성, `false`: 반대) |
+
+| 댓글 필드 | 설명 |
+|------------|------|
+| likeCount | 좋아요 수 |
+| isLiked | 내 좋아요 여부 (비로그인 시 `null`) |
 
 ---
 
@@ -725,6 +736,27 @@ data: {"type":"vote_update","stats":{"totalVotes":101,"stats":[...]}}
 [인증 필요] (본인 또는 관리자)
 
 **Response (204):** No Content
+
+---
+
+### 댓글 좋아요 토글
+`POST /balance/:id/comments/:commentId/like`
+
+[인증 필요]
+
+좋아요가 없으면 추가, 있으면 취소 (토글 방식)
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "data": {
+    "commentId": 1,
+    "likeCount": 6,
+    "isLiked": true
+  }
+}
+```
 
 ---
 
