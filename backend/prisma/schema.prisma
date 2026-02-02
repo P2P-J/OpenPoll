@@ -185,6 +185,7 @@ model Article {
   refinedSummary String  
   shortSummary   String  
   relatedTags    String[]
+  press String?
 
   createdAt     DateTime @default(now())
 
