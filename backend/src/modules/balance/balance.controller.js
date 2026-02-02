@@ -48,7 +48,8 @@ export const deleteGame = catchAsyncError(async (req, res) => {
 
 export const getComments = catchAsyncError(async (req, res) => {
   const gameId = parseInt(req.params.id, 10);
-  const comments = await balanceService.getComments(gameId);
+  const userId = req.user?.id || null;
+  const comments = await balanceService.getComments(gameId, userId);
   successResponse(res, comments);
 });
 
@@ -72,4 +73,10 @@ export const updateComment = catchAsyncError(async (req, res) => {
   const { content } = req.body;
   const comment = await balanceService.updateComment(req.user.id, req.user.role, commentId, content);
   successResponse(res, comment);
+});
+
+export const toggleCommentLike = catchAsyncError(async (req, res) => {
+  const commentId = parseInt(req.params.commentId, 10);
+  const result = await balanceService.toggleCommentLike(req.user.id, commentId);
+  successResponse(res, result);
 });

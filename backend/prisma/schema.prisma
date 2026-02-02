@@ -24,8 +24,9 @@ model User {
   pointHistory    PointHistory[]
   votes           Vote[]
   attendances     Attendance[]
-  balanceVotes    BalanceVote[]
-  balanceComments BalanceComment[]
+  balanceVotes        BalanceVote[]
+  balanceComments     BalanceComment[]
+  balanceCommentLikes BalanceCommentLike[]
 
   @@map("users")
 }
@@ -97,8 +98,10 @@ model DosQuestion {
 model DosResultType {
   id          String @id // CMFD, SEON 등 4자리 조합
   name        String // 유형 이름(~형)
-  description String @db.Text
-  traits      String @db.Text
+  description String @db.Text // 짧은 설명
+  detail      String @db.Text // 마크다운 상세 설명
+  features    String @db.Text // 특징 배열 (JSON)
+  tag         String @db.Text // 태그 배열 (JSON)
 
   @@map("dos_result_types")
 }
@@ -154,8 +157,23 @@ model BalanceComment {
   parent  BalanceComment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
   replies BalanceComment[] @relation("CommentReplies")
 
+  likes   BalanceCommentLike[]
+
   @@index([gameId, createdAt])
   @@map("balance_comments")
+}
+
+model BalanceCommentLike {
+  id        Int      @id @default(autoincrement())
+  userId    String
+  commentId Int
+  createdAt DateTime @default(now())
+
+  user    User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  comment BalanceComment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, commentId])
+  @@map("balance_comment_likes")
 }
 
 model Article {
