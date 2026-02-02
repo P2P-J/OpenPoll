@@ -190,7 +190,7 @@ export const deleteGame = async (gameId) => {
   });
 };
 
-export const getComments = async (gameId) => {
+export const getComments = async (gameId, userId = null) => {
   const game = await prisma.balanceGame.findUnique({
     where: { id: gameId },
   });
@@ -215,7 +215,13 @@ export const getComments = async (gameId) => {
           user: {
             select: { id: true, nickname: true },
           },
+          _count: {
+            select: { likes: true },
+          },
         },
+      },
+      _count: {
+        select: { likes: true },
       },
     },
   });
@@ -237,10 +243,31 @@ export const getComments = async (gameId) => {
 
   const voteMap = new Map(votes.map((v) => [v.userId, v.isAgree]));
 
+  // 로그인한 경우 내 좋아요 목록 조회
+  let myLikes = new Set();
+  if (userId) {
+    const allCommentIds = [];
+    comments.forEach((c) => {
+      allCommentIds.push(c.id);
+      c.replies.forEach((r) => allCommentIds.push(r.id));
+    });
+
+    const likes = await prisma.balanceCommentLike.findMany({
+      where: {
+        userId,
+        commentId: { in: allCommentIds },
+      },
+      select: { commentId: true },
+    });
+    myLikes = new Set(likes.map((l) => l.commentId));
+  }
+
   return comments.map((comment) => ({
     id: comment.id,
     content: comment.content,
     createdAt: comment.createdAt,
+    likeCount: comment._count.likes,
+    isLiked: userId ? myLikes.has(comment.id) : null,
     user: {
       id: comment.user.id,
       nickname: comment.user.nickname,
@@ -250,6 +277,8 @@ export const getComments = async (gameId) => {
       id: reply.id,
       content: reply.content,
       createdAt: reply.createdAt,
+      likeCount: reply._count.likes,
+      isLiked: userId ? myLikes.has(reply.id) : null,
       user: {
         id: reply.user.id,
         nickname: reply.user.nickname,
@@ -257,6 +286,44 @@ export const getComments = async (gameId) => {
       },
     })),
   }));
+};
+
+export const toggleCommentLike = async (userId, commentId) => {
+  const comment = await prisma.balanceComment.findUnique({
+    where: { id: commentId },
+  });
+
+  if (!comment) {
+    throw AppError.notFound('댓글을 찾을 수 없습니다.');
+  }
+
+  const existingLike = await prisma.balanceCommentLike.findUnique({
+    where: {
+      userId_commentId: { userId, commentId },
+    },
+  });
+
+  if (existingLike) {
+    // 좋아요 취소
+    await prisma.balanceCommentLike.delete({
+      where: { id: existingLike.id },
+    });
+  } else {
+    // 좋아요 추가
+    await prisma.balanceCommentLike.create({
+      data: { userId, commentId },
+    });
+  }
+
+  const likeCount = await prisma.balanceCommentLike.count({
+    where: { commentId },
+  });
+
+  return {
+    commentId,
+    likeCount,
+    isLiked: !existingLike,
+  };
 };
 
 export const createComment = async (userId, gameId, content, parentId = null) => {
