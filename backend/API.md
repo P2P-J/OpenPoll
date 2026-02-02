@@ -787,6 +787,65 @@ data: {"type":"vote_update","stats":{"totalVotes":101,"stats":[...]}}
 
 ---
 
+## 실시간 뉴스 (News)
+
+### 실시간 뉴스 새로고침
+`POST /news/refresh`
+
+**Response (200):**
+```json
+{
+  "success": true,
+    "data": {
+        "enqueued": 10,
+        "urls": [
+            "https://n.news.naver.com/mnews/article/nnn/nnnnnnnnnn",
+            "https://n.news.naver.com/mnews/article/nnn/nnnnnnnnnn",
+            "https://n.news.naver.com/mnews/article/nnn/nnnnnnnnnn",
+            "https://n.news.naver.com/mnews/article/nnn/nnnnnnnnnn",
+            "https://n.news.naver.com/mnews/article/nnn/nnnnnnnnnn",
+            "https://n.news.naver.com/mnews/article/nnn/nnnnnnnnnn",
+            "https://n.news.naver.com/mnews/article/nnn/nnnnnnnnnn",
+            "https://n.news.naver.com/mnews/article/nnn/nnnnnnnnnn",
+            "https://n.news.naver.com/mnews/article/nnn/nnnnnnnnnn",
+            "https://n.news.naver.com/mnews/article/nnn/nnnnnnnnnn",
+        ]
+    }
+}
+```
+
+---
+
+### 실시간 뉴스 조회
+`GET /news/articles`
+
+**Response (200):**
+```json
+{
+  "success": true,
+    "data": [
+        {
+            "id": 20,
+            "naverUrl": "https://n.news.naver.com/mnews/article/nnn/nnnnnnnnnn",
+            "originalUrl": "크롤링한 뉴스의 원문 url",
+            "refinedTitle": "정제된 중립화 제목",
+            "refinedSummary": "정제된 중립화 본문",
+            "shortSummary": "3줄 요약 첫 번째 줄\n3줄 요약 두 번째 줄\n3줄 요약 세 번째 줄",
+            "relatedTags": [
+                "이슈 태그 1",
+                "이슈 태그 2",
+                "이슈 태그 3",
+                "이슈 태그 4"
+            ],
+            "press": "언론사",
+            "createdAt": "2024-01-01T00:00:00.000Z"
+        }, ...
+    ]
+}
+```
+
+---
+
 ## 지역 코드
 
 ```

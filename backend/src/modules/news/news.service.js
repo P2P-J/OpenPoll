@@ -35,7 +35,7 @@ function startWorkerOnce() {
     workerStarted = true;
 
     new Worker('article', async (job) => {
-        const { naverUrl } = job.data;
+        const { naverUrl, press } = job.data;
 
         const res = await axios.get(naverUrl, {
             timeout: 15000,
@@ -70,6 +70,7 @@ function startWorkerOnce() {
                 refinedSummary: summarizeAi.refinedSummary,
                 shortSummary: summarizeAi.shortSummary,
                 relatedTags: summarizeAi.relatedTags, // String[]
+                press: press || null,
             },
             update: {
                 originalUrl,
@@ -77,12 +78,13 @@ function startWorkerOnce() {
                 refinedSummary: summarizeAi.refinedSummary,
                 shortSummary: summarizeAi.shortSummary,
                 relatedTags: summarizeAi.relatedTags,
+                press: press || null,
             },
         });
     },
         {
             connection: getBullConnection(),
-            concurrency: 2,
+            concurrency: 3,
             removeOnComplete: { count: 200 },
             removeOnFail: { count: 200 },
         }
@@ -101,36 +103,43 @@ async function crawlPoliticsHeadlineUrls(urlMax) {
     const url = 'https://news.naver.com/section/100';
     const res = await axios.get(url, { timeout: 15000 });
     const $ = load(res.data);
+
+    const items = [];
     const urls = new Set();
 
-    $('ul[id^="_SECTION_HEADLINE_LIST"] li.sa_item._SECTION_HEADLINE a.sa_text_title[href]').each((_, el) => {
-        const href = $(el).attr('href');
-        if (!href) return;
+    $('ul[id^="_SECTION_HEADLINE_LIST"] li.sa_item._SECTION_HEADLINE').each((_, li) => {
+        const href = $(li).find('a.sa_text_title[href]').attr('href');
 
-        if (href.startsWith('https://n.news.naver.com/mnews/article/')) {
-            urls.add(href.split('#')[0].trim());
-        }
+        if (!href || !href.startsWith('https://n.news.naver.com/mnews/article/')) return;
 
-        if (urls.size >= urlMax) return false;
+        const naverUrl = href.split('#')[0].trim();
+        if (urls.has(naverUrl)) return;
+
+        const press = $(li).find('.sa_text_press').first().text().trim() || null;
+
+        urls.add(naverUrl);
+        items.push({ naverUrl, press });
+
+        if (items.length >= urlMax) return false;
     });
 
-    return [...urls];
+    return items;
 }
 
 export const refreshArticles = async () => {
     await ensureQueueReady();
 
     const urlMax = 10;
-    const urls = await crawlPoliticsHeadlineUrls(urlMax);
+    const items = await crawlPoliticsHeadlineUrls(urlMax);
 
     const { queue, queueEvents } = getQueue();
 
     const jobStart = process.hrtime.bigint();
 
     const jobs = [];
-    for (const naverUrl of urls) {
-        const jobId = Buffer.from(naverUrl).toString('base64url');
-        const job = await queue.add('crawling', { naverUrl }, { jobId });
+    for (const item of items) {
+        const jobId = Buffer.from(item.naverUrl).toString('base64url');
+        const job = await queue.add('crawling', item, { jobId });
         jobs.push(job);
     }
 
@@ -152,21 +161,24 @@ export const refreshArticles = async () => {
     const keep = await prisma.article.findMany({
         select: { id: true },
         orderBy: { createdAt: 'desc' },
-        take: 20,
+        take: 50,
     });
 
     const keepIds = keep.map((x) => x.id);
-
-    await prisma.article.deleteMany({
-        where: { id: { notIn: keepIds }, },
-    });
+    if (keepIds.length > 0) {
+        await prisma.article.deleteMany({
+            where: { id: { notIn: keepIds } },
+        });
+    } else {
+        console.warn('[NEWS_REFRESH_Failed] Skip cleanup deleteMany');
+    }
 
     const jobFinish = process.hrtime.bigint();
     const jobTime = Number(jobFinish - jobStart) / 1e9;
 
-    console.log(`[NEWS_REFRESH] enqueue+work+delete done in ${jobTime.toFixed(2)}s`);
+    console.log(`[NEWS_REFRESH_Success] enqueue + work + delete done in ${jobTime.toFixed(2)}s`);
 
-    return { enqueued: urls.length, urls };
+    return { enqueued: items.length, urls: items.map(i => i.naverUrl) };
 };
 
 export const getArticles = async () => {
