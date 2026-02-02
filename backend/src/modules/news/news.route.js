@@ -5,7 +5,7 @@ import * as newsController from './news.controller.js';
 const router = Router();
 
 const refreshLimiter = rateLimit({
-    windowMs: 1 * 60 * 1000, // 5분
+    windowMs: 1 * 60 * 1000, // 1분
     max: 1,
     message: '잠시 후 다시 시도해주세요.',
 });
