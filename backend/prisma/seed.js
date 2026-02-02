@@ -81,29 +81,19 @@ async function main() {
   }
   console.log(`DOS questions seeded: ${dosQuestions.length} questions`);
 
-  const dosResultTypes = [
-    { id: 'CMFD', name: '진보적 자유주의자', description: '변화를 추구하며 개인의 자유와 경쟁을 중시하고, 발전을 위한 개발에 긍정적인 유형입니다.', traits: JSON.stringify(['혁신 지향', '개인주의', '성장 중심', '자유 옹호']) },
-    { id: 'CMFN', name: '녹색 진보주의자', description: '변화와 자유를 중시하되, 환경 보존에 높은 가치를 두는 유형입니다.', traits: JSON.stringify(['혁신 지향', '개인주의', '환경 친화', '자유 옹호']) },
-    { id: 'CMOD', name: '진보적 권위주의자', description: '변화와 경쟁을 지지하면서 사회 질서를 중시하고, 개발에 적극적인 유형입니다.', traits: JSON.stringify(['혁신 지향', '질서 중시', '성장 중심', '규율 선호']) },
-    { id: 'CMON', name: '진보적 보존주의자', description: '변화를 추구하지만 규율을 중시하며, 환경 보존에 관심이 높은 유형입니다.', traits: JSON.stringify(['혁신 지향', '질서 중시', '환경 친화', '규율 선호']) },
-    { id: 'CEFD', name: '진보적 평등주의자', description: '변화와 평등, 자유를 중시하며 발전을 위한 개발에 긍정적인 유형입니다.', traits: JSON.stringify(['혁신 지향', '평등 지향', '성장 중심', '자유 옹호']) },
-    { id: 'CEFN', name: '녹색 평등주의자', description: '변화와 평등, 자유를 추구하면서 환경 보존을 중요시하는 유형입니다.', traits: JSON.stringify(['혁신 지향', '평등 지향', '환경 친화', '자유 옹호']) },
-    { id: 'CEOD', name: '진보적 사회주의자', description: '변화와 평등을 지지하며 질서를 중시하고, 개발에 긍정적인 유형입니다.', traits: JSON.stringify(['혁신 지향', '평등 지향', '성장 중심', '규율 선호']) },
-    { id: 'CEON', name: '생태 사회주의자', description: '변화와 평등을 추구하며 질서를 존중하고, 환경 보존에 높은 가치를 두는 유형입니다.', traits: JSON.stringify(['혁신 지향', '평등 지향', '환경 친화', '규율 선호']) },
-    { id: 'SMFD', name: '자유주의적 보수', description: '안정을 선호하며 개인의 자유와 경쟁을 중시하고, 개발에 긍정적인 유형입니다.', traits: JSON.stringify(['안정 지향', '개인주의', '성장 중심', '자유 옹호']) },
-    { id: 'SMFN', name: '녹색 보수주의자', description: '안정과 자유를 중시하면서 경쟁을 지지하고, 환경 보존에 관심이 높은 유형입니다.', traits: JSON.stringify(['안정 지향', '개인주의', '환경 친화', '자유 옹호']) },
-    { id: 'SMOD', name: '전통적 보수주의자', description: '안정과 경쟁, 질서를 중시하며 발전을 위한 개발에 적극적인 유형입니다.', traits: JSON.stringify(['안정 지향', '질서 중시', '성장 중심', '규율 선호']) },
-    { id: 'SMON', name: '온건 보수주의자', description: '안정과 질서를 중시하며 경쟁을 지지하고, 환경 보존에도 관심을 가지는 유형입니다.', traits: JSON.stringify(['안정 지향', '질서 중시', '환경 친화', '규율 선호']) },
-    { id: 'SEFD', name: '사회민주주의자', description: '안정을 선호하며 평등과 자유를 중시하고, 개발에 긍정적인 유형입니다.', traits: JSON.stringify(['안정 지향', '평등 지향', '성장 중심', '자유 옹호']) },
-    { id: 'SEFN', name: '녹색 사민주의자', description: '안정과 평등, 자유를 중시하면서 환경 보존에 높은 가치를 두는 유형입니다.', traits: JSON.stringify(['안정 지향', '평등 지향', '환경 친화', '자유 옹호']) },
-    { id: 'SEOD', name: '온건 사회주의자', description: '안정과 평등, 질서를 중시하며 발전을 위한 개발에 긍정적인 유형입니다.', traits: JSON.stringify(['안정 지향', '평등 지향', '성장 중심', '규율 선호']) },
-    { id: 'SEON', name: '생태 보수주의자', description: '안정과 평등, 질서를 중시하며 환경 보존을 우선시하는 유형입니다.', traits: JSON.stringify(['안정 지향', '평등 지향', '환경 친화', '규율 선호']) },
-  ];
+  // DOS 결과 유형은 너무 길어서 dosResultTypes.js 파일에서 가져옴!
+  const { dosResultTypes } = await import('./dosResultTypes.js');
 
   for (const resultType of dosResultTypes) {
     await prisma.dosResultType.upsert({
       where: { id: resultType.id },
-      update: { name: resultType.name, description: resultType.description, traits: resultType.traits },
+      update: { 
+        name: resultType.name, 
+        description: resultType.description, 
+        detail: resultType.detail,
+        features: resultType.features,
+        tag: resultType.tag
+      },
       create: resultType,
     });
   }
