@@ -113,6 +113,38 @@ Base URL: `http://localhost:3000/api`
 
 ---
 
+### 비밀번호 변경
+`PATCH /auth/password`
+
+[인증 필요]
+
+비밀번호 변경 성공 시 보안을 위해 기존 Refresh Token이 삭제됩니다. (재로그인 필요)
+
+**Request Body:**
+```json
+{
+  "currentPassword": "현재비밀번호",
+  "newPassword": "새비밀번호123"
+}
+```
+
+| 필드 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| currentPassword | string | O | 현재 비밀번호 |
+| newPassword | string | O | 새 비밀번호 (8자 이상, 영문+숫자) |
+
+**Response (204):** No Content
+
+**Error (401):**
+```json
+{
+  "success": false,
+  "message": "현재 비밀번호가 올바르지 않습니다."
+}
+```
+
+---
+
 ## 사용자 (User)
 
 ### 내 정보 조회
