@@ -13,7 +13,7 @@ const config = {
   isDev: process.env.NODE_ENV === 'development',
   isProd: process.env.NODE_ENV === 'production',
 
-  // Database(PostgreSQL)
+  // DB(PostgreSQL)
   databaseUrl: process.env.DATABASE_URL,
 
   // Redis
@@ -34,8 +34,9 @@ const config = {
     signup: 500,
     dos: 300,
     dailyAttendance: 30,
-    streakBonus: 20,    // 7일 연속 출석 보너스
-    partyVote: -5,      // 정당 지지 시 차감
+    consecutiveAttendanceBonus: 20,
+    partyVote: -5,
+    balanceGame: 50,
   },
 };
 
