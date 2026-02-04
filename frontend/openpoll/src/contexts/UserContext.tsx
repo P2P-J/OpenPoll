@@ -75,6 +75,14 @@ export function UserProvider({ children }: { children: ReactNode }) {
         const userData = await userApi.getMe();
         setUser(userData);
 
+        // Sync with localAuth session
+        const session = {
+          nickname: userData.nickname,
+          email: userData.email,
+          points: userData.points,
+        };
+        localStorage.setItem("openpoll_session_v1", JSON.stringify(session));
+
         // 선제적 토큰 갱신 스케줄 설정
         scheduleProactiveRefresh();
       } catch (err) {
@@ -113,6 +121,15 @@ export function UserProvider({ children }: { children: ReactNode }) {
       // Set user
       setUser(response.user);
 
+      // Sync with localAuth session for Header compatibility
+      const session = {
+        nickname: response.user.nickname,
+        email: response.user.email,
+        points: response.user.points,
+      };
+      localStorage.setItem("openpoll_session_v1", JSON.stringify(session));
+      window.dispatchEvent(new Event("storage"));
+
       // 선제적 토큰 갱신 스케줄 설정
       scheduleProactiveRefresh();
     } catch (err) {
@@ -146,6 +163,15 @@ export function UserProvider({ children }: { children: ReactNode }) {
         // Set user
         setUser(response.user);
 
+        // Sync with localAuth session for Header compatibility
+        const session = {
+          nickname: response.user.nickname,
+          email: response.user.email,
+          points: response.user.points,
+        };
+        localStorage.setItem("openpoll_session_v1", JSON.stringify(session));
+        window.dispatchEvent(new Event("storage"));
+
         // 선제적 토큰 갱신 스케줄 설정
         scheduleProactiveRefresh();
       } catch (err) {
@@ -171,6 +197,10 @@ export function UserProvider({ children }: { children: ReactNode }) {
       // Clear tokens and user regardless of API call success
       clearTokens();
       setUser(null);
+
+      // Clear localAuth session
+      localStorage.removeItem("openpoll_session_v1");
+      window.dispatchEvent(new Event("storage"));
     }
   }, []);
 
@@ -182,6 +212,15 @@ export function UserProvider({ children }: { children: ReactNode }) {
     try {
       const userData = await userApi.getMe();
       setUser(userData);
+
+      // Sync with localAuth session
+      const session = {
+        nickname: userData.nickname,
+        email: userData.email,
+        points: userData.points,
+      };
+      localStorage.setItem("openpoll_session_v1", JSON.stringify(session));
+      window.dispatchEvent(new Event("storage"));
     } catch (err) {
       console.error("Failed to refresh user:", err);
     }

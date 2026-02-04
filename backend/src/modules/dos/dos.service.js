@@ -12,7 +12,6 @@ import { POINT_TYPES, POINT_TYPE_DESCRIPTIONS } from '../../constants/pointTypes
 
 export const getQuestions = async () => {
   const questions = await prisma.dosQuestion.findMany({
-    orderBy: { order: 'asc' },
     select: {
       id: true,
       question: true,
