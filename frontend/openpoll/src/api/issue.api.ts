@@ -297,6 +297,33 @@ async function toggleCommentLikeHttp(issueId: number, commentId: number) {
 }
 
 /**
+ * ✅ 댓글 수정 (HTTP)
+ * 명세: PATCH /balance/:id/comments/:commentId body { content }
+ */
+async function updateCommentHttp(
+  issueId: number,
+  commentId: number,
+  payload: { content: string }
+) {
+  const res = await apiClient.patch(
+    `/balance/${issueId}/comments/${commentId}`,
+    payload
+  );
+  return (res.data?.data ?? res.data) as {
+    id: number;
+    content: string;
+  };
+}
+
+/**
+ * ✅ 댓글 삭제 (HTTP)
+ * 명세: DELETE /balance/:id/comments/:commentId
+ */
+async function deleteCommentHttp(issueId: number, commentId: number): Promise<void> {
+  await apiClient.delete(`/balance/${issueId}/comments/${commentId}`);
+}
+
+/**
  * =========================
  * MOCK (기존 유지)
  * =========================
@@ -524,6 +551,21 @@ function toggleCommentLikeMock(issueId: number, commentId: number) {
 }
 
 /**
+ * ✅ 댓글 삭제 (MOCK)
+ */
+function deleteCommentMock(issueId: number, commentId: number): void {
+  const roots = getOrInitMockComments(issueId);
+
+  const remove = (nodes: IssueComment[]): IssueComment[] => {
+    return (nodes ?? [])
+      .filter((n) => keyOf(n.id) !== keyOf(commentId))
+      .map((n) => ({ ...n, replies: remove(n.replies ?? []) }));
+  };
+
+  mockCommentStore[issueId] = remove(roots);
+}
+
+/**
  * 관리자 CRUD (명세)
  */
 export type CreateIssuePayload = {
@@ -544,7 +586,10 @@ async function createIssueHttp(payload: CreateIssuePayload) {
 }
 
 async function updateIssueHttp(issueId: number, payload: UpdateIssuePayload) {
-  const res = await apiClient.patch<ApiResponse<any>>(`/balance/${issueId}`, payload);
+  const res = await apiClient.patch<ApiResponse<any>>(
+    `/balance/${issueId}`,
+    payload
+  );
   return res.data.data;
 }
 
@@ -567,7 +612,10 @@ export const getIssueDetail = async (issueId: number): Promise<IssueDetail> => {
   return getIssueDetailHttp(issueId);
 };
 
-export const voteIssue = async (issueId: number, option: IssueVoteOption | null) => {
+export const voteIssue = async (
+  issueId: number,
+  option: IssueVoteOption | null
+) => {
   if (apiMode === "mock") return voteIssueMock(issueId, option);
   return voteIssueHttp(issueId, option);
 };
@@ -580,24 +628,44 @@ export const createComment = async (
   return createCommentHttp(issueId, payload);
 };
 
+export const toggleCommentLike = async (issueId: number, commentId: number) => {
+  if (apiMode === "mock") return toggleCommentLikeMock(issueId, commentId);
+  return toggleCommentLikeHttp(issueId, commentId);
+};
+
+export const updateComment = async (
+  issueId: number,
+  commentId: number,
+  payload: { content: string }
+) => {
+  // mock 수정은 현재 필요 없어서 http만
+  return updateCommentHttp(issueId, commentId, payload);
+};
+
+export const deleteComment = async (
+  issueId: number,
+  commentId: number
+): Promise<void> => {
+  if (apiMode === "mock") return deleteCommentMock(issueId, commentId);
+  return deleteCommentHttp(issueId, commentId);
+};
+
 export const createIssue = async (payload: CreateIssuePayload) => {
-  if (apiMode === "mock") throw new Error("mock 모드에서는 createIssue를 지원하지 않습니다.");
+  if (apiMode === "mock")
+    throw new Error("mock 모드에서는 createIssue를 지원하지 않습니다.");
   return createIssueHttp(payload);
 };
 
 export const updateIssue = async (issueId: number, payload: UpdateIssuePayload) => {
-  if (apiMode === "mock") throw new Error("mock 모드에서는 updateIssue를 지원하지 않습니다.");
+  if (apiMode === "mock")
+    throw new Error("mock 모드에서는 updateIssue를 지원하지 않습니다.");
   return updateIssueHttp(issueId, payload);
 };
 
 export const deleteIssue = async (issueId: number) => {
-  if (apiMode === "mock") throw new Error("mock 모드에서는 deleteIssue를 지원하지 않습니다.");
+  if (apiMode === "mock")
+    throw new Error("mock 모드에서는 deleteIssue를 지원하지 않습니다.");
   return deleteIssueHttp(issueId);
-};
-
-export const toggleCommentLike = async (issueId: number, commentId: number) => {
-  if (apiMode === "mock") return toggleCommentLikeMock(issueId, commentId);
-  return toggleCommentLikeHttp(issueId, commentId);
 };
 
 /**
@@ -612,4 +680,6 @@ export const issueApi = {
   updateIssue,
   deleteIssue,
   toggleCommentLike,
+  updateComment,
+  deleteComment,
 };
