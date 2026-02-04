@@ -284,20 +284,30 @@ export function NewsList() {
     initialFetch();
   }, []);
 
-  // Polling: refresh news every 30 seconds (for testing, change to 5 minutes in production)
+  // Polling: trigger crawling every 40 seconds (for testing)
+  // Note: This only triggers backend crawling, does NOT auto-update the UI
+  // Users must manually refresh the browser to see new articles
   useEffect(() => {
-    const POLLING_INTERVAL = 30 * 1000; // 30 seconds (테스트용)
+    const POLLING_INTERVAL = 40 * 1000; // 40 seconds (테스트용)
     // const POLLING_INTERVAL = 5 * 60 * 1000; // 5 minutes (프로덕션용)
 
-    console.log('[News Polling] Starting polling with interval:', POLLING_INTERVAL / 1000, 'seconds');
+    console.log('[News Polling] Starting crawling trigger with interval:', POLLING_INTERVAL / 1000, 'seconds');
 
     const intervalId = setInterval(() => {
-      refreshNews();
+      // 크롤링만 트리거, UI는 업데이트하지 않음
+      console.log('[News Polling] Triggering backend crawling (UI will NOT auto-update)...');
+      newsApi.refreshNews()
+        .then(() => {
+          console.log('[News Polling] Crawling triggered successfully. Refresh browser to see new articles.');
+        })
+        .catch((err) => {
+          console.error('[News Polling] Failed to trigger crawling:', err);
+        });
     }, POLLING_INTERVAL);
 
     // Cleanup on unmount
     return () => {
-      console.log('[News Polling] Stopping polling');
+      console.log('[News Polling] Stopping crawling trigger');
       clearInterval(intervalId);
     };
   }, []);
