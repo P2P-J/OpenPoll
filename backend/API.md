@@ -113,6 +113,38 @@ Base URL: `http://localhost:3000/api`
 
 ---
 
+### 비밀번호 변경
+`PATCH /auth/password`
+
+[인증 필요]
+
+비밀번호 변경 성공 시 보안을 위해 기존 Refresh Token이 삭제됩니다. (재로그인 필요)
+
+**Request Body:**
+```json
+{
+  "currentPassword": "현재비밀번호",
+  "newPassword": "새비밀번호123"
+}
+```
+
+| 필드 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| currentPassword | string | O | 현재 비밀번호 |
+| newPassword | string | O | 새 비밀번호 (8자 이상, 영문+숫자) |
+
+**Response (204):** No Content
+
+**Error (401):**
+```json
+{
+  "success": false,
+  "message": "현재 비밀번호가 올바르지 않습니다."
+}
+```
+
+---
+
 ## 사용자 (User)
 
 ### 내 정보 조회
@@ -532,6 +564,320 @@ data: {"type":"vote_update","stats":{"totalVotes":101,"stats":[...]}}
 
 ---
 
+## 밸런스 게임 (Balance Game)
+
+### 밸런스 게임 목록 조회
+`GET /balance`
+
+[인증 선택] (로그인 시 myVote 포함)
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": 1,
+      "title": "주 4일제 도입",
+      "subtitle": "근로시간을 주 32시간으로 단축하는 제도",
+      "agreeCount": 150,
+      "disagreeCount": 80,
+      "totalVotes": 230,
+      "myVote": true,
+      "createdAt": "2024-01-01T00:00:00.000Z"
+    }
+  ]
+}
+```
+
+---
+
+### 밸런스 게임 상세 조회
+`GET /balance/:id`
+
+[인증 선택] (로그인 시 myVote 포함)
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "data": {
+    "id": 1,
+    "title": "주 4일제 도입",
+    "description": "주 4일 근무제는 근로시간을 주 32시간으로.....",
+    "agreeCount": 150,
+    "disagreeCount": 80,
+    "totalVotes": 230,
+    "commentCount": 23,
+    "myVote": true,
+    "createdAt": "2024-01-01T00:00:00.000Z"
+  }
+}
+```
+
+---
+
+### 밸런스 게임 투표
+`POST /balance/:id/vote`
+
+[인증 필요]
+
++50P 지급 (사안당 1회)
+
+**Request Body:**
+```json
+{
+  "isAgree": true
+}
+```
+
+**Response (201):**
+```json
+{
+  "success": true,
+  "data": {
+    "id": 1,
+    "title": "주 4일제",
+    "agreeCount": 151,
+    "disagreeCount": 80,
+    "totalVotes": 231,
+    "agreePercent": 65,
+    "disagreePercent": 35,
+    "myVote": true,
+    "pointsEarned": 50,
+    "remainingPoints": 550
+  }
+}
+```
+
+---
+
+### 밸런스 게임 생성 (관리자)
+`POST /balance`
+
+[관리자 전용]
+
+**Request Body:**
+```json
+{
+  "title": "주 4일제 도입",
+  "subtitle": "근로시간을 주 32시간으로 단축하는 제도",
+  "description": "주 4일 근무제는 근로시간을 주 32시간으로....."
+}
+```
+
+| 필드 | 설명 |
+|------|------|
+| title | 제목 (100자 이하) |
+| subtitle | 소제목 (200자 이하) |
+| description | 상세 내용 |
+
+---
+
+### 밸런스 게임 수정 (관리자)
+`PATCH /balance/:id`
+
+[관리자 전용]
+
+**Request Body:** (변경할 필드만)
+```json
+{
+  "title": "수정된 제목",
+  "subtitle": "수정된 소제목",
+  "description": "수정된 설명"
+}
+```
+
+---
+
+### 밸런스 게임 삭제 (관리자)
+`DELETE /balance/:id`
+
+[관리자 전용]
+
+**Response (204):** No Content
+
+---
+
+### 댓글 목록 조회
+`GET /balance/:id/comments`
+
+[인증 선택] (로그인 시 isLiked 포함)
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": 1,
+      "content": "저는 찬성입니다.",
+      "createdAt": "2024-01-01T00:00:00.000Z",
+      "likeCount": 5,
+      "isLiked": true,
+      "user": { "id": "uuid", "nickname": "닉네임", "isAgree": true },
+      "replies": [
+        {
+          "id": 2,
+          "content": "저도요!",
+          "createdAt": "2024-01-01T00:01:00.000Z",
+          "likeCount": 2,
+          "isLiked": false,
+          "user": { "id": "uuid2", "nickname": "닉네임2", "isAgree": false }
+        }
+      ]
+    }
+  ]
+}
+```
+
+| user 필드 | 설명 |
+|------------|------|
+| isAgree | 작성자의 투표 결과 (`true`: 찬성, `false`: 반대) |
+
+| 댓글 필드 | 설명 |
+|------------|------|
+| likeCount | 좋아요 수 |
+| isLiked | 내 좋아요 여부 (비로그인 시 `null`) |
+
+---
+
+### 댓글 작성
+`POST /balance/:id/comments`
+
+[인증 필요] (투표한 유저만)
+
+**Request Body:**
+```json
+{
+  "content": "댓글 내용",
+  "parentId": null
+}
+```
+
+| 필드 | 설명 |
+|------|------|
+| content | 댓글 내용 (500자 이하) |
+| parentId | 대댓글인 경우 부모 댓글 ID (선택) |
+
+---
+
+### 댓글 삭제
+`DELETE /balance/:id/comments/:commentId`
+
+[인증 필요] (본인 또는 관리자)
+
+**Response (204):** No Content
+
+---
+
+### 댓글 좋아요 토글
+`POST /balance/:id/comments/:commentId/like`
+
+[인증 필요]
+
+좋아요가 없으면 추가, 있으면 취소 (토글 방식)
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "data": {
+    "commentId": 1,
+    "likeCount": 6,
+    "isLiked": true
+  }
+}
+```
+
+---
+
+### 댓글 수정
+`PATCH /balance/:id/comments/:commentId`
+
+[인증 필요] (본인 또는 관리자)
+
+**Request Body:**
+```json
+{
+  "content": "수정된 댓글 내용"
+}
+```
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "data": {
+    "id": 1,
+    "content": "수정된 댓글 내용",
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "user": { "id": "uuid", "nickname": "닉네임" }
+  }
+}
+```
+
+---
+
+## 실시간 뉴스 (News)
+
+### 실시간 뉴스 새로고침
+`POST /news/refresh`
+
+**Response (200):**
+```json
+{
+  "success": true,
+    "data": {
+        "enqueued": 10,
+        "urls": [
+            "https://n.news.naver.com/mnews/article/nnn/nnnnnnnnnn",
+            "https://n.news.naver.com/mnews/article/nnn/nnnnnnnnnn",
+            "https://n.news.naver.com/mnews/article/nnn/nnnnnnnnnn",
+            "https://n.news.naver.com/mnews/article/nnn/nnnnnnnnnn",
+            "https://n.news.naver.com/mnews/article/nnn/nnnnnnnnnn",
+            "https://n.news.naver.com/mnews/article/nnn/nnnnnnnnnn",
+            "https://n.news.naver.com/mnews/article/nnn/nnnnnnnnnn",
+            "https://n.news.naver.com/mnews/article/nnn/nnnnnnnnnn",
+            "https://n.news.naver.com/mnews/article/nnn/nnnnnnnnnn",
+            "https://n.news.naver.com/mnews/article/nnn/nnnnnnnnnn",
+        ]
+    }
+}
+```
+
+---
+
+### 실시간 뉴스 조회
+`GET /news/articles`
+
+**Response (200):**
+```json
+{
+  "success": true,
+    "data": [
+        {
+            "id": 20,
+            "naverUrl": "https://n.news.naver.com/mnews/article/nnn/nnnnnnnnnn",
+            "originalUrl": "크롤링한 뉴스의 원문 url",
+            "refinedTitle": "정제된 중립화 제목",
+            "refinedSummary": "정제된 중립화 본문",
+            "shortSummary": "3줄 요약 첫 번째 줄\n3줄 요약 두 번째 줄\n3줄 요약 세 번째 줄",
+            "relatedTags": [
+                "이슈 태그 1",
+                "이슈 태그 2",
+                "이슈 태그 3",
+                "이슈 태그 4"
+            ],
+            "press": "언론사",
+            "createdAt": "2024-01-01T00:00:00.000Z"
+        }, ...
+    ]
+}
+```
+
+---
+
 ## 지역 코드
 
 ```
@@ -548,3 +894,4 @@ data: {"type":"vote_update","stats":{"totalVotes":101,"stats":[...]}}
 ```
 Authorization: Bearer eyJhbGciOiJIUzI1NiIs...
 ```
+

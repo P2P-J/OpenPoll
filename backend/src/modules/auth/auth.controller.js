@@ -23,3 +23,9 @@ export const refresh = catchAsyncError(async (req, res) => {
   const tokens = await authService.refreshAccessToken(refreshToken);
   successResponse(res, tokens);
 });
+
+export const changePassword = catchAsyncError(async (req, res) => {
+  const { currentPassword, newPassword } = req.body;
+  await authService.changePassword(req.user.id, currentPassword, newPassword);
+  noContentResponse(res);
+});
