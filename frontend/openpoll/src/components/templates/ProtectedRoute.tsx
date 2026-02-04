@@ -1,22 +1,9 @@
-import { ReactNode } from "react";
-import { Navigate } from "react-router-dom";
-import { useUser } from "@/contexts/UserContext";
-import { LoadingSpinner } from "@/components/atoms/loadingSpinner/LoadingSpinner";
+import type { ReactNode } from "react";
 
 interface ProtectedRouteProps {
   children: ReactNode;
 }
 
 export function ProtectedRoute({ children }: ProtectedRouteProps) {
-  const { isAuthenticated, isLoading } = useUser();
-
-  if (isLoading) {
-    return <LoadingSpinner />;
-  }
-
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
-  }
-
   return <>{children}</>;
 }
