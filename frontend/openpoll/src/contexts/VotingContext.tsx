@@ -1,12 +1,5 @@
-import {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  useCallback,
-  useRef,
-  ReactNode,
-} from "react";
+import { createContext, useContext, useState, useEffect, useCallback, useRef } from "react";
+import type { ReactNode } from "react";
 import { voteApi, dashboardApi, partyApi, getErrorMessage } from "@/api";
 import type { Party, DashboardStats } from "@/types/api.types";
 import { useUser } from "@/contexts/UserContext";

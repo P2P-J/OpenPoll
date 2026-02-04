@@ -23,7 +23,7 @@ export function MainLayout() {
       
       <main 
         id="main-content" 
-        className={isAuthPage ? '' : 'pb-20 sm:pb-0'}
+        className="bg-black"
       >
         <Outlet />
       </main>
