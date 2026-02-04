@@ -1,203 +1,753 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { motion } from 'motion/react';
-import { Flame, Clock, CheckCircle, Users, MessageCircle, ChevronRight } from 'lucide-react';
+import { useEffect, useMemo, useState } from "react";
+import { Link, useLocation } from "react-router-dom";
+import { motion } from "motion/react";
+import {
+  Flame,
+  Clock,
+  CheckCircle,
+  Users,
+  ArrowRight,
+  X,
+  Pencil,
+  Plus,
+} from "lucide-react";
 
-const issues = [
-  {
-    id: 1,
-    emoji: '💼',
-    title: '주 4일제 도입',
-    description: '근로시간을 주 32시간으로 단축하는 제도',
-    participants: 2340,
-    comments: 156,
-    agreePercent: 62,
-    voted: false,
-  },
-  {
-    id: 2,
-    emoji: '💰',
-    title: '기본소득제 도입',
-    description: '모든 국민에게 기본소득을 지급하는 제도',
-    participants: 1892,
-    comments: 203,
-    agreePercent: 45,
-    voted: true,
-  },
-  {
-    id: 3,
-    emoji: '🎓',
-    title: '대학 등록금 동결 연장',
-    description: '대학 등록금 동결 정책을 계속 이어가는 것',
-    participants: 3104,
-    comments: 284,
-    agreePercent: 71,
-    voted: false,
-  },
-  {
-    id: 4,
-    emoji: '🚗',
-    title: '전기차 보조금 축소',
-    description: '전기차 구매 시 지급하는 보조금을 줄이는 것',
-    participants: 1567,
-    comments: 98,
-    agreePercent: 38,
-    voted: false,
-  },
-  {
-    id: 5,
-    emoji: '📱',
-    title: 'SNS 실명제 도입',
-    description: 'SNS 사용 시 실명 인증을 의무화하는 제도',
-    participants: 2891,
-    comments: 412,
-    agreePercent: 53,
-    voted: true,
-  },
-  {
-    id: 6,
-    emoji: '🪖',
-    title: '병역 의무 기간 단축',
-    description: '군 복무 기간을 현재보다 단축하는 것',
-    participants: 4203,
-    comments: 534,
-    agreePercent: 79,
-    voted: false,
-  },
-];
+import { issueApi, userApi, getErrorMessage } from "@/api";
+import { getSession } from "@/shared/utils/localAuth";
+import type { IssueListItem } from "@/types/issue.types";
 
-export function IssueList() {
-  const [filter, setFilter] = useState<'hot' | 'recent' | 'completed'>('hot');
+// ✅ 관리자 식별(임시): 로운 계정만 관리자 UI 표시
+const ADMIN_EMAILS = new Set<string>(["oct95@naver.com"]);
+const ADMIN_NICKNAMES = new Set<string>(["로운"].map((x) => x.toLowerCase()));
+// ✅ 토큰 payload에 userId만 들어있어서, userId로 관리자 판별 추가
+const ADMIN_USER_IDS = new Set<string>([
+  "62968fae-154c-4d4f-91f4-abf4b67fd7c0", // 로운 userId (accessToken payload)
+]);
 
-  const filters = [
-    { key: 'hot' as const, label: 'HOT', icon: Flame },
-    { key: 'recent' as const, label: '최신', icon: Clock },
-    { key: 'completed' as const, label: '참여완료', icon: CheckCircle },
-  ];
+/** JWT payload 디코드 (서명검증 X / 프론트 판별용) */
+function decodeJwtPayload(token?: string | null): any | null {
+  try {
+    if (!token) return null;
+    const parts = token.split(".");
+    if (parts.length < 2) return null;
+    const base64Url = parts[1];
+    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+    const padded = base64.padEnd(
+      base64.length + ((4 - (base64.length % 4)) % 4),
+      "="
+    );
+    const json = decodeURIComponent(
+      atob(padded)
+        .split("")
+        .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+        .join("")
+    );
+    return JSON.parse(json);
+  } catch {
+    return null;
+  }
+}
+
+/** session/user/me 어디에 있든 userId/email/nickname 최대한 뽑기 */
+function pickIdentityFromAnywhere(): {
+  userId?: string;
+  email?: string;
+  nickname?: string;
+} {
+  const s = getSession() as any;
+
+  // 1) session 쪽
+  const sessionUserId =
+    s?.user?.id || s?.userId || s?.id || s?.user?.userId || s?.profile?.id;
+  const sessionEmail =
+    s?.user?.email || s?.email || s?.userEmail || s?.profile?.email;
+  const sessionNickname =
+    s?.user?.nickname || s?.nickname || s?.userNickname || s?.profile?.nickname;
+
+  if (sessionUserId || sessionEmail || sessionNickname) {
+    return { userId: sessionUserId, email: sessionEmail, nickname: sessionNickname };
+  }
+
+  // 2) accessToken jwt payload
+  const token = localStorage.getItem("accessToken") || undefined;
+  const payload = decodeJwtPayload(token);
+
+  const jwtUserId =
+    payload?.userId ||
+    payload?.sub ||
+    payload?.user?.id ||
+    payload?.data?.userId;
+
+  const jwtEmail =
+    payload?.email || payload?.user?.email || payload?.data?.email;
+
+  const jwtNickname =
+    payload?.nickname || payload?.user?.nickname || payload?.data?.nickname;
+
+  return { userId: jwtUserId, email: jwtEmail, nickname: jwtNickname };
+}
+
+function isAdminByIdentity(input: { userId?: string; email?: string; nickname?: string }) {
+  const uid = (input.userId ?? "").trim();
+  const e = (input.email ?? "").toLowerCase().trim();
+  const n = (input.nickname ?? "").toLowerCase().trim();
+
+  if (uid && ADMIN_USER_IDS.has(uid)) return true;
+  if (e && ADMIN_EMAILS.has(e)) return true;
+  if (n && ADMIN_NICKNAMES.has(n)) return true;
+
+  return false;
+}
+
+function IssueFormModal({
+  isOpen,
+  mode,
+  initial,
+  isSubmitting,
+  onClose,
+  onSubmit,
+}: {
+  isOpen: boolean;
+  mode: "create" | "edit";
+  initial?: { title: string; subtitle: string; description: string };
+  isSubmitting: boolean;
+  onClose: () => void;
+  onSubmit: (payload: { title: string; subtitle: string; description: string }) => void;
+}) {
+  const [title, setTitle] = useState(initial?.title ?? "");
+  const [subtitle, setSubtitle] = useState(initial?.subtitle ?? "");
+  const [description, setDescription] = useState(initial?.description ?? "");
+
+  useEffect(() => {
+    if (!isOpen) return;
+    setTitle(initial?.title ?? "");
+    setSubtitle(initial?.subtitle ?? "");
+    setDescription(initial?.description ?? "");
+  }, [isOpen, initial]);
+
+  if (!isOpen) return null;
+
+  const disabled =
+    isSubmitting || !title.trim() || !subtitle.trim() || !description.trim();
 
   return (
-    <div className="pt-16 min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
-        {/* Header */}
+    <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+      <div
+        className="absolute inset-0 bg-black opacity-95"
+        onClick={() => {
+          if (!isSubmitting) onClose();
+        }}
+      />
+      <div className="relative w-full max-w-2xl rounded-2xl border border-white/10 bg-gradient-to-br from-gray-900 to-black shadow-xl">
+        <div className="flex items-center justify-between p-5 border-b border-white/10">
+          <div className="text-lg font-bold text-white">
+            {mode === "create" ? "밸런스게임 등록" : "밸런스게임 수정"}
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              if (!isSubmitting) onClose();
+            }}
+            className="p-2 rounded-lg hover:bg-white/10 transition-colors"
+          >
+            <X className="w-5 h-5 text-white" />
+          </button>
+        </div>
+
+        <div className="p-5 space-y-4">
+          <div>
+            <div className="text-sm text-gray-300 font-semibold mb-2">제목</div>
+            <input
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl focus:outline-none focus:border-white/30 text-white placeholder-gray-500"
+              placeholder="예) 💼 주 4일제 도입"
+            />
+            <div className="mt-2 text-xs text-gray-500">
+              제목은{" "}
+              <span className="text-gray-300 font-semibold">
+                이모지 + 공백 1칸 + 내용
+              </span>{" "}
+              형식으로 작성해주세요.
+            </div>
+          </div>
+
+          <div>
+            <div className="text-sm text-gray-300 font-semibold mb-2">
+              소제목(리스트용)
+            </div>
+            <input
+              value={subtitle}
+              onChange={(e) => setSubtitle(e.target.value)}
+              className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl focus:outline-none focus:border-white/30 text-white placeholder-gray-500"
+              placeholder="예) 근로시간을 주 32시간으로 단축하는 제도"
+            />
+          </div>
+
+          <div>
+            <div className="text-sm text-gray-300 font-semibold mb-2">상세 설명</div>
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl focus:outline-none focus:border-white/30 text-white placeholder-gray-500 resize-none"
+              placeholder="상세 설명을 입력하세요"
+              rows={6}
+            />
+          </div>
+        </div>
+
+        <div className="p-5 border-t border-white/10 flex justify-end gap-2">
+          <button
+            type="button"
+            onClick={() => {
+              if (!isSubmitting) onClose();
+            }}
+            className="px-4 py-2 rounded-lg border border-white/10 text-gray-300 hover:text-white hover:border-white/20 transition-colors"
+          >
+            취소
+          </button>
+          <button
+            type="button"
+            disabled={disabled}
+            onClick={() =>
+              onSubmit({
+                title: title.trim(),
+                subtitle: subtitle.trim(),
+                description: description.trim(),
+              })
+            }
+            className="px-4 py-2 rounded-lg bg-white text-black font-semibold hover:bg-gray-200 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+          >
+            {mode === "create" ? "등록" : "저장"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function IssueCard({
+  issue,
+  isLoggedIn,
+  isAdmin,
+  hideAdminActions,
+  onEdit,
+  onDelete,
+}: {
+  issue: IssueListItem;
+  isLoggedIn: boolean;
+  isAdmin: boolean;
+  hideAdminActions: boolean;
+  onEdit: (issue: IssueListItem) => void;
+  onDelete: (issue: IssueListItem) => void;
+}) {
+  const [isFlipped, setIsFlipped] = useState(false);
+
+  const participantsSafe = (issue.participants ?? issue.totalVotes ?? 0) as number;
+
+  // ✅ 0표면 찬/반 둘다 0%로 고정
+  const agreePercentSafe =
+    participantsSafe <= 0 ? 0 : Number(issue.agreePercent ?? 0);
+  const disagreePercentSafe =
+    participantsSafe <= 0 ? 0 : Math.max(0, 100 - agreePercentSafe);
+
+  const isHotIssue = participantsSafe >= 3000;
+  const showCompleted = isLoggedIn && ((issue as any).voted || issue.myVote !== null);
+
+  const agreeCountSafe =
+    participantsSafe <= 0 ? 0 : Math.round((agreePercentSafe / 100) * participantsSafe);
+  const disagreeCountSafe = participantsSafe <= 0 ? 0 : participantsSafe - agreeCountSafe;
+
+  return (
+    <div
+      className="relative group h-full"
+      onMouseEnter={() => setIsFlipped(true)}
+      onMouseLeave={() => setIsFlipped(false)}
+    >
+      {isAdmin && !hideAdminActions && (
+        <div className="absolute right-3 top-3 z-50 flex gap-2 pointer-events-auto">
+          <button
+            type="button"
+            title="수정"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onEdit(issue);
+            }}
+            className="w-9 h-9 rounded-full bg-black/70 border border-white/20 hover:border-white/40 hover:bg-black/90 transition-all flex items-center justify-center"
+          >
+            <Pencil className="w-4 h-4 text-white" />
+          </button>
+
+          <button
+            type="button"
+            title="삭제"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onDelete(issue);
+            }}
+            className="w-9 h-9 rounded-full bg-black/70 border border-white/20 hover:border-white/40 hover:bg-black/90 transition-all flex items-center justify-center"
+          >
+            <X className="w-5 h-5 text-white" />
+          </button>
+        </div>
+      )}
+
+      <Link to={`/balance/${issue.id}`} className="block h-full">
+        <div className="relative h-full preserve-3d" style={{ perspective: "1000px" }}>
+          <motion.div
+            className="relative w-full h-full"
+            animate={{ rotateY: isFlipped ? 180 : 0 }}
+            transition={{ duration: 0.6, ease: "easeInOut" }}
+            style={{ transformStyle: "preserve-3d" }}
+          >
+            {/* Front Side */}
+            <div
+              className="absolute inset-0 bg-gradient-to-br from-gray-900 to-black rounded-2xl sm:rounded-3xl overflow-hidden border-2 border-white/10 group-hover:border-white/30 transition-all shadow-lg"
+              style={{ backfaceVisibility: "hidden" }}
+            >
+              <div className="relative p-6 sm:p-8 h-full flex flex-col">
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex items-center space-x-3 sm:space-x-4 flex-1">
+                    <span className="text-4xl sm:text-5xl">{issue.emoji}</span>
+                    <div className="flex-1">
+                      <h3 className="text-xl sm:text-2xl font-bold mb-1 group-hover:text-gray-300 transition-colors">
+                        {issue.title}
+                      </h3>
+                    </div>
+                  </div>
+
+                  <div className="flex-shrink-0 ml-2 flex flex-col items-end space-y-2">
+                    {isHotIssue && (
+                      <div
+                        className="flex items-center space-x-1 px-3 py-1.5 text-white rounded-full text-xs font-bold animate-pulse border border-white/25 shadow-[0_10px_22px_rgba(239,68,68,0.45)]"
+                        style={{ backgroundColor: "#ef4444" }}
+                      >
+                        <Flame className="w-3.5 h-3.5" />
+                        <span>핫이슈!</span>
+                      </div>
+                    )}
+
+                    {showCompleted && (
+                      <div className="flex items-center space-x-1 px-3 py-1.5 bg-white/10 border border-white/20 text-white rounded-full text-xs font-bold">
+                        <CheckCircle className="w-3.5 h-3.5" />
+                        <span>완료</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <p className="text-gray-400 text-sm sm:text-base mb-6 leading-relaxed flex-1">
+                  {issue.description}
+                </p>
+
+                <div className="flex items-center justify-between pt-4 border-t border-white/10">
+                  <div className="flex flex-col">
+                    <span className="text-xs text-gray-500 mb-1">참여 인원</span>
+                    <div className="flex items-center space-x-2">
+                      <Users className="w-5 h-5 text-white" />
+                      <span className="font-bold text-2xl sm:text-3xl text-white">
+                        {participantsSafe.toLocaleString()}
+                      </span>
+                      <span className="text-sm text-gray-400 font-semibold">명</span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center space-x-2 text-white font-bold text-sm group-hover:translate-x-1 transition-transform">
+                    <span>투표하기</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Back Side */}
+            <div
+              className="absolute inset-0 bg-white rounded-2xl sm:rounded-3xl overflow-hidden border-2 border-black shadow-lg"
+              style={{
+                backfaceVisibility: "hidden",
+                transform: "rotateY(180deg)",
+              }}
+            >
+              <div className="relative p-6 sm:p-8 h-full flex flex-col">
+                <div className="flex items-center space-x-3 sm:space-x-4 mb-6">
+                  <span className="text-4xl sm:text-5xl">{issue.emoji}</span>
+                  <h3 className="text-xl sm:text-2xl font-bold text-black">{issue.title}</h3>
+                </div>
+
+                <div className="flex-1 flex flex-col justify-center">
+                  <div className="mb-6">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center space-x-2">
+                        <div className="w-2 h-2 bg-black rounded-full" />
+                        <span className="text-sm font-semibold text-black">찬성</span>
+                        <span className="text-2xl font-bold text-black">{agreePercentSafe}%</span>
+                      </div>
+
+                      <div className="flex items-center space-x-2">
+                        <span className="text-2xl font-bold text-gray-600">
+                          {disagreePercentSafe}%
+                        </span>
+                        <span className="text-sm font-semibold text-gray-600">반대</span>
+                        <div className="w-2 h-2 bg-gray-400 rounded-full" />
+                      </div>
+                    </div>
+
+                    <div className="relative h-3 bg-gray-200 rounded-full overflow-hidden border border-gray-300">
+                      <div
+                        className="absolute left-0 top-0 h-full bg-black rounded-full transition-all duration-500"
+                        style={{ width: `${agreePercentSafe}%` }}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="text-center p-3 bg-black/5 rounded-xl">
+                      <div className="text-xs text-gray-600 font-semibold mb-1">찬성</div>
+                      <div className="text-lg font-bold text-black">
+                        {agreeCountSafe.toLocaleString()}명
+                      </div>
+                    </div>
+
+                    <div className="text-center p-3 bg-black/5 rounded-xl">
+                      <div className="text-xs text-gray-600 font-semibold mb-1">반대</div>
+                      <div className="text-lg font-bold text-gray-600">
+                        {disagreeCountSafe.toLocaleString()}명
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between pt-4 border-t border-gray-300 mt-4">
+                  <div className="text-xs sm:text-sm text-gray-600 font-medium">
+                    마우스를 떼면 다시 뒤집혀요
+                  </div>
+                  <div className="flex items-center space-x-2 text-black font-bold text-sm">
+                    <span>클릭해서 투표</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </motion.div>
+        </div>
+      </Link>
+    </div>
+  );
+}
+
+export function IssueList() {
+  const location = useLocation();
+
+  const [filter, setFilter] = useState<"hot" | "recent" | "completed">("hot");
+  const [issues, setIssues] = useState<IssueListItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  const hasToken = !!localStorage.getItem("accessToken");
+  const isLoggedIn = !!getSession() || hasToken;
+
+  const [meEmail, setMeEmail] = useState<string>("-");
+  const [meNickname, setMeNickname] = useState<string>("-");
+  const [meUserId, setMeUserId] = useState<string>("-");
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalMode, setModalMode] = useState<"create" | "edit">("create");
+  const [editing, setEditing] = useState<IssueListItem | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const filters = [
+    { key: "hot" as const, label: "HOT", icon: Flame },
+    { key: "recent" as const, label: "최신", icon: Clock },
+    { key: "completed" as const, label: "참여완료", icon: CheckCircle },
+  ];
+
+  const refresh = async () => {
+    const data = await issueApi.getIssueList();
+    setIssues(data);
+  };
+
+  useEffect(() => {
+    let mounted = true;
+
+    (async () => {
+      try {
+        const fallback = pickIdentityFromAnywhere();
+        if (!mounted) return;
+
+        setMeUserId(fallback.userId ?? "-");
+        setMeEmail(fallback.email ?? "-");
+        setMeNickname(fallback.nickname ?? "-");
+        setIsAdmin(isAdminByIdentity(fallback));
+
+        if (isLoggedIn) {
+          try {
+            const me = await userApi.getMe();
+            if (!mounted) return;
+
+            const merged = {
+              userId: me?.id ?? fallback.userId,
+              email: me?.email ?? fallback.email,
+              nickname: me?.nickname ?? fallback.nickname,
+            };
+
+            setMeUserId(merged.userId ?? "-");
+            setMeEmail(merged.email ?? "-");
+            setMeNickname(merged.nickname ?? "-");
+            setIsAdmin(isAdminByIdentity(merged));
+          } catch (e) {
+            console.warn("[users/me] failed:", e);
+          }
+        }
+      } catch (e) {
+        console.warn("[admin-check] failed:", e);
+      }
+    })();
+
+    return () => {
+      mounted = false;
+    };
+  }, [isLoggedIn]);
+
+  useEffect(() => {
+    let mounted = true;
+
+    (async () => {
+      try {
+        setIsLoading(true);
+        setErrorMessage(null);
+
+        const data = await issueApi.getIssueList();
+        if (!mounted) return;
+        setIssues(data);
+      } catch (e) {
+        if (!mounted) return;
+        setErrorMessage(getErrorMessage(e));
+      } finally {
+        if (!mounted) return;
+        setIsLoading(false);
+      }
+    })();
+
+    return () => {
+      mounted = false;
+    };
+  }, [location.key]);
+
+  const filteredIssues = useMemo(() => {
+    if (filter === "completed") {
+      if (!isLoggedIn) return [];
+      return issues.filter((x) => x.myVote !== null);
+    }
+
+    if (filter === "recent") {
+      return [...issues].sort((a, b) => {
+        const at = a.createdAt ? new Date(a.createdAt).getTime() : a.id;
+        const bt = b.createdAt ? new Date(b.createdAt).getTime() : b.id;
+        return bt - at;
+      });
+    }
+
+    return [...issues].sort((a, b) => {
+      const ap = (a.participants ?? a.totalVotes ?? 0) as number;
+      const bp = (b.participants ?? b.totalVotes ?? 0) as number;
+      return bp - ap;
+    });
+  }, [issues, filter, isLoggedIn]);
+
+  const openCreate = () => {
+    setErrorMessage(null);
+    setModalMode("create");
+    setEditing(null);
+    setIsModalOpen(true);
+  };
+
+  const openEdit = async (issue: IssueListItem) => {
+    try {
+      setErrorMessage(null);
+      setModalMode("edit");
+
+      const detail = await issueApi.getIssueDetail(issue.id);
+
+      setEditing({
+        ...issue,
+        _detailDescription: detail.description ?? "",
+      } as any);
+
+      setIsModalOpen(true);
+    } catch (e) {
+      setErrorMessage(getErrorMessage(e));
+    }
+  };
+
+  const handleDelete = async (issue: IssueListItem) => {
+    const ok = window.confirm(`"${issue.title}" 이슈를 삭제할까요?`);
+    if (!ok) return;
+
+    try {
+      setIsSubmitting(true);
+      setErrorMessage(null);
+      await issueApi.deleteIssue(issue.id);
+      await refresh();
+    } catch (e) {
+      setErrorMessage(getErrorMessage(e));
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleSubmit = async (payload: {
+    title: string;
+    subtitle: string;
+    description: string;
+  }) => {
+    try {
+      setIsSubmitting(true);
+      setErrorMessage(null);
+
+      if (modalMode === "create") {
+        await issueApi.createIssue(payload);
+      } else {
+        if (!editing) throw new Error("수정 대상을 찾을 수 없습니다.");
+        await issueApi.updateIssue(editing.id, payload);
+      }
+
+      setIsModalOpen(false);
+      setEditing(null);
+      await refresh();
+    } catch (e) {
+      setErrorMessage(getErrorMessage(e));
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const initialForModal:
+    | { title: string; subtitle: string; description: string }
+    | undefined =
+    modalMode === "create"
+      ? undefined
+      : editing
+      ? {
+          title: String(editing.title ?? ""),
+          subtitle: String(editing.description ?? ""),
+          description: String((editing as any)._detailDescription ?? ""),
+        }
+      : undefined;
+
+  // ✅ 모달이 열려있는 동안(등록/수정 모두) 카드의 관리자 액션 숨김
+  const hideAdminActions = isModalOpen;
+
+  return (
+    <div className="pt-16 min-h-screen bg-black text-white">
+      <IssueFormModal
+        isOpen={isModalOpen}
+        mode={modalMode}
+        initial={initialForModal}
+        isSubmitting={isSubmitting}
+        onClose={() => setIsModalOpen(false)}
+        onSubmit={handleSubmit}
+      />
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-16">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-6 sm:mb-8"
+          className="text-center mb-8 sm:mb-12 lg:mb-16"
         >
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-2 sm:mb-3">밸런스 게임</h1>
-          <p className="text-gray-600 text-base sm:text-lg lg:text-xl">
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-3 sm:mb-4">
+            밸런스 게임
+          </h1>
+          <p className="text-gray-400 text-base sm:text-lg lg:text-xl">
             정치 이슈에 대한 당신의 생각을 투표로 표현하세요
           </p>
+
+          {isAdmin && (
+            <div className="mt-6 flex justify-center">
+              <button
+                type="button"
+                onClick={openCreate}
+                className="flex items-center space-x-2 px-6 py-3 rounded-full font-semibold text-sm sm:text-base transition-all bg-white text-black hover:bg-gray-200"
+              >
+                <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
+                <span>밸런스게임 등록</span>
+              </button>
+            </div>
+          )}
         </motion.div>
 
-        {/* Filters */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.1 }}
-          className="flex space-x-2 mb-6 sm:mb-8 overflow-x-auto pb-2"
+          className="flex justify-center space-x-2 sm:space-x-3 mb-8 sm:mb-12"
         >
           {filters.map((item) => (
             <button
               key={item.key}
               onClick={() => setFilter(item.key)}
-              className={`flex-shrink-0 flex items-center space-x-1.5 sm:space-x-2 px-4 sm:px-5 py-2 sm:py-2.5 rounded-full font-semibold text-sm sm:text-base transition-all ${
+              className={`flex items-center space-x-1.5 sm:space-x-2 px-4 sm:px-6 py-2.5 sm:py-3 rounded-full font-semibold text-sm sm:text-base transition-all ${
                 filter === item.key
-                  ? 'bg-black text-white'
-                  : 'bg-white text-gray-600 hover:bg-gray-100'
+                  ? "bg-white text-black"
+                  : "bg-white/10 text-white hover:bg-white/20 border border-white/10"
               }`}
             >
-              <item.icon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              <item.icon className="w-4 h-4 sm:w-5 sm:h-5" />
               <span>{item.label}</span>
             </button>
           ))}
         </motion.div>
 
-        {/* Issues Grid */}
-        <div className="grid grid-cols-1 gap-4 sm:gap-6">
-          {issues.map((issue, index) => (
-            <motion.div
-              key={issue.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 + index * 0.05 }}
-            >
-              <Link
-                to={`/balance/${issue.id}`}
-                className="block group"
-              >
-                <div className="bg-gradient-to-br from-white to-gray-50 rounded-xl sm:rounded-2xl overflow-hidden border-2 border-black hover:border-gray-800 transition-all hover:shadow-2xl shadow-lg">
-                  <div className="p-5 sm:p-6 lg:p-8">
-                    <div className="flex items-start justify-between mb-3 sm:mb-4">
-                      {/* Left: Emoji + Title */}
-                      <div className="flex-1">
-                        <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-4 mb-2 sm:mb-3">
-                          <span className="text-4xl sm:text-5xl">{issue.emoji}</span>
-                          <div className="flex-1">
-                            <h3 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-1 sm:mb-2 group-hover:text-gray-600 transition-colors">
-                              {issue.title}
-                            </h3>
-                            <p className="text-gray-600 text-xs sm:text-sm lg:text-base">
-                              {issue.description}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
+        {isLoading && <div className="text-center text-gray-400 py-16">불러오는 중...</div>}
 
-                      {/* Right: Status Badge */}
-                      {issue.voted && (
-                        <div className="flex-shrink-0 ml-2 sm:ml-4">
-                          <div className="flex items-center space-x-1 sm:space-x-1.5 px-3 sm:px-4 py-1.5 sm:py-2 bg-green-50 text-green-600 rounded-full text-xs sm:text-sm font-bold">
-                            <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4" />
-                            <span className="hidden sm:inline">참여완료</span>
-                            <span className="sm:hidden">완료</span>
-                          </div>
-                        </div>
-                      )}
-                    </div>
+        {!isLoading && errorMessage && (
+          <div className="text-center text-gray-400 py-16">{errorMessage}</div>
+        )}
 
-                    {/* Vote Preview Bar */}
-                    <div className="mb-3 sm:mb-4">
-                      <div className="h-1.5 sm:h-2 bg-gray-100 rounded-full overflow-hidden">
-                        <div 
-                          className="h-full bg-gradient-to-r from-blue-500 to-blue-600 rounded-full"
-                          style={{ width: `${issue.agreePercent}%` }}
-                        />
-                      </div>
-                      <div className="flex items-center justify-between mt-1.5 sm:mt-2 text-xs sm:text-sm font-semibold">
-                        <span className="text-blue-600">찬성 {issue.agreePercent}%</span>
-                        <span className="text-red-600">반대 {100 - issue.agreePercent}%</span>
-                      </div>
-                    </div>
+        {!isLoading && !errorMessage && (
+          filteredIssues.length === 0 ? (
+            <div className="text-center text-gray-400 py-16">
+              {filter === "completed"
+                ? (isLoggedIn
+                    ? "아직 참여한 이슈가 없어요."
+                    : "로그인 후 참여완료를 확인할 수 있어요.")
+                : "표시할 이슈가 없어요."}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+              {filteredIssues.map((issue, index) => (
+                <motion.div
+                  key={issue.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2 + index * 0.05 }}
+                  style={{ minHeight: "280px" }}
+                >
+                  <IssueCard
+                    issue={issue}
+                    isLoggedIn={isLoggedIn}
+                    isAdmin={isAdmin}
+                    hideAdminActions={hideAdminActions}
+                    onEdit={openEdit}
+                    onDelete={handleDelete}
+                  />
+                </motion.div>
+              ))}
+            </div>
+          )
+        )}
 
-                    {/* Stats + CTA */}
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0 pt-3 sm:pt-4 border-t border-gray-100">
-                      <div className="flex items-center space-x-4 sm:space-x-6 text-xs sm:text-sm text-gray-600">
-                        <div className="flex items-center space-x-1.5 sm:space-x-2">
-                          <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                          <span className="font-semibold">
-                            {issue.participants.toLocaleString()}명
-                          </span>
-                        </div>
-                        <div className="flex items-center space-x-1.5 sm:space-x-2">
-                          <MessageCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                          <span className="font-semibold">
-                            {issue.comments}개
-                          </span>
-                        </div>
-                      </div>
-
-                      <button className="flex items-center justify-center space-x-2 px-5 sm:px-6 py-2.5 sm:py-3 bg-black text-white rounded-lg sm:rounded-xl font-bold text-sm sm:text-base hover:bg-gray-800 transition-all group-hover:scale-105">
-                        <span>{issue.voted ? '결과 보기' : '투표하기'}</span>
-                        <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </Link>
-            </motion.div>
-          ))}
-        </div>
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.8 }}
+          className="mt-12 pt-3 text-center text-gray-500 text-sm"
+        >
+          <p>💡 카드에 마우스를 올리면 투표 결과를 미리 볼 수 있어요</p>
+        </motion.div>
       </div>
     </div>
   );
