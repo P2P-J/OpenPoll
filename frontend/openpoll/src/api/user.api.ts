@@ -67,4 +67,5 @@ export const changePassword = async (
     currentPassword,
     newPassword,
   });
+  return;
 };
