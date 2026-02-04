@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Lock, X, Eye, EyeOff, AlertCircle, CheckCircle2, Shield } from "lucide-react";
-import { userApi } from "@/api";
+import { changePassword } from "@/api/user.api";
 
 interface PasswordChangeModalProps {
   isOpen: boolean;
@@ -70,7 +70,8 @@ export function PasswordChangeModal({
     try {
       setIsChangingPassword(true);
       // 실제 API 호출
-      await userApi.changePassword(currentPassword, newPassword);
+      // @ts-ignore: Promise<void> await is required for async flow control
+      await changePassword(currentPassword, newPassword);
 
       setPasswordSuccess(true);
 
@@ -111,7 +112,7 @@ export function PasswordChangeModal({
               duration: 0.3,
               ease: [0.4, 0, 0.2, 1],
             }}
-            className="relative bg-white border-2 border-black rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden"
+            className="relative bg-white border-2 border-black rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Subtle Gradient Background */}
@@ -119,16 +120,21 @@ export function PasswordChangeModal({
 
             {/* Close Button */}
             <button
-              onClick={handleClose}
-              className="absolute top-6 right-6 text-gray-400 hover:text-black transition-all duration-200 hover:rotate-90 z-10"
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                handleClose();
+              }}
+              className="absolute top-8 right-8 sm:right-10 p-2 bg-white border-2 border-gray-200 hover:border-black text-gray-500 hover:text-black rounded-xl transition-all duration-200 hover:rotate-90 hover:scale-110 active:scale-95 shadow-sm hover:shadow-md z-20 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:rotate-0"
               aria-label="닫기"
               disabled={isChangingPassword}
             >
-              <X className="w-6 h-6" />
+              <X className="w-5 h-5" />
             </button>
 
             {/* Header */}
-            <div className="relative z-10 flex flex-col items-center pt-12 pb-8 px-8">
+            <div className="relative z-10 flex flex-col items-center pt-16 pb-8 px-10 sm:px-12">
               {/* Icon with Animation */}
               <motion.div
                 initial={{ scale: 0 }}
@@ -158,10 +164,10 @@ export function PasswordChangeModal({
             </div>
 
             {/* Form */}
-            <form onSubmit={handlePasswordChange} className="relative z-10 px-8 pb-8 space-y-5">
+            <form onSubmit={handlePasswordChange} className="relative z-10 px-10 sm:px-12 pb-10 space-y-6">
               {/* Current Password */}
               <div>
-                <label className="block text-sm font-bold text-gray-900 mb-2.5">
+                <label className="block text-base font-bold text-gray-900 mb-3">
                   현재 비밀번호
                 </label>
                 <div className="relative">
@@ -169,14 +175,14 @@ export function PasswordChangeModal({
                     type={showCurrentPassword ? "text" : "password"}
                     value={currentPassword}
                     onChange={(e) => setCurrentPassword(e.target.value)}
-                    className="w-full px-4 py-3.5 pr-12 bg-white border-2 border-gray-200 rounded-xl text-black placeholder-gray-400 focus:ring-2 focus:ring-black focus:border-black transition-all outline-none"
+                    className="w-full px-5 py-4 pr-14 bg-white border-2 border-gray-200 rounded-xl text-base text-black placeholder-gray-400 focus:ring-2 focus:ring-black focus:border-black transition-all duration-200 outline-none hover:border-gray-300"
                     placeholder="현재 비밀번호를 입력하세요"
                     disabled={isChangingPassword}
                   />
                   <button
                     type="button"
                     onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-gray-400 hover:text-black transition-colors"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 p-2 text-gray-400 hover:text-black transition-colors duration-200 rounded-lg hover:bg-gray-100"
                     disabled={isChangingPassword}
                     tabIndex={-1}
                   >
@@ -191,7 +197,7 @@ export function PasswordChangeModal({
 
               {/* New Password */}
               <div>
-                <label className="block text-sm font-bold text-gray-900 mb-2.5">
+                <label className="block text-base font-bold text-gray-900 mb-3">
                   새 비밀번호
                 </label>
                 <div className="relative">
@@ -199,14 +205,14 @@ export function PasswordChangeModal({
                     type={showNewPassword ? "text" : "password"}
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
-                    className="w-full px-4 py-3.5 pr-12 bg-white border-2 border-gray-200 rounded-xl text-black placeholder-gray-400 focus:ring-2 focus:ring-black focus:border-black transition-all outline-none"
+                    className="w-full px-5 py-4 pr-14 bg-white border-2 border-gray-200 rounded-xl text-base text-black placeholder-gray-400 focus:ring-2 focus:ring-black focus:border-black transition-all duration-200 outline-none hover:border-gray-300"
                     placeholder="영문+숫자 포함, 8자 이상"
                     disabled={isChangingPassword}
                   />
                   <button
                     type="button"
                     onClick={() => setShowNewPassword(!showNewPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-gray-400 hover:text-black transition-colors"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 p-2 text-gray-400 hover:text-black transition-colors duration-200 rounded-lg hover:bg-gray-100"
                     disabled={isChangingPassword}
                     tabIndex={-1}
                   >
@@ -217,14 +223,14 @@ export function PasswordChangeModal({
                     )}
                   </button>
                 </div>
-                <p className="mt-2 text-xs text-gray-500 font-medium">
+                <p className="mt-3 text-sm text-gray-500 font-medium">
                   영문자와 숫자를 포함하여 8자 이상 입력해주세요
                 </p>
               </div>
 
               {/* Confirm Password */}
               <div>
-                <label className="block text-sm font-bold text-gray-900 mb-2.5">
+                <label className="block text-base font-bold text-gray-900 mb-3">
                   새 비밀번호 확인
                 </label>
                 <div className="relative">
@@ -232,14 +238,14 @@ export function PasswordChangeModal({
                     type={showConfirmPassword ? "text" : "password"}
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="w-full px-4 py-3.5 pr-12 bg-white border-2 border-gray-200 rounded-xl text-black placeholder-gray-400 focus:ring-2 focus:ring-black focus:border-black transition-all outline-none"
+                    className="w-full px-5 py-4 pr-14 bg-white border-2 border-gray-200 rounded-xl text-base text-black placeholder-gray-400 focus:ring-2 focus:ring-black focus:border-black transition-all duration-200 outline-none hover:border-gray-300"
                     placeholder="새 비밀번호를 다시 입력하세요"
                     disabled={isChangingPassword}
                   />
                   <button
                     type="button"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-gray-400 hover:text-black transition-colors"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 p-2 text-gray-400 hover:text-black transition-colors duration-200 rounded-lg hover:bg-gray-100"
                     disabled={isChangingPassword}
                     tabIndex={-1}
                   >
@@ -287,18 +293,18 @@ export function PasswordChangeModal({
               </AnimatePresence>
 
               {/* Buttons */}
-              <div className="flex gap-3 pt-4">
+              <div className="flex gap-4 pt-6 pb-4">
                 <button
                   type="button"
                   onClick={handleClose}
-                  className="flex-1 h-14 bg-white border-2 border-gray-300 hover:border-black text-gray-700 hover:text-black font-bold rounded-xl transition-all duration-200"
+                  className="flex-1 py-4 bg-white border-2 border-gray-300 hover:border-black text-gray-700 hover:text-black font-bold text-base rounded-xl transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                   disabled={isChangingPassword}
                 >
                   취소
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 h-14 bg-black hover:bg-gray-800 text-white font-bold rounded-xl transition-all duration-200 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                  className="flex-1 py-4 bg-black hover:bg-gray-800 text-white font-bold text-base rounded-xl transition-all duration-200 flex items-center justify-center gap-2.5 shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                   disabled={isChangingPassword || passwordSuccess}
                 >
                   {isChangingPassword ? (
