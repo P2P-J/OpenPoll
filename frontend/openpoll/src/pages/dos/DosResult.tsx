@@ -231,7 +231,7 @@ export function DosResult() {
                         </h1>
                       ),
                       h2: ({ children }) => (
-                        <h2 className="text-lg sm:text-xl font-bold mb-2 text-white">
+                        <h2 className="text-lg sm:text-xl font-bold mb-2 mt-4 text-white">
                           {children}
                         </h2>
                       ),
