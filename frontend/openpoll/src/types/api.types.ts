@@ -131,6 +131,7 @@ export interface VoteResponse {
     name: string;
     color: string;
   };
+  remainingPoints: number;
 }
 
 export interface UserVoteStats {
