@@ -11,7 +11,7 @@ export const castVote = async (userId, partyId) => {
     where: { id: partyId },
   });
 
-  if (!party || !party.isActive) {
+  if (!party) {
     throw AppError.notFound('해당 정당을 찾을 수 없습니다.');
   }
 
@@ -54,7 +54,6 @@ export const castVote = async (userId, partyId) => {
       data: { voteCount: { increment: 1 } },
     });
 
-    // 업데이트된 포인트 조회
     const updatedUser = await tx.user.findUnique({
       where: { id: userId },
       select: { points: true },
