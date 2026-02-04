@@ -4,8 +4,8 @@ import {
   useState,
   useEffect,
   useCallback,
-  ReactNode,
 } from "react";
+import type { ReactNode } from "react";
 import { authApi, userApi, getErrorMessage } from "@/api";
 import {
   isTokenExpired,
@@ -92,16 +92,69 @@ export function UserProvider({ children }: { children: ReactNode }) {
         // 선제적 토큰 갱신 스케줄 설정
         scheduleProactiveRefresh();
       } catch (err) {
-        // 네트워크 에러인 경우 조용히 처리 (백엔드 서버가 실행되지 않을 수 있음)
+        // 에러 타입에 따라 다르게 처리
         const isNetworkError = err instanceof Error && err.message.includes("Network Error");
+        const isAuthError =
+          (err as any)?.response?.status === 401 ||
+          (err as any)?.response?.status === 403;
+
         if (isNetworkError) {
+          // 네트워크 에러: 서버가 꺼져있거나 연결 불가
           console.warn("[Auth] Cannot connect to server. Please ensure backend is running.");
+          // 로컬 세션 정보가 있으면 임시로 사용
+          tryLoadLocalSession();
+        } else if (isAuthError) {
+          // 인증 에러: 토큰이 유효하지 않음
+          console.error("[Auth] Authentication failed. Clearing tokens.");
+          clearTokens();
         } else {
-          console.error("Failed to initialize auth:", err);
+          // 기타 서버 에러 (500 등): 토큰을 유지하고 로컬 세션 사용
+          console.warn("[Auth] Server error during initialization. Using cached session.");
+          tryLoadLocalSession();
+          // 백그라운드에서 재시도
+          setTimeout(async () => {
+            try {
+              const userData = await userApi.getMe();
+              setUser(userData);
+              const session = {
+                nickname: userData.nickname,
+                email: userData.email,
+                points: userData.points,
+              };
+              localStorage.setItem("openpoll_session_v1", JSON.stringify(session));
+              console.log("[Auth] Successfully refreshed user data in background");
+            } catch (retryErr) {
+              console.warn("[Auth] Background refresh failed:", retryErr);
+            }
+          }, 5000);
         }
-        clearTokens();
       } finally {
         setIsLoading(false);
+      }
+    };
+
+    // 로컬 세션 정보로 임시 사용자 데이터 설정
+    const tryLoadLocalSession = () => {
+      try {
+        const sessionStr = localStorage.getItem("openpoll_session_v1");
+        if (sessionStr) {
+          const session = JSON.parse(sessionStr);
+          // 세션 정보로 최소한의 User 객체 생성
+          setUser({
+            id: 0, // ID는 알 수 없음
+            email: session.email || "",
+            nickname: session.nickname || "",
+            points: session.points || 0,
+            age: 0,
+            gender: "MALE",
+            region: "",
+            createdAt: "",
+            updatedAt: "",
+          });
+          console.log("[Auth] Loaded cached session data");
+        }
+      } catch (e) {
+        console.error("[Auth] Failed to load local session:", e);
       }
     };
 
