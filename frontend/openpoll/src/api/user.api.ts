@@ -54,3 +54,17 @@ export const getMyVotes = async (): Promise<UserVoteStats> => {
     await apiClient.get<ApiResponse<UserVoteStats>>("/users/me/votes");
   return response.data.data;
 };
+
+/**
+ * 비밀번호 변경
+ * PATCH /auth/password
+ */
+export const changePassword = async (
+  currentPassword: string,
+  newPassword: string,
+): Promise<void> => {
+  await apiClient.patch("/auth/password", {
+    currentPassword,
+    newPassword,
+  });
+};

@@ -17,6 +17,8 @@ import {
   Info,
   Plus,
   Minus,
+  Lock,
+  X,
 } from "lucide-react";
 import { useUser } from "@/contexts/UserContext";
 import { userApi } from "@/api";
@@ -30,6 +32,15 @@ export function Profile() {
   const [pointHistory, setPointHistory] = useState<PointRecord[]>([]);
   const [voteStats, setVoteStats] = useState<UserVoteStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+
+  // 비밀번호 변경 상태
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+  const [passwordSuccess, setPasswordSuccess] = useState(false);
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
 
   // 로그인하지 않은 경우 로그인 페이지로 리다이렉트
   useEffect(() => {
@@ -122,6 +133,54 @@ export function Profile() {
       hour: "2-digit",
       minute: "2-digit",
     });
+  };
+
+  const handlePasswordChange = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setPasswordError("");
+    setPasswordSuccess(false);
+
+    // 유효성 검사
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      setPasswordError("모든 필드를 입력해주세요.");
+      return;
+    }
+
+    if (newPassword.length < 8) {
+      setPasswordError("새 비밀번호는 최소 8자 이상이어야 합니다.");
+      return;
+    }
+
+    if (!/^(?=.*[a-zA-Z])(?=.*[0-9])/.test(newPassword)) {
+      setPasswordError("새 비밀번호는 영문과 숫자를 포함해야 합니다.");
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      setPasswordError("새 비밀번호가 일치하지 않습니다.");
+      return;
+    }
+
+    try {
+      setIsChangingPassword(true);
+      await userApi.changePassword(currentPassword, newPassword);
+      setPasswordSuccess(true);
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+
+      // 3초 후 모달 닫기
+      setTimeout(() => {
+        setShowPasswordModal(false);
+        setPasswordSuccess(false);
+      }, 2000);
+    } catch (error: any) {
+      setPasswordError(
+        error?.response?.data?.message || "비밀번호 변경에 실패했습니다."
+      );
+    } finally {
+      setIsChangingPassword(false);
+    }
   };
 
   return (
@@ -380,7 +439,7 @@ export function Profile() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
-          className="bg-white dark:bg-gray-900 rounded-3xl border border-gray-200 dark:border-gray-800 shadow-sm p-6 sm:p-8"
+          className="bg-white dark:bg-gray-900 rounded-3xl border border-gray-200 dark:border-gray-800 shadow-sm p-6 sm:p-8 mb-6"
         >
           <div className="flex items-center space-x-3 mb-6">
             <History className="w-6 h-6 text-gray-700 dark:text-gray-300" />
@@ -438,7 +497,146 @@ export function Profile() {
             </div>
           )}
         </motion.div>
+
+        {/* Password Change Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+          className="bg-white dark:bg-gray-900 rounded-3xl border border-gray-200 dark:border-gray-800 shadow-sm p-6 sm:p-8"
+        >
+          <div className="flex items-center space-x-3 mb-6">
+            <Lock className="w-6 h-6 text-gray-700 dark:text-gray-300" />
+            <h3 className="text-xl font-bold dark:text-white">보안</h3>
+          </div>
+
+          <button
+            onClick={() => setShowPasswordModal(true)}
+            className="w-full py-4 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-xl transition-colors flex items-center justify-center space-x-2"
+          >
+            <Lock className="w-5 h-5" />
+            <span>비밀번호 변경</span>
+          </button>
+        </motion.div>
       </div>
+
+      {/* Password Change Modal */}
+      {showPasswordModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-white dark:bg-gray-900 rounded-3xl shadow-2xl max-w-md w-full p-6 sm:p-8"
+          >
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center space-x-3">
+                <Lock className="w-6 h-6 text-gray-700 dark:text-gray-300" />
+                <h3 className="text-xl font-bold dark:text-white">
+                  비밀번호 변경
+                </h3>
+              </div>
+              <button
+                onClick={() => {
+                  setShowPasswordModal(false);
+                  setPasswordError("");
+                  setPasswordSuccess(false);
+                  setCurrentPassword("");
+                  setNewPassword("");
+                  setConfirmPassword("");
+                }}
+                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5 text-gray-500" />
+              </button>
+            </div>
+
+            <form onSubmit={handlePasswordChange} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  현재 비밀번호
+                </label>
+                <input
+                  type="password"
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent dark:bg-gray-800 dark:text-white"
+                  placeholder="현재 비밀번호를 입력하세요"
+                  disabled={isChangingPassword}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  새 비밀번호
+                </label>
+                <input
+                  type="password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent dark:bg-gray-800 dark:text-white"
+                  placeholder="새 비밀번호 (영문+숫자, 8자 이상)"
+                  disabled={isChangingPassword}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  새 비밀번호 확인
+                </label>
+                <input
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent dark:bg-gray-800 dark:text-white"
+                  placeholder="새 비밀번호를 다시 입력하세요"
+                  disabled={isChangingPassword}
+                />
+              </div>
+
+              {passwordError && (
+                <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl">
+                  <p className="text-sm text-red-600 dark:text-red-400">
+                    {passwordError}
+                  </p>
+                </div>
+              )}
+
+              {passwordSuccess && (
+                <div className="p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl">
+                  <p className="text-sm text-green-600 dark:text-green-400">
+                    비밀번호가 성공적으로 변경되었습니다.
+                  </p>
+                </div>
+              )}
+
+              <div className="flex space-x-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowPasswordModal(false);
+                    setPasswordError("");
+                    setPasswordSuccess(false);
+                    setCurrentPassword("");
+                    setNewPassword("");
+                    setConfirmPassword("");
+                  }}
+                  className="flex-1 py-3 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-semibold rounded-xl hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+                  disabled={isChangingPassword}
+                >
+                  취소
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 py-3 bg-red-600 text-white font-semibold rounded-xl hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={isChangingPassword}
+                >
+                  {isChangingPassword ? "변경 중..." : "변경하기"}
+                </button>
+              </div>
+            </form>
+          </motion.div>
+        </div>
+      )}
     </div>
   );
 }
