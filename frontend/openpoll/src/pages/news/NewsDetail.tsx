@@ -1,144 +1,242 @@
-import { Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Link, useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
-import { ChevronLeft, ExternalLink, Sparkles, Clock, Tag } from 'lucide-react';
+import { ChevronLeft, ExternalLink, Sparkles, Clock } from 'lucide-react';
+import { newsApi } from '@/api';
+import type { NewsArticle } from '@/types/api.types';
 
-export function NewsDetail() {
-  const news = {
-    category: '국회',
-    title: '국회, 예산안 처리 두고 여야 이견',
-    publishedAt: '2024년 1월 23일 오후 2시',
-    source: '한국일보',
-    originalUrl: 'https://example.com/original-article',
-    tags: ['예산안', '여야갈등', '국회'],
-    content: `
-      <p class="mb-4">국회에서 2024년도 예산안 처리를 두고 여당과 야당 간 의견 차이가 지속되고 있습니다.</p>
-      
-      <h2 class="text-2xl font-bold mt-8 mb-4">여당의 입장</h2>
-      <p class="mb-4">여당은 경제 활성화를 위해 R&D 예산과 중소기업 지원 예산을 증액해야 한다는 입장입니다. 특히 반도체 산업 육성과 청년 고용 지원 분야에 대한 투자 확대가 필요하다고 주장하고 있습니다.</p>
-      
-      <h2 class="text-2xl font-bold mt-8 mb-4">야당의 입장</h2>
-      <p class="mb-4">반면 야당은 재정 건전성을 우려하며 신중한 접근이 필요하다는 입장입니다. 무분별한 예산 증액보다는 기존 예산의 효율적 집행이 우선이라고 주장하고 있습니다.</p>
-      
-      <h2 class="text-2xl font-bold mt-8 mb-4">향후 전망</h2>
-      <p class="mb-4">양측은 합의점 도출을 위한 협상을 지속하고 있으며, 전문가들은 일부 항목에서 절충안이 마련될 것으로 전망하고 있습니다. 예산안 처리 시한인 다음 달 2일까지 합의가 이루어질지 주목됩니다.</p>
-      
-      <h2 class="text-2xl font-bold mt-8 mb-4">전문가 의견</h2>
-      <p class="mb-4">경제 전문가들은 경제 상황과 재정 건전성을 모두 고려한 균형잡힌 접근이 필요하다고 조언하고 있습니다. 단기적 경기 부양과 장기적 재정 안정성 사이에서 적절한 균형점을 찾는 것이 중요하다는 지적입니다.</p>
-    `,
+// Helper function to get category from tags
+const getCategoryFromTags = (tags: string[]): string => {
+  const categoryMap: Record<string, string> = {
+    '경제': '경제',
+    '금리': '경제',
+    '수출': '경제',
+    '물가': '경제',
+    '외교': '외교',
+    '정상회담': '외교',
+    '국제협력': '외교',
+    '국회': '국회',
+    '법안': '국회',
+    '예산안': '국회',
+    '선거': '선거',
+    '투표': '선거',
+    '여론조사': '선거',
+    '사회': '사회',
+    '복지': '사회',
+    '교육': '사회',
+    '민생': '국회',
+    '개혁': '국회',
   };
 
+  for (const tag of tags) {
+    if (categoryMap[tag]) {
+      return categoryMap[tag];
+    }
+  }
+  return '사회';
+};
+
+// Helper function to format published date
+const formatPublishedDate = (createdAt: string): string => {
+  const date = new Date(createdAt);
+  const year = date.getFullYear();
+  const month = date.getMonth() + 1;
+  const day = date.getDate();
+  const hours = date.getHours();
+  const minutes = date.getMinutes();
+  const period = hours >= 12 ? '오후' : '오전';
+  const displayHours = hours > 12 ? hours - 12 : hours === 0 ? 12 : hours;
+
+  return `${year}년 ${month}월 ${day}일 ${period} ${displayHours}시 ${minutes}분`;
+};
+
+// Helper function to get time ago
+const getTimeAgo = (createdAt: string): string => {
+  const now = new Date();
+  const created = new Date(createdAt);
+  const diffInMinutes = Math.floor((now.getTime() - created.getTime()) / (1000 * 60));
+
+  if (diffInMinutes < 60) {
+    return `${diffInMinutes}분 전`;
+  } else if (diffInMinutes < 1440) {
+    const hours = Math.floor(diffInMinutes / 60);
+    return `${hours}시간 전`;
+  } else {
+    const days = Math.floor(diffInMinutes / 1440);
+    return `${days}일 전`;
+  }
+};
+
+export function NewsDetail() {
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const [article, setArticle] = useState<NewsArticle | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchArticle = async () => {
+      if (!id) {
+        setError('잘못된 접근입니다.');
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        setIsLoading(true);
+        const data = await newsApi.getArticleById(parseInt(id));
+        if (data) {
+          setArticle(data);
+          setError(null);
+        } else {
+          setError('뉴스를 찾을 수 없습니다.');
+        }
+      } catch (err) {
+        console.error('Failed to fetch article:', err);
+        setError('뉴스를 불러오는데 실패했습니다.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchArticle();
+  }, [id]);
+
+  if (isLoading) {
+    return (
+      <div className="pt-16 min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <Sparkles className="w-12 h-12 mx-auto mb-4 animate-pulse" />
+          <p className="text-gray-600">뉴스를 불러오는 중...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !article) {
+    return (
+      <div className="pt-16 min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-600 mb-4">{error || '뉴스를 찾을 수 없습니다.'}</p>
+          <button
+            onClick={() => navigate('/news')}
+            className="px-6 py-3 bg-black text-white rounded-xl font-semibold hover:bg-gray-800 transition-colors"
+          >
+            목록으로 돌아가기
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const category = getCategoryFromTags(article.relatedTags);
+
   return (
-    <div className="pt-16 min-h-screen bg-white">
-      <div className="max-w-4xl mx-auto px-4 py-8">
+    <div className="pt-16 min-h-screen bg-gray-50 pb-12">
+      <div className="max-w-3xl mx-auto">
         {/* Back Button */}
-        <Link
-          to="/news"
-          className="inline-flex items-center space-x-2 text-gray-600 hover:text-black mb-8 transition-colors"
-        >
-          <ChevronLeft className="w-5 h-5" />
-          <span className="font-medium">목록으로</span>
-        </Link>
+        <div className="px-4 sm:px-6 py-4">
+          <Link
+            to="/news"
+            className="inline-flex items-center space-x-2 text-gray-600 hover:text-black transition-colors"
+          >
+            <ChevronLeft className="w-5 h-5" />
+            <span className="font-medium">뒤로</span>
+          </Link>
+        </div>
 
-        {/* Article Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-8"
-        >
-          <div className="flex items-center space-x-3 mb-4">
-            <span className="px-3 py-1 bg-gray-100 text-gray-700 text-sm font-semibold rounded-full">
-              {news.category}
-            </span>
-            <div className="flex items-center space-x-2 text-blue-600 text-sm font-semibold">
-              <Sparkles className="w-4 h-4" />
-              <span>AI 중립화 처리됨</span>
-            </div>
-          </div>
-          
-          <h1 className="text-4xl sm:text-5xl font-bold mb-6 leading-tight">
-            {news.title}
-          </h1>
-
-          <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600">
-            <div className="flex items-center space-x-2">
-              <Clock className="w-4 h-4" />
-              <span>{news.publishedAt}</span>
-            </div>
-            <div>•</div>
-            <div>{news.source}</div>
-          </div>
-        </motion.div>
-
-        {/* AI Notice */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.2 }}
-          className="bg-blue-50 border border-blue-100 rounded-2xl p-6 mb-8"
-        >
-          <div className="flex items-start space-x-3">
-            <Sparkles className="w-5 h-5 text-blue-600 mt-0.5" />
-            <div className="text-sm text-blue-900 leading-relaxed">
-              <p className="font-semibold mb-2">AI 중립화 안내</p>
-              <p className="text-blue-800">
-                이 기사는 AI에 의해 중립화 처리되었습니다. 자극적인 표현은 순화되었으며,
-                가능한 한 객관적인 사실 중심으로 재구성되었습니다. 원문과 비교하여 읽어보실 수 있습니다.
-              </p>
-            </div>
-          </div>
-        </motion.div>
-
-        {/* Article Content */}
-        <motion.article
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.3 }}
-          className="prose prose-lg max-w-none mb-8"
-          dangerouslySetInnerHTML={{ __html: news.content }}
-        />
-
-        {/* Tags */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.4 }}
-          className="flex items-start space-x-3 mb-8"
-        >
-          <Tag className="w-5 h-5 text-gray-400 mt-1" />
-          <div className="flex flex-wrap gap-2">
-            {news.tags.map((tag) => (
-              <span
-                key={tag}
-                className="px-3 py-1.5 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg"
-              >
-                #{tag}
-              </span>
-            ))}
-          </div>
-        </motion.div>
-
-        {/* Original Link */}
+        {/* Main Content Card */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-          className="bg-gray-50 rounded-2xl p-6 border border-gray-100"
+          className="bg-white rounded-t-3xl sm:rounded-3xl overflow-hidden border border-gray-200 shadow-lg mx-4 sm:mx-0 p-8 sm:p-10"
         >
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="font-semibold mb-1">원문 기사 보기</p>
-              <p className="text-sm text-gray-600">
-                {news.source}에서 작성한 원본 기사를 확인하세요
-              </p>
+          {/* Header */}
+          <div className="mb-6 sm:mb-7">
+            <div className="flex items-center justify-between pb-6 sm:pb-7 border-b border-gray-100">
+              <div className="flex items-center space-x-4">
+                <div
+                  className="bg-gradient-to-br from-gray-900 to-gray-700 rounded-full flex items-center justify-center"
+                  style={{ width: '56px', height: '56px', minWidth: '56px', minHeight: '56px' }}
+                >
+                  <Sparkles className="w-7 h-7 text-white" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-lg">{article.press}</span>
+                    <div
+                      className="rounded-full flex items-center justify-center"
+                      style={{ width: '16px', height: '16px', minWidth: '16px', backgroundColor: '#3b82f6' }}
+                    >
+                      <div
+                        className="rounded-full bg-white"
+                        style={{ width: '8px', height: '8px' }}
+                      />
+                    </div>
+                  </div>
+                  <span className="text-sm text-gray-500">{getTimeAgo(article.createdAt)}</span>
+                </div>
+              </div>
+              <span className="px-4 py-1.5 bg-black text-white text-sm font-bold rounded-full">
+                {category}
+              </span>
             </div>
+          </div>
+
+          {/* Article Content */}
+          <div className="py-8 sm:py-9">
+            {/* Title */}
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-6 sm:mb-8 leading-tight">
+              {article.refinedTitle}
+            </h1>
+
+            {/* AI Notice */}
+            <div className="bg-blue-50 rounded-2xl p-5 mb-8 border border-blue-100">
+              <div className="flex items-start space-x-3">
+                <Sparkles className="w-6 h-6 text-blue-600 mt-0.5 flex-shrink-0" />
+                <div className="text-sm sm:text-base text-blue-900">
+                  <p className="font-bold mb-2">AI 중립화 처리됨</p>
+                  <p className="text-blue-800 leading-relaxed">
+                    자극적인 표현은 순화되었으며, 객관적인 사실 중심으로 재구성되었습니다.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Article Body */}
+            <article className="prose prose-base sm:prose-lg max-w-none text-gray-800 mb-8">
+              <div className="whitespace-pre-wrap leading-relaxed">
+                {article.refinedSummary}
+              </div>
+            </article>
+
+            {/* Tags */}
+            <div className="flex flex-wrap gap-2 pt-8 border-t border-gray-100 mb-8">
+              {article.relatedTags.map((tag) => (
+                <span
+                  key={tag}
+                  className="text-sm sm:text-base text-blue-600 font-medium hover:underline cursor-pointer"
+                >
+                  #{tag}
+                </span>
+              ))}
+            </div>
+
+            {/* Timestamp */}
+            <div className="flex items-center space-x-2 text-sm text-gray-500 mb-6">
+              <Clock className="w-4 h-4" />
+              <span>{formatPublishedDate(article.createdAt)}</span>
+            </div>
+
+            {/* Original Link Button */}
             <a
-              href={news.originalUrl}
+              href={article.originalUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center space-x-2 px-6 py-3 bg-black text-white rounded-lg font-semibold hover:bg-gray-800 transition-colors"
+              className="flex items-center justify-center space-x-2 w-full py-4 sm:py-5 bg-black text-white rounded-xl font-semibold text-base sm:text-lg hover:bg-gray-800 transition-colors"
             >
-              <span>원문 보기</span>
-              <ExternalLink className="w-4 h-4" />
+              <span>원문 기사 보기</span>
+              <ExternalLink className="w-5 h-5" />
             </a>
           </div>
         </motion.div>
