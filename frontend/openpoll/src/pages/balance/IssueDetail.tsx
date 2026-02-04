@@ -39,16 +39,206 @@ function getMyLabelFromSession() {
   );
 }
 
+// ✅ 관리자 판정 강화 (세션 구조가 달라도 ADMIN이면 true)
+
+// ✅ 관리자 식별(리스트와 동일): 화이트리스트 기반
+const ADMIN_EMAILS = new Set<string>([
+  "oct95@naver.com",
+  "admin@test.com",
+]);
+const ADMIN_NICKNAMES = new Set<string>(["로운"].map((x) => x.toLowerCase()));
+const ADMIN_USER_IDS = new Set<string>([
+  "62968fae-154c-4d4f-91f4-abf4b67fd7c0", // 로운 userId (accessToken payload)
+]);
+
+/** JWT payload 디코드 (서명검증 X / 프론트 fallback 용) */
+function decodeJwtPayload(token?: string | null): any | null {
+  try {
+    if (!token) return null;
+    const parts = token.split(".");
+    if (parts.length < 2) return null;
+
+    const base64Url = parts[1];
+    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+    const padded = base64.padEnd(
+      base64.length + ((4 - (base64.length % 4)) % 4),
+      "="
+    );
+
+    const json = decodeURIComponent(
+      atob(padded)
+        .split("")
+        .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+        .join("")
+    );
+
+    return JSON.parse(json);
+  } catch {
+    return null;
+  }
+}
+
+/** session/user/me 어디에 있든 userId/email/nickname 최대한 뽑기 */
+function pickIdentityFromAnywhere(): {
+  userId?: string;
+  email?: string;
+  nickname?: string;
+} {
+  const s = getSession() as any;
+
+  // 1) session 쪽
+  const sessionUserId =
+    s?.user?.id || s?.userId || s?.id || s?.user?.userId || s?.profile?.id;
+  const sessionEmail =
+    s?.user?.email || s?.email || s?.userEmail || s?.profile?.email;
+  const sessionNickname =
+    s?.user?.nickname || s?.nickname || s?.userNickname || s?.profile?.nickname;
+
+  if (sessionUserId || sessionEmail || sessionNickname) {
+    return { userId: sessionUserId, email: sessionEmail, nickname: sessionNickname };
+  }
+
+  // 2) accessToken jwt payload
+  const token = localStorage.getItem("accessToken") || undefined;
+  const payload = decodeJwtPayload(token);
+
+  const jwtUserId =
+    payload?.userId ||
+    payload?.sub ||
+    payload?.user?.id ||
+    payload?.data?.userId;
+
+  const jwtEmail =
+    payload?.email || payload?.user?.email || payload?.data?.email;
+
+  const jwtNickname =
+    payload?.nickname || payload?.user?.nickname || payload?.data?.nickname;
+
+  return { userId: jwtUserId, email: jwtEmail, nickname: jwtNickname };
+}
+
+function isAdminByIdentity(input: {
+  userId?: string;
+  email?: string;
+  nickname?: string;
+}) {
+  const uid = (input.userId ?? "").trim();
+  const e = (input.email ?? "").toLowerCase().trim();
+  const n = (input.nickname ?? "").toLowerCase().trim();
+
+  if (uid && ADMIN_USER_IDS.has(uid)) return true;
+  if (e && ADMIN_EMAILS.has(e)) return true;
+  if (n && ADMIN_NICKNAMES.has(n)) return true;
+
+  return false;
+}
+
+function parseJwtPayload(token: string) {
+  try {
+    const parts = token.split(".");
+    if (parts.length < 2) return null;
+
+    const base64 = parts[1].replace(/-/g, "+").replace(/_/g, "/");
+    const padded = base64 + "=".repeat((4 - (base64.length % 4)) % 4);
+
+    const json = decodeURIComponent(
+      atob(padded)
+        .split("")
+        .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+        .join("")
+    );
+    return JSON.parse(json);
+  } catch {
+    return null;
+  }
+}
+
+function isAdminNow() {
+  const s = getSession() as any;
+
+  // 1) 세션에서 먼저 체크
+  const role =
+    s?.user?.role ??
+    s?.role ??
+    s?.user?.authority ??
+    s?.authority ??
+    null;
+
+  if (typeof role === "string") {
+    const v = role.toUpperCase();
+    if (v === "ADMIN" || v === "ROLE_ADMIN") return true;
+  }
+
+  const roles = s?.user?.roles ?? s?.roles ?? null;
+  if (Array.isArray(roles)) {
+    const up = roles.map((r) => String(r).toUpperCase());
+    if (up.includes("ADMIN") || up.includes("ROLE_ADMIN")) return true;
+  }
+
+  if (s?.user?.isAdmin === true || s?.isAdmin === true) return true;
+  if (String(s?.user?.isAdmin).toLowerCase() === "true") return true;
+  if (String(s?.isAdmin).toLowerCase() === "true") return true;
+
+  // 2) accessToken(JWT)에서 체크
+  const token =
+    (s?.accessToken as string) ||
+    (s?.user?.accessToken as string) ||
+    localStorage.getItem("accessToken") ||
+    "";
+
+  if (token) {
+    const payload = parseJwtPayload(token);
+
+    const jwtRole =
+      payload?.role ??
+      payload?.authority ??
+      payload?.user?.role ??
+      payload?.user?.authority ??
+      null;
+
+    if (typeof jwtRole === "string") {
+      const v = jwtRole.toUpperCase();
+      if (v === "ADMIN" || v === "ROLE_ADMIN") return true;
+    }
+
+    const jwtRoles =
+      payload?.roles ??
+      payload?.authorities ??
+      payload?.user?.roles ??
+      payload?.user?.authorities ??
+      null;
+
+    if (Array.isArray(jwtRoles)) {
+      const up = jwtRoles.map((r: any) => String(r).toUpperCase());
+      if (up.includes("ADMIN") || up.includes("ROLE_ADMIN")) return true;
+    }
+
+    const isAdmin =
+      payload?.isAdmin ?? payload?.user?.isAdmin ?? payload?.admin ?? null;
+    if (isAdmin === true) return true;
+    if (String(isAdmin).toLowerCase() === "true") return true;
+  }
+
+  return false;
+}
+
+function getMyUserIdFromSession() {
+  const s = getSession() as any;
+  return s?.user?.id || s?.id || null;
+}
+
+function getMyNicknameFromSession() {
+  const s = getSession() as any;
+  return s?.user?.nickname || s?.nickname || null;
+}
+
 function getAuthorLabel(c: any) {
-  // ✅ API 명세 형태: comment.user.nickname
   if (c?.user?.nickname) return c.user.nickname;
   if (c?.user?.id) return c.user.id;
 
-  // ✅ 기존 mock 형태: author가 "me" 같은 값으로 들어오는 경우
   if (c?.author === "me") return getMyLabelFromSession();
   if (typeof c?.author === "string" && c.author.trim() !== "") return c.author;
 
-  // ✅ 혹시 다른 형태
   if (c?.nickname) return c.nickname;
 
   return "익명";
@@ -68,7 +258,6 @@ function getTotalVotesSafe(issue: IssueDetailType) {
   if (typeof anyIssue.totalVotes === "number") return anyIssue.totalVotes;
   if (typeof anyIssue.participants === "number") return anyIssue.participants;
 
-  // agree/disagreeCount가 있으면 합산
   const agree = typeof anyIssue.agreeCount === "number" ? anyIssue.agreeCount : 0;
   const disagree =
     typeof anyIssue.disagreeCount === "number" ? anyIssue.disagreeCount : 0;
@@ -82,12 +271,9 @@ function applyVoteOptimistic(
   nextVote: IssueVoteOption | null
 ): IssueDetailType {
   let totalVotes = getTotalVotesSafe(issue);
-
-  // count가 없으면 percent 기반으로 “초기 count” 만들어서 처리
   let agreeCount = getAgreeCountSafe(issue);
   let disagreeCount = getDisagreeCountSafe(issue);
 
-  // 이전 제거
   if (prevVote === "agree") {
     agreeCount -= 1;
     totalVotes -= 1;
@@ -97,7 +283,6 @@ function applyVoteOptimistic(
     totalVotes -= 1;
   }
 
-  // 새 반영
   if (nextVote === "agree") {
     agreeCount += 1;
     totalVotes += 1;
@@ -128,8 +313,8 @@ function applyVoteOptimistic(
 export function IssueDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [isAdmin, setIsAdmin] = useState(false);
 
-  // ✅ 실제 로그인 상태는 UserContext 기반 (accessToken)
   const { isAuthenticated } = useUser();
 
   const [selectedOption, setSelectedOption] = useState<IssueVoteOption | null>(null);
@@ -137,6 +322,9 @@ export function IssueDetail() {
 
   const [replyToId, setReplyToId] = useState<string | null>(null);
   const [replyContent, setReplyContent] = useState("");
+
+  const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
+  const [editingContent, setEditingContent] = useState("");
 
   const [issue, setIssue] = useState<IssueDetailType | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -149,12 +337,91 @@ export function IssueDetail() {
 
   const keyOf = (v: string | number) => String(v);
 
-  // ✅ 화면용 “로그인 여부” (실로그인 OR mock 세션 둘 다 인정)
   const isLoggedIn = isAuthenticated || !!getSession();
 
-  // ✅ 클릭 순간에도 최신 기준으로 판단 (UserContext + mock + accessToken fallback)
   const isLoggedInNow = () =>
     isAuthenticated || !!getSession() || !!localStorage.getItem("accessToken");
+
+  const openLoginModal = () => {
+    setErrorMessage(null);
+    setIsLoginModalOpen(true);
+  };
+
+  useEffect(() => {
+  let mounted = true;
+
+  (async () => {
+    try {
+      const fallback = pickIdentityFromAnywhere();
+      if (!mounted) return;
+
+      // ✅ 디테일은 리스트처럼 "화이트리스트"만 사용
+      const nextAdmin = isAdminByIdentity(fallback);
+
+      if (!mounted) return;
+      setIsAdmin(nextAdmin);
+    } catch (e) {
+      console.warn("[IssueDetail admin-check failed]", e);
+    }
+  })();
+
+  return () => {
+    mounted = false;
+  };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [isAuthenticated]);
+
+  const isRootCommentId = (commentId: string | number) => {
+    const roots = ((issue as any)?.comments ?? []) as any[];
+    return roots.some((c) => keyOf(c.id) === keyOf(commentId));
+  };
+
+  const handleDeleteComment = async (commentId: string | number) => {
+    if (!issue) return;
+
+    if (!isLoggedInNow()) {
+      openLoginModal();
+      return;
+    }
+
+    const commentIdNum =
+      typeof commentId === "number" ? commentId : Number(commentId);
+    if (Number.isNaN(commentIdNum)) return;
+
+    try {
+      await (issueApi as any).deleteComment(issue.id, commentIdNum);
+
+      const remove = (nodes: any[]): any[] => {
+        return (nodes ?? [])
+          .filter((n) => keyOf(n.id) !== keyOf(commentId))
+          .map((n) => ({ ...n, replies: remove(n.replies ?? []) }));
+      };
+
+      setIssue((prev) =>
+        prev
+          ? ({ ...(prev as any), comments: remove((prev as any).comments) } as any)
+          : prev
+      );
+
+      if (editingCommentId === keyOf(commentId)) handleCancelEdit();
+      if (replyToId === keyOf(commentId)) handleCancelReply();
+    } catch (e) {
+      setErrorMessage(getErrorMessage(e));
+    }
+  };
+
+  const isMyComment = (c: any) => {
+    const myId = getMyUserIdFromSession();
+    const myNick = getMyNicknameFromSession();
+
+    if (myId && c?.user?.id) return String(c.user.id) === String(myId);
+    if (myNick && c?.user?.nickname)
+      return String(c.user.nickname) === String(myNick);
+
+    const authorLabel = getAuthorLabel(c);
+    const myLabel = getMyLabelFromSession();
+    return authorLabel === myLabel;
+  };
 
   useEffect(() => {
     let mounted = true;
@@ -171,8 +438,6 @@ export function IssueDetail() {
         if (!mounted) return;
 
         setIssue(data);
-
-        // ✅ 비로그인 상태면 투표 표시 강제 제거
         setSelectedOption(isLoggedInNow() ? data.myVote : null);
       } catch (e) {
         if (!mounted) return;
@@ -187,27 +452,24 @@ export function IssueDetail() {
       mounted = false;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id, isAuthenticated]); // ✅ 로그인 상태 바뀌면(컨텍스트) 다시 반영
+  }, [id, isAuthenticated]);
 
-  const openLoginModal = () => {
-    setErrorMessage(null);
-    setIsLoginModalOpen(true);
-  };
-
+  // ✅ 투표: 1회만 허용
   const handleVote = async (option: IssueVoteOption) => {
     if (!issue || isVoting) return;
 
-    // ✅ 비로그인: 눌리게는 두고 모달만 띄우기
     if (!isLoggedInNow()) {
       openLoginModal();
       return;
     }
 
-    const prevVote = selectedOption;
-    const nextVote: IssueVoteOption | null = prevVote === option ? null : option;
+    // ✅ 이미 투표했으면 변경/취소 불가
+    if (selectedOption) return;
 
     const prevIssue = issue;
-    const nextIssue = applyVoteOptimistic(prevIssue, prevVote, nextVote);
+    const nextVote: IssueVoteOption = option;
+
+    const nextIssue = applyVoteOptimistic(prevIssue, null, nextVote);
 
     setSelectedOption(nextVote);
     setIssue(nextIssue);
@@ -217,7 +479,7 @@ export function IssueDetail() {
       setErrorMessage(null);
       await issueApi.voteIssue(prevIssue.id, nextVote);
     } catch (e) {
-      setSelectedOption(prevVote);
+      setSelectedOption(null);
       setIssue(prevIssue);
       setErrorMessage(getErrorMessage(e));
     } finally {
@@ -225,37 +487,38 @@ export function IssueDetail() {
     }
   };
 
-  // ✅ FIX: 최상위 댓글은 parentId를 아예 보내지 않기 (null 보내면 백엔드 검증에서 걸림)
   const handleSubmitComment = async () => {
-    if (!issue) return;
+  if (!issue) return;
 
-    if (!isLoggedInNow()) {
-      openLoginModal();
-      return;
-    }
+  if (!isLoggedInNow()) {
+    openLoginModal();
+    return;
+  }
 
-    if (!selectedOption) return;
+  if (!selectedOption) return;
 
-    const content = comment.trim();
-    if (!content) return;
+  const content = comment.trim();
+  if (!content) return;
 
-    setComment("");
+  setComment("");
 
-    try {
-      const newComment = await issueApi.createComment(issue.id, {
-        content,
-      } as any);
+  try {
+    const newComment = await issueApi.createComment(issue.id, {
+      content,
+    } as any);
 
-      setIssue((prev) => {
-        if (!prev) return prev;
-        return { ...prev, comments: [newComment, ...prev.comments] };
-      });
-    } catch (e) {
-      setErrorMessage(getErrorMessage(e));
-    }
-  };
+    // ✅ 새 댓글을 "맨 아래"로 붙이기
+    setIssue((prev) => {
+      if (!prev) return prev;
+      const prevComments = ((prev as any).comments ?? []) as any[];
+      return { ...prev, comments: [...prevComments, newComment] } as any;
+    });
+  } catch (e) {
+    setErrorMessage(getErrorMessage(e));
+  }
+};
 
-  const handleStartReply = (commentId: string | number) => {
+  const handleStartReply = (commentId: string | number, depth: number) => {
     if (!isLoggedInNow()) {
       openLoginModal();
       return;
@@ -264,6 +527,15 @@ export function IssueDetail() {
       setErrorMessage("투표 후 답글을 작성할 수 있어요.");
       return;
     }
+
+    if (depth > 0) {
+      setErrorMessage("답글은 대댓글까지만 작성할 수 있어요.");
+      return;
+    }
+
+    setEditingCommentId(null);
+    setEditingContent("");
+
     setReplyToId(keyOf(commentId));
     setReplyContent("");
   };
@@ -273,7 +545,6 @@ export function IssueDetail() {
     setReplyContent("");
   };
 
-  // ✅ FIX: 답글 parentId는 number로 보내기 (백엔드가 Int로 검증하면 string이면 걸림)
   const handleSubmitReply = async (parentId: string | number) => {
     if (!issue) return;
 
@@ -283,6 +554,11 @@ export function IssueDetail() {
     }
 
     if (!selectedOption) return;
+
+    if (!isRootCommentId(parentId)) {
+      setErrorMessage("답글은 대댓글까지만 작성할 수 있어요.");
+      return;
+    }
 
     const parentKey = keyOf(parentId);
     const content = replyContent.trim();
@@ -306,7 +582,8 @@ export function IssueDetail() {
       const addReply = (nodes: any[]): any[] => {
         return (nodes ?? []).map((n) => {
           if (keyOf(n.id) === parentKey) {
-            return { ...n, replies: [newReply, ...(n.replies ?? [])] };
+            // ✅ 대댓글도 "맨 아래"로 붙이기
+            return { ...n, replies: [...(n.replies ?? []), newReply] };
           }
           if (n.replies && n.replies.length > 0) {
             return { ...n, replies: addReply(n.replies) };
@@ -350,7 +627,6 @@ export function IssueDetail() {
     });
   };
 
-  // ✅ 댓글 좋아요 토글 (optimistic + 실패 rollback + 서버값 sync)
   const handleToggleLike = async (commentId: string | number) => {
     if (!issue) return;
 
@@ -388,16 +664,13 @@ export function IssueDetail() {
       });
     };
 
-    // 1) optimistic
     const nextIssue = {
       ...(prevIssue as any),
       comments: patchLikes((prevIssue as any).comments),
     };
     setIssue(nextIssue as any);
 
-    // 2) 서버 반영
     try {
-      // ✅ issue.api.ts의 issueApi 객체에 toggleCommentLike가 있어야 함
       const res = await (issueApi as any).toggleCommentLike(prevIssue.id, commentIdNum);
 
       const sync = (nodes: any[]): any[] => {
@@ -421,8 +694,80 @@ export function IssueDetail() {
         cur ? ({ ...(cur as any), comments: sync((cur as any).comments) } as any) : cur
       );
     } catch (e) {
-      // 실패 시 롤백
       setIssue(prevIssue);
+      setErrorMessage(getErrorMessage(e));
+    }
+  };
+
+  const handleStartEdit = (c: any) => {
+    if (!issue) return;
+
+    if (!isLoggedInNow()) {
+      openLoginModal();
+      return;
+    }
+    if (!isMyComment(c)) {
+      setErrorMessage("본인 댓글만 수정할 수 있어요.");
+      return;
+    }
+
+    setReplyToId(null);
+    setReplyContent("");
+
+    setEditingCommentId(keyOf(c.id));
+    setEditingContent(String(c.content ?? ""));
+  };
+
+  const handleCancelEdit = () => {
+    setEditingCommentId(null);
+    setEditingContent("");
+  };
+
+  const handleSubmitEdit = async (commentId: string | number) => {
+    if (!issue) return;
+
+    if (!isLoggedInNow()) {
+      openLoginModal();
+      return;
+    }
+
+    const content = editingContent.trim();
+    if (!content) return;
+
+    const commentIdNum = typeof commentId === "number" ? commentId : Number(commentId);
+    if (Number.isNaN(commentIdNum)) return;
+
+    try {
+      setErrorMessage(null);
+
+      const updated = await (issueApi as any).updateComment(issue.id, commentIdNum, {
+        content,
+      });
+
+      const patchContent = (nodes: any[]): any[] => {
+        return (nodes ?? []).map((n) => {
+          if (keyOf(n.id) === keyOf(commentId)) {
+            return {
+              ...n,
+              content: updated?.content ?? content,
+            };
+          }
+          if (n.replies && n.replies.length > 0) {
+            return { ...n, replies: patchContent(n.replies) };
+          }
+          return n;
+        });
+      };
+
+      setIssue((prev) =>
+        prev
+          ? ({ ...(prev as any), comments: patchContent((prev as any).comments) } as any)
+          : prev
+      );
+
+      setEditingCommentId(null);
+      setEditingContent("");
+    } catch (e) {
       setErrorMessage(getErrorMessage(e));
     }
   };
@@ -431,6 +776,15 @@ export function IssueDetail() {
     const hasReplies = (c.replies ?? []).length > 0;
     const isExpanded = expandedComments.has(keyOf(c.id));
     const isReply = depth > 0;
+
+    const canReply = depth === 0;
+    const canEdit = isLoggedInNow() && isMyComment(c);
+
+    // ✅ 관리자면 남 댓글도 삭제 버튼 보임
+    const canDelete = isLoggedInNow() && (isMyComment(c) || isAdmin);
+
+    const isEditing = editingCommentId === keyOf(c.id);
+    const isReplyBoxOpen = replyToId === keyOf(c.id);
 
     return (
       <div
@@ -488,9 +842,38 @@ export function IssueDetail() {
                 <span className="text-sm text-gray-500">{c.createdAt}</span>
               </div>
 
-              <p className="text-gray-300 leading-relaxed mb-3 text-sm sm:text-base">
-                {c.content}
-              </p>
+              {isEditing ? (
+                <>
+                  <textarea
+                    value={editingContent}
+                    onChange={(e) => setEditingContent(e.target.value)}
+                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl focus:outline-none focus:border-white/30 resize-none text-white placeholder-gray-500"
+                    rows={3}
+                    placeholder="수정할 내용을 입력하세요..."
+                  />
+                  <div className="flex justify-end gap-2 mt-2">
+                    <button
+                      type="button"
+                      onClick={handleCancelEdit}
+                      className="px-4 py-2 rounded-lg border border-white/10 text-gray-300 hover:text-white hover:border-white/20 transition-colors"
+                    >
+                      취소
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleSubmitEdit(c.id)}
+                      disabled={!editingContent.trim()}
+                      className="px-4 py-2 rounded-lg bg-white text-black font-semibold hover:bg-gray-200 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                    >
+                      저장
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <p className="text-gray-300 leading-relaxed mb-3 text-sm sm:text-base">
+                  {c.content}
+                </p>
+              )}
 
               <div className="flex items-center gap-4">
                 <button
@@ -498,17 +881,42 @@ export function IssueDetail() {
                   onClick={() => handleToggleLike(c.id)}
                   className="flex items-center space-x-2 text-sm text-gray-400 hover:text-white transition-colors"
                 >
-                  <Heart className="w-4 h-4" />
+                  <Heart
+                    className={`w-4 h-4 ${c.isLiked ? "text-white" : ""}`}
+                    fill={c.isLiked ? "currentColor" : "none"}
+                  />
                   <span className="font-medium">{c.likes ?? c.likeCount ?? 0}</span>
                 </button>
 
-                <button
-                  type="button"
-                  onClick={() => handleStartReply(c.id)}
-                  className="text-sm text-gray-400 hover:text-white transition-colors"
-                >
-                  답글
-                </button>
+                {canReply && !isEditing && (
+                  <button
+                    type="button"
+                    onClick={() => handleStartReply(c.id, depth)}
+                    className="text-sm text-gray-400 hover:text-white transition-colors"
+                  >
+                    답글
+                  </button>
+                )}
+
+                {canEdit && !isEditing && (
+                  <button
+                    type="button"
+                    onClick={() => handleStartEdit(c)}
+                    className="text-sm text-gray-400 hover:text-white transition-colors"
+                  >
+                    수정
+                  </button>
+                )}
+
+                {canDelete && !isEditing && (
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteComment(c.id)}
+                    className="text-sm text-gray-400 hover:text-white transition-colors"
+                  >
+                    삭제
+                  </button>
+                )}
 
                 {hasReplies && (
                   <button
@@ -521,7 +929,7 @@ export function IssueDetail() {
                 )}
               </div>
 
-              {replyToId === keyOf(c.id) && (
+              {isReplyBoxOpen && canReply && !isEditing && (
                 <div className="mt-4">
                   <textarea
                     value={replyContent}
@@ -617,13 +1025,14 @@ export function IssueDetail() {
   const agreeCountView = getAgreeCountSafe(issue);
   const disagreeCountView = getDisagreeCountSafe(issue);
 
-  // ✅ bar 안전 계산 (0표면 둘 다 0)
   const totalVotesSafe = Math.max(
     0,
     (issue.totalVotes ?? agreeCountView + disagreeCountView) as number
   );
   const agreePercentBar =
-    totalVotesSafe === 0 ? 0 : Math.round((agreeCountView / totalVotesSafe) * 100);
+    totalVotesSafe === 0
+      ? 0
+      : Math.round((agreeCountView / totalVotesSafe) * 100);
   const disagreePercentBar =
     totalVotesSafe === 0 ? 0 : Math.max(0, 100 - agreePercentBar);
 
@@ -682,7 +1091,6 @@ export function IssueDetail() {
                 className="relative bg-white/5 rounded-2xl overflow-hidden border border-white/10"
                 style={{ height: 80 }}
               >
-                {/* 찬성 */}
                 <div
                   className={`absolute left-0 top-0 h-full bg-white flex items-center justify-start transition-all duration-500 overflow-hidden ${
                     agreePercentBar <= 0 ? "px-0" : "px-6 sm:px-8"
@@ -702,7 +1110,6 @@ export function IssueDetail() {
                   )}
                 </div>
 
-                {/* 반대 */}
                 <div
                   className={`absolute right-0 top-0 h-full bg-gray-800 flex items-center justify-end transition-all duration-500 overflow-hidden ${
                     disagreePercentBar <= 0 ? "px-0" : "px-6 sm:px-8"
@@ -722,7 +1129,6 @@ export function IssueDetail() {
                   )}
                 </div>
 
-                {/* 0표일 때 안내(원하면 삭제 가능) */}
                 {totalVotesSafe === 0 && (
                   <div className="absolute inset-0 flex items-center justify-center text-sm text-gray-400">
                     아직 투표가 없어요
@@ -802,18 +1208,6 @@ export function IssueDetail() {
                   </div>
                 </button>
               </div>
-
-              {selectedOption && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="mt-4 text-center"
-                >
-                  <p className="text-sm text-gray-400">
-                    💡 다시 클릭하면 투표를 취소할 수 있어요
-                  </p>
-                </motion.div>
-              )}
             </div>
 
             <div className="text-center py-4 mt-6 border-t border-white/10">
@@ -899,9 +1293,7 @@ export function IssueDetail() {
                         handleSubmitComment();
                       }}
                       disabled={
-                        isLoggedInNow()
-                          ? !selectedOption || !comment.trim()
-                          : false
+                        isLoggedInNow() ? !selectedOption || !comment.trim() : false
                       }
                       className="flex items-center space-x-2 px-6 py-2.5 bg-white text-black rounded-lg font-semibold hover:bg-gray-200 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                     >
@@ -919,9 +1311,7 @@ export function IssueDetail() {
                   아직 댓글이 없어요. 첫 댓글을 남겨보세요!
                 </div>
               ) : (
-                [...((issue as any).comments ?? [])]
-                  .reverse()
-                  .map((c: any) => renderCommentNode(c, 0))
+                [...((issue as any).comments ?? [])].map((c: any) => renderCommentNode(c, 0))
               )}
             </div>
           </div>
@@ -930,3 +1320,4 @@ export function IssueDetail() {
     </div>
   );
 }
+
