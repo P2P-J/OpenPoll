@@ -1,8 +1,13 @@
+// src/api/issue.api.ts
 import { apiClient } from "./client";
 import type { ApiResponse } from "@/types/api.types";
-import type { IssueDetail, IssueListItem, IssueComment } from "@/types/issue.types";
-
-export type IssueVoteOption = "agree" | "disagree";
+import { getSession } from "@/shared/utils/localAuth";
+import type {
+  IssueComment,
+  IssueDetail,
+  IssueListItem,
+  IssueVoteOption,
+} from "@/types/issue.types";
 
 const apiMode = (import.meta.env.VITE_API_MODE ?? "mock") as "mock" | "http";
 
@@ -10,108 +15,335 @@ function sleep(ms: number) {
   return new Promise((r) => setTimeout(r, ms));
 }
 
-const mockIssues: IssueListItem[] = [
+function getMyLabelFromSession() {
+  const s = getSession() as any;
+  return (
+    s?.user?.nickname ||
+    s?.user?.email ||
+    s?.user?.id ||
+    s?.nickname ||
+    s?.email ||
+    s?.id ||
+    "me"
+  );
+}
+
+function calcAgreePercent(agreeCount: number, totalVotes: number) {
+  if (totalVotes <= 0) return 0;
+  return Math.round((agreeCount / totalVotes) * 100);
+}
+function calcDisagreePercent(agreeCount: number, totalVotes: number) {
+  return 100 - calcAgreePercent(agreeCount, totalVotes);
+}
+
+function mapMyVoteToOption(myVote?: boolean): IssueVoteOption | null {
+  if (myVote === true) return "agree";
+  if (myVote === false) return "disagree";
+  return null;
+}
+
+function pickEmojiById(id: number) {
+  const emojis = ["💼", "💰", "🎓", "🚗", "📱", "🪖", "🏠", "🌏", "⚖️", "🧑‍⚕️"];
+  return emojis[(id - 1) % emojis.length];
+}
+
+function formatIso(iso: string) {
+  const t = new Date(iso);
+  if (Number.isNaN(t.getTime())) return iso;
+  return t.toLocaleString();
+}
+
+/**
+ * 제목 규칙 파싱:
+ * - 입력: "🔥 주 4일제 도입"
+ * - 결과: { hasEmojiPrefix:true, emoji:"🔥", title:"주 4일제 도입" }
+ * - 이모지 접두가 없으면 hasEmojiPrefix:false
+ */
+function splitEmojiTitle(rawTitle: string): {
+  hasEmojiPrefix: boolean;
+  emoji: string;
+  title: string;
+} {
+  const s = (rawTitle ?? "").trim();
+  if (!s) return { hasEmojiPrefix: false, emoji: "💬", title: "" };
+
+  const m = s.match(/^(\S+)\s+(.+)$/);
+  if (!m) return { hasEmojiPrefix: false, emoji: "💬", title: s };
+
+  const firstToken = (m[1] ?? "").trim();
+  const rest = (m[2] ?? "").trim();
+  if (!firstToken || !rest) return { hasEmojiPrefix: false, emoji: "💬", title: s };
+
+  return { hasEmojiPrefix: true, emoji: firstToken, title: rest };
+}
+
+/**
+ * =========================
+ * HTTP (명세 기반)
+ * =========================
+ */
+
+type BalanceListItemRes = {
+  id: number;
+  title: string;
+  subtitle: string;
+  agreeCount: number;
+  disagreeCount: number;
+  totalVotes: number;
+  myVote?: boolean;
+  createdAt: string;
+};
+
+type BalanceDetailRes = {
+  id: number;
+  title: string;
+  description: string;
+  agreeCount: number;
+  disagreeCount: number;
+  totalVotes: number;
+  commentCount: number;
+  myVote?: boolean;
+  createdAt: string;
+};
+
+type BalanceVoteRes = {
+  id: number;
+  title: string;
+  agreeCount: number;
+  disagreeCount: number;
+  totalVotes: number;
+  agreePercent: number;
+  disagreePercent: number;
+  myVote: boolean;
+  pointsEarned: number;
+  remainingPoints: number;
+};
+
+type BalanceCommentUserRes = {
+  id: string;
+  nickname: string;
+  isAgree: boolean;
+};
+
+type BalanceCommentRes = {
+  id: number;
+  content: string;
+  createdAt: string;
+  likeCount?: number;
+  isLiked?: boolean | null;
+  user: BalanceCommentUserRes;
+  replies?: BalanceCommentRes[];
+};
+
+function mapBalanceCommentsToTree(items: BalanceCommentRes[]): IssueComment[] {
+  return (items ?? []).map((c) => ({
+    id: c.id,
+    author: c.user?.nickname ?? c.user?.id ?? "unknown",
+    option: c.user?.isAgree ? "agree" : "disagree",
+    content: c.content,
+    likes: c.likeCount ?? 0,
+    createdAt: formatIso(c.createdAt),
+    replies: mapBalanceCommentsToTree(c.replies ?? []),
+
+    // UI에서 그대로 쓰는 확장 필드들(타입에 없어도 as any로 씀)
+    user: c.user,
+    likeCount: c.likeCount,
+    isLiked: c.isLiked ?? null,
+  })) as any;
+}
+
+async function getIssueListHttp(): Promise<IssueListItem[]> {
+  const res = await apiClient.get<ApiResponse<BalanceListItemRes[]>>("/balance");
+  const list = res.data.data ?? [];
+
+  return list.map((x) => {
+    const agreePercent = calcAgreePercent(x.agreeCount, x.totalVotes);
+    const myVote = mapMyVoteToOption(x.myVote);
+
+    const parsed = splitEmojiTitle(x.title);
+    const emoji = parsed.hasEmojiPrefix ? parsed.emoji : pickEmojiById(x.id);
+    const title = parsed.hasEmojiPrefix ? parsed.title : x.title;
+
+    return {
+      id: x.id,
+      emoji,
+
+      title,
+      description: x.subtitle,
+      participants: x.totalVotes,
+
+      agreePercent,
+      voted: myVote !== null,
+      myVote,
+      createdAt: x.createdAt,
+
+      totalVotes: x.totalVotes,
+      agreeCount: x.agreeCount,
+      disagreeCount: x.disagreeCount,
+    } as IssueListItem;
+  });
+}
+
+async function getIssueDetailHttp(issueId: number): Promise<IssueDetail> {
+  const detailRes = await apiClient.get<ApiResponse<BalanceDetailRes>>(
+    `/balance/${issueId}`
+  );
+  const detail = detailRes.data.data;
+
+  const commentsRes = await apiClient.get<ApiResponse<BalanceCommentRes[]>>(
+    `/balance/${issueId}/comments`
+  );
+  const comments = mapBalanceCommentsToTree(commentsRes.data.data ?? []);
+
+  const agreePercent = calcAgreePercent(detail.agreeCount, detail.totalVotes);
+  const disagreePercent = 100 - agreePercent;
+
+  const parsed = splitEmojiTitle(detail.title);
+  const emoji = parsed.hasEmojiPrefix ? parsed.emoji : pickEmojiById(detail.id);
+  const title = parsed.hasEmojiPrefix ? parsed.title : detail.title;
+
+  return {
+    id: detail.id,
+    emoji,
+    title,
+    description: detail.description,
+
+    agreeCount: detail.agreeCount,
+    disagreeCount: detail.disagreeCount,
+    totalVotes: detail.totalVotes,
+
+    agreePercent,
+    disagreePercent,
+
+    commentCount: detail.commentCount,
+    myVote: mapMyVoteToOption(detail.myVote),
+    comments,
+    createdAt: detail.createdAt,
+  } as IssueDetail;
+}
+
+/**
+ * 명세: POST /balance/:id/vote body { isAgree: boolean }
+ * - 취소(null)는 명세에 없음 -> http 모드에서는 호출 스킵
+ */
+async function voteIssueHttp(issueId: number, option: IssueVoteOption | null) {
+  if (option === null) return { skipped: true } as unknown;
+
+  const res = await apiClient.post<ApiResponse<BalanceVoteRes>>(
+    `/balance/${issueId}/vote`,
+    { isAgree: option === "agree" }
+  );
+
+  return res.data.data;
+}
+
+/**
+ * 명세: POST /balance/:id/comments body { content, parentId }
+ */
+export type CreateIssueCommentPayload = {
+  content: string;
+  parentId?: string | number | null;
+  option?: IssueVoteOption; // mock 표시용
+};
+
+async function createCommentHttp(
+  issueId: number,
+  payload: CreateIssueCommentPayload
+): Promise<IssueComment> {
+  // ✅ 루트 댓글이면 parentId를 "아예" 보내지 않는다
+  const body: { content: string; parentId?: number } = {
+    content: payload.content,
+  };
+
+  if (payload.parentId != null) {
+    const parentIdNum = Number(payload.parentId);
+    if (!Number.isFinite(parentIdNum)) throw new Error("잘못된 parentId 입니다.");
+    body.parentId = parentIdNum;
+  }
+
+  const res = await apiClient.post<ApiResponse<BalanceCommentRes>>(
+    `/balance/${issueId}/comments`,
+    body
+  );
+
+  const c = res.data.data;
+  return {
+    id: c.id,
+    author: c.user?.nickname ?? c.user?.id ?? "unknown",
+    option: c.user?.isAgree ? "agree" : "disagree",
+    content: c.content,
+    likes: c.likeCount ?? 0,
+    createdAt: formatIso(c.createdAt),
+    replies: [],
+    user: c.user,
+    likeCount: c.likeCount,
+    isLiked: c.isLiked ?? null,
+  } as any;
+}
+
+/**
+ * ✅ 댓글 좋아요 토글 (HTTP + MOCK 둘 다 지원)
+ * 명세: POST /balance/:id/comments/:commentId/like
+ */
+async function toggleCommentLikeHttp(issueId: number, commentId: number) {
+  const res = await apiClient.post(
+    `/balance/${issueId}/comments/${commentId}/like`
+  );
+  return (res.data?.data ?? res.data) as {
+    commentId: number;
+    likeCount: number;
+    isLiked: boolean;
+  };
+}
+
+/**
+ * =========================
+ * MOCK (기존 유지)
+ * =========================
+ */
+type MockIssue = IssueListItem & { description: string };
+
+let mockIssues: MockIssue[] = [
   {
     id: 1,
     emoji: "💼",
-    title: "주 4일제 도입",
-    description: "근로시간을 주 32시간으로 단축하는 제도",
-    participants: 2340,
-    comments: 156,
-    agreePercent: 62,
-    voted: false,
+    title: "🔥 주 4일제 도입",
+    subtitle: "근로시간을 주 32시간으로 단축하는 제도",
+    description: "주 4일 근무제는 근로시간을 주 32시간으로..... (mock 상세)",
+    agreeCount: 1450,
+    disagreeCount: 890,
+    totalVotes: 2340,
+    agreePercent: calcAgreePercent(1450, 2340),
+    disagreePercent: calcDisagreePercent(1450, 2340),
+    commentCount: 156,
     myVote: null,
     createdAt: new Date().toISOString(),
-  },
-  {
-    id: 2,
-    emoji: "💰",
-    title: "기본소득제 도입",
-    description: "모든 국민에게 기본소득을 지급하는 제도",
-    participants: 1892,
-    comments: 203,
-    agreePercent: 45,
-    voted: true,
-    myVote: "agree",
-    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 8).toISOString(),
-  },
-  {
-    id: 3,
-    emoji: "🎓",
-    title: "대학 등록금 동결 연장",
-    description: "대학 등록금 동결 정책을 계속 이어가는 것",
-    participants: 3104,
-    comments: 284,
-    agreePercent: 71,
-    voted: false,
-    myVote: null,
-    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 20).toISOString(),
-  },
-  {
-    id: 4,
-    emoji: "🚗",
-    title: "전기차 보조금 축소",
-    description: "전기차 구매 시 지급하는 보조금을 줄이는 것",
-    participants: 1567,
-    comments: 98,
-    agreePercent: 38,
-    voted: false,
-    myVote: null,
-    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 30).toISOString(),
-  },
-  {
-    id: 5,
-    emoji: "📱",
-    title: "SNS 실명제 도입",
-    description: "SNS 사용 시 실명 인증을 의무화하는 제도",
-    participants: 2891,
-    comments: 412,
-    agreePercent: 53,
-    voted: true,
-    myVote: "disagree",
-    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 44).toISOString(),
-  },
-  {
-    id: 6,
-    emoji: "🪖",
-    title: "병역 의무 기간 단축",
-    description: "군 복무 기간을 현재보다 단축하는 것",
-    participants: 4203,
-    comments: 534,
-    agreePercent: 79,
-    voted: false,
-    myVote: null,
-    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 60).toISOString(),
   },
 ];
 
 const mockCommentStore: Record<number, IssueComment[]> = {};
+let mockCommentIdSeq = 1000;
 
-/**
- * =========================
- * LIST
- * =========================
- */
-async function getIssueListMock(): Promise<IssueListItem[]> {
-  await sleep(150);
-  return mockIssues;
+function nextMockCommentId() {
+  mockCommentIdSeq += 1;
+  return mockCommentIdSeq;
 }
 
-// 백엔드 명세 오면 여기만 맞추면 됨
-async function getIssueListHttp(): Promise<IssueListItem[]> {
-  const res = await apiClient.get<ApiResponse<IssueListItem[]>>("/issues");
-  return res.data.data;
+const keyOf = (v: string | number) => String(v);
+
+function findCommentById(
+  nodes: IssueComment[],
+  commentId: string | number
+): IssueComment | null {
+  const target = keyOf(commentId);
+  for (const c of nodes) {
+    if (keyOf(c.id) === target) return c;
+    const found = findCommentById(c.replies ?? [], commentId);
+    if (found) return found;
+  }
+  return null;
 }
 
-export const getIssueList = async (): Promise<IssueListItem[]> => {
-  return apiMode === "mock" ? getIssueListMock() : getIssueListHttp();
-};
-
-/**
- * =========================
- * DETAIL
- * =========================
- */
 function buildMockComments(issueId: number): IssueComment[] {
   if (issueId === 1) {
     return [
@@ -122,36 +354,26 @@ function buildMockComments(issueId: number): IssueComment[] {
         content: "도입 사례를 보면 생산성이 오히려 증가했다는 얘기도 많아요.",
         likes: 24,
         createdAt: "2시간 전",
-      },
-      {
-        id: 2,
-        author: "user456",
-        option: "disagree",
-        content: "업종별로 현실 적용이 어려운 곳도 많습니다. 비용 부담도요.",
-        likes: 18,
-        createdAt: "3시간 전",
-      },
-      {
-        id: 3,
-        author: "user789",
-        option: "agree",
-        content: "단계적으로 도입하면 충분히 가능하다고 봅니다.",
-        likes: 15,
-        createdAt: "5시간 전",
-      },
+        replies: [],
+        // mock에서도 like 토글이 되게
+        isLiked: false,
+        likeCount: 24,
+      } as any,
     ];
   }
+  return [];
+}
 
-  return [
-    {
-      id: 1,
-      author: "guest",
-      option: "agree",
-      content: "상세/댓글은 백엔드 연동 후 실제 데이터로 교체됩니다.",
-      likes: 4,
-      createdAt: "방금 전",
-    },
-  ];
+function getOrInitMockComments(issueId: number): IssueComment[] {
+  if (!mockCommentStore[issueId]) {
+    mockCommentStore[issueId] = buildMockComments(issueId);
+  }
+  return mockCommentStore[issueId];
+}
+
+async function getIssueListMock(): Promise<IssueListItem[]> {
+  await sleep(150);
+  return mockIssues.map(({ description: _desc, ...rest }) => rest);
 }
 
 async function getIssueDetailMock(issueId: number): Promise<IssueDetail> {
@@ -160,41 +382,33 @@ async function getIssueDetailMock(issueId: number): Promise<IssueDetail> {
   const base = mockIssues.find((x) => x.id === issueId);
   if (!base) throw new Error("이슈를 찾을 수 없습니다.");
 
-  const longDescription =
-    base.id === 1
-      ? "주 4일 근무제는 근로시간을 주 32시간으로 단축하여 근로자의 삶의 질을 개선하고, 생산성 향상을 도모하는 제도입니다. 일부 국가/기업에서 시범 운영 사례가 있으며, 업종별 적용 난이도와 비용 부담에 대한 논쟁이 있습니다."
-      : `${base.description} (상세는 백엔드 연동 후 실제 데이터로 교체됩니다.)`;
+  const rawComments = getOrInitMockComments(issueId);
+  const comments =
+    typeof structuredClone === "function"
+      ? structuredClone(rawComments)
+      : JSON.parse(JSON.stringify(rawComments));
 
   return {
     id: base.id,
     emoji: base.emoji,
     title: base.title,
-    description: longDescription,
-    totalVotes: base.participants,
-    agreePercent: base.agreePercent,
-    disagreePercent: 100 - base.agreePercent,
+    description: base.description,
 
+    agreeCount: base.agreeCount ?? 0,
+    disagreeCount: base.disagreeCount ?? 0,
+    totalVotes: base.totalVotes ?? 0,
+
+    agreePercent: base.agreePercent ?? 0,
+    disagreePercent: base.disagreePercent ?? 0,
+
+    commentCount: base.commentCount ?? 0,
     myVote: base.myVote ?? null,
+    comments,
 
-    comments: [...(mockCommentStore[base.id] ?? []), ...buildMockComments(base.id)],
-  };
+    createdAt: base.createdAt,
+  } as IssueDetail;
 }
 
-
-async function getIssueDetailHttp(issueId: number): Promise<IssueDetail> {
-  const res = await apiClient.get<ApiResponse<IssueDetail>>(`/issues/${issueId}`);
-  return res.data.data;
-}
-
-export const getIssueDetail = async (issueId: number): Promise<IssueDetail> => {
-  return apiMode === "mock" ? getIssueDetailMock(issueId) : getIssueDetailHttp(issueId);
-};
-
-/**
- * =========================
- * VOTE
- * =========================
- */
 async function voteIssueMock(issueId: number, nextVote: IssueVoteOption | null) {
   await sleep(150);
 
@@ -202,14 +416,12 @@ async function voteIssueMock(issueId: number, nextVote: IssueVoteOption | null) 
   if (idx === -1) throw new Error("이슈를 찾을 수 없습니다.");
 
   const current = mockIssues[idx];
-  const prevVote: IssueVoteOption | null = current.myVote ?? null;
+  const prevVote = current.myVote;
 
-  // participants == totalVotes 라고 가정
-  let totalVotes = current.participants;
-  let agreeCount = Math.round((totalVotes * current.agreePercent) / 100);
-  let disagreeCount = totalVotes - agreeCount;
+  let agreeCount = current.agreeCount ?? 0;
+  let disagreeCount = current.disagreeCount ?? 0;
+  let totalVotes = current.totalVotes ?? 0;
 
-  // 이전 투표 제거
   if (prevVote === "agree") {
     agreeCount -= 1;
     totalVotes -= 1;
@@ -218,7 +430,6 @@ async function voteIssueMock(issueId: number, nextVote: IssueVoteOption | null) 
     totalVotes -= 1;
   }
 
-  // 새 투표 반영
   if (nextVote === "agree") {
     agreeCount += 1;
     totalVotes += 1;
@@ -227,78 +438,178 @@ async function voteIssueMock(issueId: number, nextVote: IssueVoteOption | null) 
     totalVotes += 1;
   }
 
-  // 안전장치
   agreeCount = Math.max(0, agreeCount);
   disagreeCount = Math.max(0, disagreeCount);
   totalVotes = Math.max(0, totalVotes);
 
-  const agreePercent = totalVotes === 0 ? 0 : Math.round((agreeCount / totalVotes) * 100);
+  const agreePercent = calcAgreePercent(agreeCount, totalVotes);
+  const disagreePercent = 100 - agreePercent;
 
   mockIssues[idx] = {
     ...current,
-    voted: nextVote !== null,
-    myVote: nextVote,
-    participants: totalVotes,
+    agreeCount,
+    disagreeCount,
+    totalVotes,
     agreePercent,
+    disagreePercent,
+    myVote: nextVote,
   };
 
   return { success: true };
 }
 
-// 백엔드 명세 오면 여기만 맞추면 됨
-async function voteIssueHttp(issueId: number, option: IssueVoteOption | null) {
-  // 예시안:
-  // - 투표: POST /issues/:id/vote  body: { option }
-  // - 취소: DELETE /issues/:id/vote
-  if (option === null) {
-    const res = await apiClient.delete<ApiResponse<unknown>>(`/issues/${issueId}/vote`);
-    return res.data.data;
-  }
-  const res = await apiClient.post<ApiResponse<unknown>>(`/issues/${issueId}/vote`, { option });
-  return res.data.data;
-}
-
-export const voteIssue = async (issueId: number, option: IssueVoteOption | null) => {
-  return apiMode === "mock" ? voteIssueMock(issueId, option) : voteIssueHttp(issueId, option);
-};
-
-export type CreateIssueCommentPayload = {
-  option: IssueVoteOption; // agree/disagree
-  content: string;
-};
-
-async function createCommentMock(issueId: number, payload: CreateIssueCommentPayload): Promise<IssueComment> {
+async function createCommentMock(
+  issueId: number,
+  payload: CreateIssueCommentPayload
+): Promise<IssueComment> {
   await sleep(150);
 
   const newComment: IssueComment = {
-    id: Date.now(), // mock용 임시 id
-    author: "me",
-    option: payload.option,
+    id: nextMockCommentId(),
+    author: getMyLabelFromSession(),
+    option: payload.option ?? "agree",
     content: payload.content,
     likes: 0,
     createdAt: "방금 전",
-  };
+    replies: [],
+    isLiked: false,
+    likeCount: 0,
+  } as any;
 
-  mockCommentStore[issueId] = [newComment, ...(mockCommentStore[issueId] ?? [])];
+  const roots = getOrInitMockComments(issueId);
 
-  // (선택) 목록 카드의 댓글 수 증가도 반영
-  const idx = mockIssues.findIndex((x) => x.id === issueId);
-  if (idx !== -1) {
-    mockIssues[idx] = {
-      ...mockIssues[idx],
-      comments: mockIssues[idx].comments + 1,
-    };
+  if (payload.parentId != null) {
+    const parent = findCommentById(roots, payload.parentId);
+    if (!parent) throw new Error("부모 댓글을 찾을 수 없습니다.");
+    parent.replies = [newComment, ...(parent.replies ?? [])];
+  } else {
+    roots.unshift(newComment);
   }
 
-  return newComment;
+  return typeof structuredClone === "function"
+    ? structuredClone(newComment)
+    : JSON.parse(JSON.stringify(newComment));
 }
 
-// 백엔드 명세 오면 여기만 바꾸면 됨
-async function createCommentHttp(issueId: number, payload: CreateIssueCommentPayload): Promise<IssueComment> {
-  const res = await apiClient.post<ApiResponse<IssueComment>>(`/issues/${issueId}/comments`, payload);
+function toggleCommentLikeMock(issueId: number, commentId: number) {
+  const roots = getOrInitMockComments(issueId);
+
+  const dfs = (nodes: IssueComment[]): IssueComment | null => {
+    for (const n of nodes) {
+      if (keyOf(n.id) === keyOf(commentId)) return n;
+      const found = dfs(n.replies ?? []);
+      if (found) return found;
+    }
+    return null;
+  };
+
+  const target = dfs(roots);
+  if (!target) throw new Error("댓글을 찾을 수 없습니다.");
+
+  const prevLiked = !!(target as any).isLiked;
+  const nextLiked = !prevLiked;
+
+  const prevCount = (target.likes ?? (target as any).likeCount ?? 0) as number;
+  const nextCount = Math.max(0, prevCount + (nextLiked ? 1 : -1));
+
+  (target as any).isLiked = nextLiked;
+  (target as any).likeCount = nextCount;
+  (target as any).likes = nextCount;
+
+  return {
+    commentId: Number(target.id),
+    likeCount: nextCount,
+    isLiked: nextLiked,
+  };
+}
+
+/**
+ * 관리자 CRUD (명세)
+ */
+export type CreateIssuePayload = {
+  title: string;
+  subtitle: string;
+  description: string;
+};
+
+export type UpdateIssuePayload = {
+  title?: string;
+  subtitle?: string;
+  description?: string;
+};
+
+async function createIssueHttp(payload: CreateIssuePayload) {
+  const res = await apiClient.post<ApiResponse<any>>("/balance", payload);
   return res.data.data;
 }
 
-export const createComment = async (issueId: number, payload: CreateIssueCommentPayload): Promise<IssueComment> => {
-  return apiMode === "mock" ? createCommentMock(issueId, payload) : createCommentHttp(issueId, payload);
+async function updateIssueHttp(issueId: number, payload: UpdateIssuePayload) {
+  const res = await apiClient.patch<ApiResponse<any>>(`/balance/${issueId}`, payload);
+  return res.data.data;
+}
+
+async function deleteIssueHttp(issueId: number): Promise<void> {
+  await apiClient.delete(`/balance/${issueId}`);
+}
+
+/**
+ * =========================
+ * EXPORTED FUNCTIONS
+ * =========================
+ */
+export const getIssueList = async (): Promise<IssueListItem[]> => {
+  if (apiMode === "mock") return getIssueListMock();
+  return getIssueListHttp();
+};
+
+export const getIssueDetail = async (issueId: number): Promise<IssueDetail> => {
+  if (apiMode === "mock") return getIssueDetailMock(issueId);
+  return getIssueDetailHttp(issueId);
+};
+
+export const voteIssue = async (issueId: number, option: IssueVoteOption | null) => {
+  if (apiMode === "mock") return voteIssueMock(issueId, option);
+  return voteIssueHttp(issueId, option);
+};
+
+export const createComment = async (
+  issueId: number,
+  payload: CreateIssueCommentPayload
+): Promise<IssueComment> => {
+  if (apiMode === "mock") return createCommentMock(issueId, payload);
+  return createCommentHttp(issueId, payload);
+};
+
+export const createIssue = async (payload: CreateIssuePayload) => {
+  if (apiMode === "mock") throw new Error("mock 모드에서는 createIssue를 지원하지 않습니다.");
+  return createIssueHttp(payload);
+};
+
+export const updateIssue = async (issueId: number, payload: UpdateIssuePayload) => {
+  if (apiMode === "mock") throw new Error("mock 모드에서는 updateIssue를 지원하지 않습니다.");
+  return updateIssueHttp(issueId, payload);
+};
+
+export const deleteIssue = async (issueId: number) => {
+  if (apiMode === "mock") throw new Error("mock 모드에서는 deleteIssue를 지원하지 않습니다.");
+  return deleteIssueHttp(issueId);
+};
+
+export const toggleCommentLike = async (issueId: number, commentId: number) => {
+  if (apiMode === "mock") return toggleCommentLikeMock(issueId, commentId);
+  return toggleCommentLikeHttp(issueId, commentId);
+};
+
+/**
+ * ✅ 단일 issueApi 객체 (중복 선언 금지)
+ */
+export const issueApi = {
+  getIssueList,
+  getIssueDetail,
+  voteIssue,
+  createComment,
+  createIssue,
+  updateIssue,
+  deleteIssue,
+  toggleCommentLike,
 };
