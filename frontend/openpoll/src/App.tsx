@@ -38,6 +38,9 @@ const LoginPage = lazy(() =>
 const SignupPage = lazy(() =>
   import("@/pages/auth").then((m) => ({ default: m.SignupPage })),
 );
+const Profile = lazy(() =>
+  import("@/pages/profile").then((m) => ({ default: m.Profile })),
+);
 
 export default function App() {
   return (
@@ -69,6 +72,7 @@ export default function App() {
                   <Route path="/news/:id" element={<NewsDetail />} />
                   <Route path="/balance" element={<IssueList />} />
                   <Route path="/balance/:id" element={<IssueDetail />} />
+                  <Route path="/profile" element={<Profile />} />
                 </Route>
               </Routes>
             </Suspense>
