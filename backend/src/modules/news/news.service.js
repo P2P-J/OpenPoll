@@ -61,6 +61,15 @@ function startWorkerOnce() {
             throw new Error('AI_SUMMARY_FAILED');
         }
 
+        function isMarkdownOK(s) {
+            const h3 = (s?.match(/^###\s/gm) || []).length;
+            return h3 >= 3 && h3 <= 4 && s.includes("\n\n");
+        }
+
+        if (!isMarkdownOK(summarizeAi.refinedSummary)) {
+            summarizeAi.refinedSummary = `### 요약\n${summarizeAi.refinedSummary}`;
+        }
+
         await prisma.article.upsert({
             where: { naverUrl },
             create: {
