@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Lock, X, Eye, EyeOff, AlertCircle, CheckCircle2 } from "lucide-react";
+import { Lock, X, Eye, EyeOff, AlertCircle, CheckCircle2, Shield } from "lucide-react";
 import { userApi } from "@/api";
 
 interface PasswordChangeModalProps {
@@ -76,9 +76,10 @@ export function PasswordChangeModal({
       setTimeout(() => {
         handleClose();
       }, 2000);
-    } catch (error: any) {
+    } catch (error) {
+      const err = error as { response?: { data?: { message?: string } } };
       setPasswordError(
-        error?.response?.data?.message || "비밀번호 변경에 실패했습니다."
+        err?.response?.data?.message || "비밀번호 변경에 실패했습니다."
       );
     } finally {
       setIsChangingPassword(false);
@@ -88,52 +89,78 @@ export function PasswordChangeModal({
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          {/* Backdrop */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={handleClose}
-            className="absolute inset-0 bg-black/70 backdrop-blur-sm"
-          />
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
+          className="fixed inset-0 z-50 flex items-center justify-center px-4"
+          onClick={handleClose}
+        >
+          {/* Backdrop - Blur Effect */}
+          <div className="absolute inset-0 bg-black/80 backdrop-blur-md" />
 
-          {/* Modal */}
+          {/* Modal Content - 직사각형 */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+            initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            transition={{ type: "spring", duration: 0.5 }}
-            className="relative bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden"
+            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+            transition={{
+              duration: 0.3,
+              ease: [0.4, 0, 0.2, 1],
+            }}
+            className="relative bg-gradient-to-br from-gray-900 via-black to-gray-900 border border-white/20 rounded-3xl shadow-2xl w-full max-w-md overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
           >
-            {/* Header */}
-            <div className="relative bg-gradient-to-r from-red-600 to-red-700 px-6 py-6 text-white">
-              <button
-                onClick={handleClose}
-                className="absolute top-4 right-4 p-2 hover:bg-white/20 rounded-lg transition-colors"
-                disabled={isChangingPassword}
-              >
-                <X className="w-5 h-5" />
-              </button>
+            {/* Gradient Orbs Background */}
+            <div className="absolute top-0 right-0 w-40 h-40 bg-red-500/10 rounded-full blur-3xl" />
+            <div className="absolute bottom-0 left-0 w-40 h-40 bg-orange-500/10 rounded-full blur-3xl" />
 
-              <div className="flex items-center space-x-3">
-                <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
-                  <Lock className="w-6 h-6" />
+            {/* Close Button */}
+            <button
+              onClick={handleClose}
+              className="absolute top-5 right-5 text-gray-500 hover:text-white transition-all duration-200 hover:rotate-90 z-10"
+              aria-label="닫기"
+              disabled={isChangingPassword}
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            {/* Header */}
+            <div className="relative z-10 flex flex-col items-center pt-10 pb-6 px-8">
+              {/* Icon with Animation */}
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: 0.1, type: "spring", stiffness: 200 }}
+                className="mb-5"
+              >
+                <div className="w-20 h-20 bg-gradient-to-br from-red-500/20 to-orange-500/20 border border-white/20 rounded-2xl flex items-center justify-center shadow-lg shadow-red-500/10">
+                  <Shield className="w-10 h-10 text-white" />
                 </div>
-                <div>
-                  <h3 className="text-xl font-bold">비밀번호 변경</h3>
-                  <p className="text-red-100 text-sm mt-0.5">
-                    새로운 비밀번호를 설정해주세요
-                  </p>
-                </div>
-              </div>
+              </motion.div>
+
+              {/* Title */}
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.15 }}
+                className="text-center mb-2"
+              >
+                <h3 className="text-2xl font-bold text-white mb-2">
+                  비밀번호 변경
+                </h3>
+                <p className="text-sm text-gray-400">
+                  새로운 비밀번호를 설정해주세요
+                </p>
+              </motion.div>
             </div>
 
             {/* Form */}
-            <form onSubmit={handlePasswordChange} className="p-6 space-y-4">
+            <form onSubmit={handlePasswordChange} className="relative z-10 px-8 pb-8 space-y-4">
               {/* Current Password */}
               <div>
-                <label className="block text-sm font-semibold text-gray-800 dark:text-gray-200 mb-2">
+                <label className="block text-sm font-semibold text-gray-300 mb-2">
                   현재 비밀번호
                 </label>
                 <div className="relative">
@@ -141,14 +168,14 @@ export function PasswordChangeModal({
                     type={showCurrentPassword ? "text" : "password"}
                     value={currentPassword}
                     onChange={(e) => setCurrentPassword(e.target.value)}
-                    className="w-full px-4 py-3 pr-12 border-2 border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 dark:bg-gray-800 dark:text-white transition-all outline-none"
+                    className="w-full px-4 py-3 pr-12 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:ring-2 focus:ring-red-500/50 focus:border-red-500/50 transition-all outline-none"
                     placeholder="현재 비밀번호를 입력하세요"
                     disabled={isChangingPassword}
                   />
                   <button
                     type="button"
                     onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-gray-400 hover:text-white transition-colors"
                     disabled={isChangingPassword}
                     tabIndex={-1}
                   >
@@ -163,7 +190,7 @@ export function PasswordChangeModal({
 
               {/* New Password */}
               <div>
-                <label className="block text-sm font-semibold text-gray-800 dark:text-gray-200 mb-2">
+                <label className="block text-sm font-semibold text-gray-300 mb-2">
                   새 비밀번호
                 </label>
                 <div className="relative">
@@ -171,14 +198,14 @@ export function PasswordChangeModal({
                     type={showNewPassword ? "text" : "password"}
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
-                    className="w-full px-4 py-3 pr-12 border-2 border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 dark:bg-gray-800 dark:text-white transition-all outline-none"
+                    className="w-full px-4 py-3 pr-12 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:ring-2 focus:ring-red-500/50 focus:border-red-500/50 transition-all outline-none"
                     placeholder="영문+숫자 포함, 8자 이상"
                     disabled={isChangingPassword}
                   />
                   <button
                     type="button"
                     onClick={() => setShowNewPassword(!showNewPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-gray-400 hover:text-white transition-colors"
                     disabled={isChangingPassword}
                     tabIndex={-1}
                   >
@@ -189,14 +216,14 @@ export function PasswordChangeModal({
                     )}
                   </button>
                 </div>
-                <p className="mt-1.5 text-xs text-gray-500 dark:text-gray-400">
+                <p className="mt-1.5 text-xs text-gray-500">
                   영문자와 숫자를 포함하여 8자 이상 입력해주세요
                 </p>
               </div>
 
               {/* Confirm Password */}
               <div>
-                <label className="block text-sm font-semibold text-gray-800 dark:text-gray-200 mb-2">
+                <label className="block text-sm font-semibold text-gray-300 mb-2">
                   새 비밀번호 확인
                 </label>
                 <div className="relative">
@@ -204,14 +231,14 @@ export function PasswordChangeModal({
                     type={showConfirmPassword ? "text" : "password"}
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="w-full px-4 py-3 pr-12 border-2 border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 dark:bg-gray-800 dark:text-white transition-all outline-none"
+                    className="w-full px-4 py-3 pr-12 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:ring-2 focus:ring-red-500/50 focus:border-red-500/50 transition-all outline-none"
                     placeholder="새 비밀번호를 다시 입력하세요"
                     disabled={isChangingPassword}
                   />
                   <button
                     type="button"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-gray-400 hover:text-white transition-colors"
                     disabled={isChangingPassword}
                     tabIndex={-1}
                   >
@@ -231,10 +258,10 @@ export function PasswordChangeModal({
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
-                    className="flex items-start space-x-2 p-3 bg-red-50 dark:bg-red-900/20 border border-red-300 dark:border-red-700 rounded-lg"
+                    className="flex items-start gap-2 p-3 bg-red-500/10 border border-red-500/30 rounded-xl"
                   >
-                    <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
-                    <p className="text-sm text-red-700 dark:text-red-300 font-medium">
+                    <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
+                    <p className="text-sm text-red-300 font-medium">
                       {passwordError}
                     </p>
                   </motion.div>
@@ -248,10 +275,10 @@ export function PasswordChangeModal({
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
-                    className="flex items-start space-x-2 p-3 bg-green-50 dark:bg-green-900/20 border border-green-300 dark:border-green-700 rounded-lg"
+                    className="flex items-start gap-2 p-3 bg-green-500/10 border border-green-500/30 rounded-xl"
                   >
-                    <CheckCircle2 className="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
-                    <p className="text-sm text-green-700 dark:text-green-300 font-medium">
+                    <CheckCircle2 className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
+                    <p className="text-sm text-green-300 font-medium">
                       비밀번호가 성공적으로 변경되었습니다!
                     </p>
                   </motion.div>
@@ -263,29 +290,32 @@ export function PasswordChangeModal({
                 <button
                   type="button"
                   onClick={handleClose}
-                  className="flex-1 py-3.5 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 font-bold rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors text-base"
+                  className="flex-1 h-12 bg-white/5 hover:bg-white/10 border border-white/10 text-gray-300 hover:text-white font-semibold rounded-xl transition-all duration-200 hover:border-white/20"
                   disabled={isChangingPassword}
                 >
                   취소
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 py-3.5 bg-red-600 text-white font-bold rounded-lg hover:bg-red-700 active:bg-red-800 transition-all disabled:opacity-60 disabled:cursor-not-allowed text-base shadow-md"
+                  className="flex-1 h-12 bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 text-white font-bold rounded-xl transition-all duration-200 flex items-center justify-center gap-2 shadow-lg shadow-red-500/30 hover:shadow-red-500/50 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                   disabled={isChangingPassword || passwordSuccess}
                 >
                   {isChangingPassword ? (
-                    <span className="flex items-center justify-center gap-2">
+                    <>
                       <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                       <span>변경 중...</span>
-                    </span>
+                    </>
                   ) : (
-                    "변경하기"
+                    <>
+                      <Lock className="w-4 h-4" />
+                      <span>변경하기</span>
+                    </>
                   )}
                 </button>
               </div>
             </form>
           </motion.div>
-        </div>
+        </motion.div>
       )}
     </AnimatePresence>
   );
