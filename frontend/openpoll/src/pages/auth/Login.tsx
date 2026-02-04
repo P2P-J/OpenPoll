@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { ArrowRight, Mail, Lock, Gift, Home } from 'lucide-react';
 import { motion } from 'motion/react';
 import { ROUTES } from '@/shared/constants';
-import { loginUser } from '@/shared/utils/localAuth';
+import { useUser } from '@/contexts/UserContext';
 
 type LoginErrors = {
   email?: string;
@@ -12,6 +12,8 @@ type LoginErrors = {
 
 export function Login() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { login, isLoading } = useUser();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -27,22 +29,20 @@ export function Login() {
     return Object.keys(next).length === 0;
   };
 
-  const onSubmit = (e: React.FormEvent) => {
+  const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setHasSubmitted(true);
 
     if (!validate()) return;
 
-    const result = loginUser(email.trim(), password);
-
-    if (!result.ok) {
-      setErrors((prev) => ({ ...prev, password: result.message }));
-      return;
+    try {
+      await login(email.trim(), password);
+      const from = (location.state as { from?: string })?.from;
+      navigate(from || ROUTES.HOME);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : '로그인에 실패했습니다.';
+      setErrors((prev) => ({ ...prev, password: errorMessage }));
     }
-
-    alert(`로그인 성공!\n포인트가 지급되었습니다. (+${result.awardedPoints}P)`);
-    window.dispatchEvent(new Event('storage'));
-    navigate(ROUTES.HOME);
   };
 
   const showError = (key: keyof LoginErrors) => hasSubmitted && !!errors[key];

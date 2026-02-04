@@ -75,6 +75,7 @@ export interface User {
   points: number;
   hasTakenDos: boolean;
   createdAt: string;
+  totalEarnedPoints?: number;
 }
 
 export interface UpdateUserRequest {
