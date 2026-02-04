@@ -17,22 +17,23 @@ import { useUser } from "@/contexts/UserContext";
 const FEATURES = [
   {
     icon: Brain,
-    title: "정치 MBTI",
-    description: "8values 기반 테스트로 나의 정치 성향을 발견하세요",
-    link: "/mbti",
+    title: "DOS 테스트",
+    description:
+      "정치 MBTI? DOS 테스트로 나의 정치적 DNA를 8가지 차원으로 분석해보세요!",
+    link: "/dos",
     color: "from-gray-900 to-gray-700",
   },
   {
     icon: Scale,
     title: "밸런스 게임",
-    description: "정치 이슈에 대한 찬반 투표로 의견을 나눠보세요",
+    description: "정치 이슈에 대한 찬반 투표로 의견을 나눠보세요!",
     link: "/balance",
     color: "from-gray-700 to-gray-500",
   },
   {
     icon: Newspaper,
     title: "중립 뉴스",
-    description: "AI가 순화한 중립적인 정치 뉴스를 읽어보세요",
+    description: "AI가 순화한 중립적인 정치 뉴스를 읽어보세요!",
     link: "/news",
     color: "from-gray-600 to-gray-400",
   },
@@ -40,7 +41,7 @@ const FEATURES = [
 
 const STATS_DATA = [
   { label: "전체 사용자", value: "12,458" },
-  { label: "MBTI 완료", value: "8,234" },
+  { label: "DOS 테스트 완료", value: "8,234" },
   { label: "투표 참여", value: "15,670" },
   { label: "뉴스 조회", value: "23,891" },
 ] as const;

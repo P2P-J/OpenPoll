@@ -19,11 +19,11 @@ export function MainLayout() {
       )}
 
       {!isAuthPage && <Header />}
-      {!isAuthPage && location.pathname !== '/mbti' && <Navigation />}
+      {!isAuthPage && location.pathname !== '/dos' && <Navigation />}
 
       <main
         id="main-content"
-        className={isAuthPage || location.pathname === '/mbti' ? '' : 'pb-20 sm:pb-0'}
+        className={isAuthPage || location.pathname === '/dos' ? '' : 'pb-20 sm:pb-0'}
       >
         <Outlet />
       </main>
