@@ -71,42 +71,53 @@ function NewsCard({ news, index, category }: NewsCardProps) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.1 }}
-      className="bg-white rounded-3xl overflow-hidden border border-gray-200 shadow-sm hover:shadow-xl transition-shadow"
+      className="bg-white rounded-3xl overflow-hidden border border-gray-200 shadow-lg hover:shadow-xl transition-shadow p-8 sm:p-10"
     >
       {/* Card Header */}
-      <div className="flex items-center justify-between px-6 sm:px-8 py-5 border-b border-gray-100">
-        <div className="flex items-center space-x-3">
-          <div className="w-12 h-12 bg-gradient-to-br from-gray-900 to-gray-700 rounded-full flex items-center justify-center">
-            <Sparkles className="w-6 h-6 text-white" />
-          </div>
-          <div>
-            <div className="flex items-center space-x-2">
-              <span className="font-bold text-base">{news.press}</span>
-              <span className="w-3 h-3 bg-blue-500 rounded-full flex items-center justify-center">
-                <span className="w-1.5 h-1.5 bg-white rounded-full"></span>
-              </span>
+      <div className="mb-6 sm:mb-7">
+        <div className="flex items-center justify-between pb-6 sm:pb-7 border-b border-gray-100">
+          <div className="flex items-center space-x-4">
+            <div
+              className="bg-gradient-to-br from-gray-900 to-gray-700 rounded-full flex items-center justify-center"
+              style={{ width: '56px', height: '56px', minWidth: '56px', minHeight: '56px' }}
+            >
+              <Sparkles className="w-7 h-7 text-white" />
             </div>
-            <span className="text-sm text-gray-500">{getTimeAgo(news.createdAt)}</span>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="font-bold text-lg">{news.press}</span>
+                <div
+                  className="rounded-full flex items-center justify-center"
+                  style={{ width: '16px', height: '16px', minWidth: '16px', backgroundColor: '#3b82f6' }}
+                >
+                  <div
+                    className="rounded-full bg-white"
+                    style={{ width: '8px', height: '8px' }}
+                  />
+                </div>
+              </div>
+              <span className="text-sm text-gray-500">{getTimeAgo(news.createdAt)}</span>
+            </div>
           </div>
+          <span className="px-4 py-1.5 bg-black text-white text-sm font-bold rounded-full">
+            {category}
+          </span>
         </div>
-        <span className="px-4 py-1.5 bg-black text-white text-sm font-bold rounded-full">
-          {category}
-        </span>
       </div>
 
       {/* Main Content Area */}
       <Link to={`/news/${news.id}`} className="block">
-        <div className="px-6 sm:px-8 py-6 sm:py-7">
+        <div className="py-8 sm:py-9">
           {/* Title */}
-          <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-5 leading-tight hover:text-gray-600 transition-colors">
+          <h2 className="text-xl sm:text-2xl font-bold mb-6 sm:mb-7 leading-tight hover:text-gray-600 transition-colors">
             {news.refinedTitle}
           </h2>
 
           {/* Summary */}
-          <div className="space-y-3 mb-5">
+          <div className="space-y-3 mb-6 sm:mb-7">
             {summaryLines.map((line, i) => (
               <div key={i} className="flex items-start text-base text-gray-700">
-                <span className="mr-3 text-gray-400 font-bold text-lg">·</span>
+                <span className="text-gray-400 font-bold text-lg" style={{ marginRight: '16px' }}>·</span>
                 <span className="leading-relaxed">{line}</span>
               </div>
             ))}
@@ -127,7 +138,8 @@ function NewsCard({ news, index, category }: NewsCardProps) {
       </Link>
 
       {/* Action Buttons */}
-      <div className="px-6 sm:px-8 py-4 border-t border-gray-100">
+      <div>
+        <hr className="border-t border-gray-100 mb-6 sm:mb-7" />
         <div className="flex gap-3">
           <Link
             to={`/news/${news.id}`}

@@ -149,38 +149,49 @@ export function NewsDetail() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white rounded-t-3xl sm:rounded-3xl overflow-hidden border border-gray-200 shadow-lg mx-4 sm:mx-0"
+          className="bg-white rounded-t-3xl sm:rounded-3xl overflow-hidden border border-gray-200 shadow-lg mx-4 sm:mx-0 p-8 sm:p-10"
         >
           {/* Header */}
-          <div className="flex items-center justify-between px-6 sm:px-8 py-5 border-b border-gray-100">
-            <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 bg-gradient-to-br from-gray-900 to-gray-700 rounded-full flex items-center justify-center">
-                <Sparkles className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <div className="flex items-center space-x-2">
-                  <span className="font-bold text-base">{article.press}</span>
-                  <span className="w-3 h-3 bg-blue-500 rounded-full flex items-center justify-center">
-                    <span className="w-1.5 h-1.5 bg-white rounded-full"></span>
-                  </span>
+          <div className="mb-6 sm:mb-7">
+            <div className="flex items-center justify-between pb-6 sm:pb-7 border-b border-gray-100">
+              <div className="flex items-center space-x-4">
+                <div
+                  className="bg-gradient-to-br from-gray-900 to-gray-700 rounded-full flex items-center justify-center"
+                  style={{ width: '56px', height: '56px', minWidth: '56px', minHeight: '56px' }}
+                >
+                  <Sparkles className="w-7 h-7 text-white" />
                 </div>
-                <span className="text-sm text-gray-500">{getTimeAgo(article.createdAt)}</span>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-lg">{article.press}</span>
+                    <div
+                      className="rounded-full flex items-center justify-center"
+                      style={{ width: '16px', height: '16px', minWidth: '16px', backgroundColor: '#3b82f6' }}
+                    >
+                      <div
+                        className="rounded-full bg-white"
+                        style={{ width: '8px', height: '8px' }}
+                      />
+                    </div>
+                  </div>
+                  <span className="text-sm text-gray-500">{getTimeAgo(article.createdAt)}</span>
+                </div>
               </div>
+              <span className="px-4 py-1.5 bg-black text-white text-sm font-bold rounded-full">
+                {category}
+              </span>
             </div>
-            <span className="px-4 py-1.5 bg-black text-white text-sm font-bold rounded-full">
-              {category}
-            </span>
           </div>
 
           {/* Article Content */}
-          <div className="px-6 sm:px-8 py-6 sm:py-8">
+          <div className="py-8 sm:py-9">
             {/* Title */}
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-5 leading-tight">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-6 sm:mb-8 leading-tight">
               {article.refinedTitle}
             </h1>
 
             {/* AI Notice */}
-            <div className="bg-gradient-to-br from-blue-50 to-blue-100/50 rounded-2xl p-5 mb-8 border border-blue-200/50">
+            <div className="bg-blue-50 rounded-2xl p-5 mb-8 border border-blue-100">
               <div className="flex items-start space-x-3">
                 <Sparkles className="w-6 h-6 text-blue-600 mt-0.5 flex-shrink-0" />
                 <div className="text-sm sm:text-base text-blue-900">
@@ -200,7 +211,7 @@ export function NewsDetail() {
             </article>
 
             {/* Tags */}
-            <div className="flex flex-wrap gap-2 pt-6 border-t border-gray-100 mb-6">
+            <div className="flex flex-wrap gap-2 pt-8 border-t border-gray-100 mb-8">
               {article.relatedTags.map((tag) => (
                 <span
                   key={tag}
@@ -222,7 +233,7 @@ export function NewsDetail() {
               href={article.originalUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center justify-center space-x-2 w-full py-3.5 bg-black text-white rounded-xl font-semibold text-base hover:bg-gray-800 transition-colors"
+              className="flex items-center justify-center space-x-2 w-full py-4 sm:py-5 bg-black text-white rounded-xl font-semibold text-base sm:text-lg hover:bg-gray-800 transition-colors"
             >
               <span>원문 기사 보기</span>
               <ExternalLink className="w-5 h-5" />
