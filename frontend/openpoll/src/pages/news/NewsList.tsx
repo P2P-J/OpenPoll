@@ -282,6 +282,11 @@ export function NewsList() {
     }
   };
 
+  // Scroll to top on mount
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   // Initial fetch on mount
   useEffect(() => {
     const initialFetch = async () => {

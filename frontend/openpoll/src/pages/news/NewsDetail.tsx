@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { ChevronLeft, ExternalLink, Sparkles, Clock } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
 import { newsApi } from '@/api';
 import type { NewsArticle } from '@/types/api.types';
 
@@ -205,10 +206,53 @@ export function NewsDetail() {
 
             {/* Article Body */}
             <article className="prose prose-base sm:prose-lg max-w-none text-gray-800 mb-8">
-              <div className="whitespace-pre-wrap leading-relaxed">
+              <ReactMarkdown
+                components={{
+                  h3: ({ children }) => (
+                    <h3 className="text-xl sm:text-2xl font-bold mt-6 mb-4 text-gray-900">
+                      {children}
+                    </h3>
+                  ),
+                  p: ({ children }) => (
+                    <p className="mb-4 text-gray-800 leading-relaxed">
+                      {children}
+                    </p>
+                  ),
+                  ul: ({ children }) => (
+                    <ul className="list-disc list-inside mb-4 space-y-2">
+                      {children}
+                    </ul>
+                  ),
+                  ol: ({ children }) => (
+                    <ol className="list-decimal list-inside mb-4 space-y-2">
+                      {children}
+                    </ol>
+                  ),
+                  li: ({ children }) => (
+                    <li className="text-gray-800 leading-relaxed">
+                      {children}
+                    </li>
+                  ),
+                }}
+              >
                 {article.refinedSummary}
-              </div>
+              </ReactMarkdown>
             </article>
+
+            {/* 3-Line Summary */}
+            <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl p-6 sm:p-8 mb-8 border border-gray-200">
+              <h2 className="text-lg sm:text-xl font-bold mb-4 text-gray-900 flex items-center space-x-2">
+                <span>핵심 요약</span>
+              </h2>
+              <div className="space-y-3">
+                {article.shortSummary.split('\n').filter(line => line.trim()).map((line, index) => (
+                  <div key={index} className="flex items-start text-base sm:text-lg text-gray-800">
+                    <span className="text-gray-400 font-bold text-xl" style={{ marginRight: '16px' }}>·</span>
+                    <span className="leading-relaxed">{line}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
 
             {/* Tags */}
             <div className="flex flex-wrap gap-2 pt-8 border-t border-gray-100 mb-8">
