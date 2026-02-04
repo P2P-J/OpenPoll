@@ -448,15 +448,15 @@ export function Profile() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}
-          className="bg-gradient-to-br from-red-50 to-orange-50 dark:from-red-950/30 dark:to-orange-950/30 rounded-3xl border-2 border-red-200 dark:border-red-800 shadow-lg p-6 sm:p-8"
+          className="bg-white dark:bg-gray-900 rounded-3xl border-2 border-red-300 dark:border-red-700 shadow-lg p-6 sm:p-8"
         >
-          <div className="flex items-center space-x-3 mb-4">
-            <div className="w-12 h-12 bg-red-100 dark:bg-red-900/50 rounded-2xl flex items-center justify-center">
-              <Shield className="w-6 h-6 text-red-600 dark:text-red-400" />
+          <div className="flex items-center space-x-4 mb-6">
+            <div className="w-14 h-14 bg-red-100 dark:bg-red-900/30 rounded-xl flex items-center justify-center">
+              <Shield className="w-7 h-7 text-red-600 dark:text-red-400" />
             </div>
             <div>
-              <h3 className="text-xl font-bold dark:text-white">보안 설정</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white">보안 설정</h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mt-0.5">
                 계정 보안을 강화하세요
               </p>
             </div>
@@ -464,15 +464,15 @@ export function Profile() {
 
           <button
             onClick={() => setShowPasswordModal(true)}
-            className="w-full py-4 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-bold rounded-2xl transition-all shadow-lg shadow-red-500/30 hover:shadow-xl hover:shadow-red-500/40 flex items-center justify-center space-x-3 group"
+            className="w-full py-4 bg-red-600 hover:bg-red-700 active:bg-red-800 text-white font-bold rounded-xl transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-3 group text-base"
           >
             <Lock className="w-5 h-5 group-hover:scale-110 transition-transform" />
-            <span className="text-lg">비밀번호 변경</span>
+            <span>비밀번호 변경</span>
           </button>
 
-          <div className="mt-4 p-3 bg-white/50 dark:bg-gray-800/50 rounded-xl">
-            <p className="text-xs text-gray-600 dark:text-gray-400 flex items-center space-x-2">
-              <Info className="w-4 h-4" />
+          <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
+            <p className="text-sm text-gray-700 dark:text-gray-300 flex items-start gap-2">
+              <Info className="w-4 h-4 flex-shrink-0 mt-0.5 text-gray-500" />
               <span>정기적인 비밀번호 변경으로 계정을 안전하게 보호하세요</span>
             </p>
           </div>
