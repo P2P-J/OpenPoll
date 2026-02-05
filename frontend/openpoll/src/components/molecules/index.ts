@@ -6,4 +6,5 @@ export * from './newsCard';
 export * from './issueCard';
 export * from './commentItem';
 export * from './loginModal';
+export * from './balanceAdminModal';
 export * from './passwordChangeModal';
