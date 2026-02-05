@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { motion } from "motion/react";
 import {
@@ -16,10 +16,8 @@ import { issueApi, userApi, getErrorMessage } from "@/api";
 import { getSession } from "@/shared/utils/localAuth";
 import type { IssueListItem } from "@/types/issue.types";
 
-// ✅ 관리자 식별(임시): 로운 계정만 관리자 UI 표시
-const ADMIN_EMAILS = new Set<string>(["oct95@naver.com"]);
+const ADMIN_EMAILS = new Set<string>(["oct95@naver.com", "admin@test.com"]);
 const ADMIN_NICKNAMES = new Set<string>(["로운"].map((x) => x.toLowerCase()));
-// ✅ 토큰 payload에 userId만 들어있어서, userId로 관리자 판별 추가
 const ADMIN_USER_IDS = new Set<string>([
   "62968fae-154c-4d4f-91f4-abf4b67fd7c0", // 로운 userId (accessToken payload)
 ]);
@@ -30,18 +28,21 @@ function decodeJwtPayload(token?: string | null): any | null {
     if (!token) return null;
     const parts = token.split(".");
     if (parts.length < 2) return null;
+
     const base64Url = parts[1];
     const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
     const padded = base64.padEnd(
       base64.length + ((4 - (base64.length % 4)) % 4),
       "="
     );
+
     const json = decodeURIComponent(
       atob(padded)
         .split("")
         .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
         .join("")
     );
+
     return JSON.parse(json);
   } catch {
     return null;
@@ -62,10 +63,17 @@ function pickIdentityFromAnywhere(): {
   const sessionEmail =
     s?.user?.email || s?.email || s?.userEmail || s?.profile?.email;
   const sessionNickname =
-    s?.user?.nickname || s?.nickname || s?.userNickname || s?.profile?.nickname;
+    s?.user?.nickname ||
+    s?.nickname ||
+    s?.userNickname ||
+    s?.profile?.nickname;
 
   if (sessionUserId || sessionEmail || sessionNickname) {
-    return { userId: sessionUserId, email: sessionEmail, nickname: sessionNickname };
+    return {
+      userId: sessionUserId,
+      email: sessionEmail,
+      nickname: sessionNickname,
+    };
   }
 
   // 2) accessToken jwt payload
@@ -73,21 +81,23 @@ function pickIdentityFromAnywhere(): {
   const payload = decodeJwtPayload(token);
 
   const jwtUserId =
-    payload?.userId ||
-    payload?.sub ||
-    payload?.user?.id ||
-    payload?.data?.userId;
+    payload?.userId || payload?.sub || payload?.user?.id || payload?.data?.userId;
 
-  const jwtEmail =
-    payload?.email || payload?.user?.email || payload?.data?.email;
+  const jwtEmail = payload?.email || payload?.user?.email || payload?.data?.email;
 
   const jwtNickname =
-    payload?.nickname || payload?.user?.nickname || payload?.data?.nickname;
+    payload?.nickname ||
+    payload?.user?.nickname ||
+    payload?.data?.nickname;
 
   return { userId: jwtUserId, email: jwtEmail, nickname: jwtNickname };
 }
 
-function isAdminByIdentity(input: { userId?: string; email?: string; nickname?: string }) {
+function isAdminByIdentity(input: {
+  userId?: string;
+  email?: string;
+  nickname?: string;
+}) {
   const uid = (input.userId ?? "").trim();
   const e = (input.email ?? "").toLowerCase().trim();
   const n = (input.nickname ?? "").toLowerCase().trim();
@@ -112,7 +122,11 @@ function IssueFormModal({
   initial?: { title: string; subtitle: string; description: string };
   isSubmitting: boolean;
   onClose: () => void;
-  onSubmit: (payload: { title: string; subtitle: string; description: string }) => void;
+  onSubmit: (payload: {
+    title: string;
+    subtitle: string;
+    description: string;
+  }) => void;
 }) {
   const [title, setTitle] = useState(initial?.title ?? "");
   const [subtitle, setSubtitle] = useState(initial?.subtitle ?? "");
@@ -185,7 +199,9 @@ function IssueFormModal({
           </div>
 
           <div>
-            <div className="text-sm text-gray-300 font-semibold mb-2">상세 설명</div>
+            <div className="text-sm text-gray-300 font-semibold mb-2">
+              상세 설명
+            </div>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
@@ -242,30 +258,78 @@ function IssueCard({
   onDelete: (issue: IssueListItem) => void;
 }) {
   const [isFlipped, setIsFlipped] = useState(false);
+  const [isFlipAnimating, setIsFlipAnimating] = useState(false);
+  const flipTimerRef = useRef<number | null>(null);
 
   const participantsSafe = (issue.participants ?? issue.totalVotes ?? 0) as number;
 
-  // ✅ 0표면 찬/반 둘다 0%로 고정
   const agreePercentSafe =
     participantsSafe <= 0 ? 0 : Number(issue.agreePercent ?? 0);
   const disagreePercentSafe =
     participantsSafe <= 0 ? 0 : Math.max(0, 100 - agreePercentSafe);
 
   const isHotIssue = participantsSafe >= 3000;
-  const showCompleted = isLoggedIn && ((issue as any).voted || issue.myVote !== null);
+  const showCompleted =
+    isLoggedIn && ((issue as any).voted || issue.myVote !== null);
 
   const agreeCountSafe =
-    participantsSafe <= 0 ? 0 : Math.round((agreePercentSafe / 100) * participantsSafe);
-  const disagreeCountSafe = participantsSafe <= 0 ? 0 : participantsSafe - agreeCountSafe;
+    participantsSafe <= 0
+      ? 0
+      : Math.round((agreePercentSafe / 100) * participantsSafe);
+  const disagreeCountSafe =
+    participantsSafe <= 0 ? 0 : participantsSafe - agreeCountSafe;
+
+  const startFlip = (next: boolean) => {
+    if (flipTimerRef.current) window.clearTimeout(flipTimerRef.current);
+
+    setIsFlipAnimating(true);
+    setIsFlipped(next);
+
+    // ✅ 애니메이션(0.6s) 동안 버튼 렌더링 X
+    flipTimerRef.current = window.setTimeout(() => {
+      setIsFlipAnimating(false);
+      flipTimerRef.current = null;
+    }, 650);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (flipTimerRef.current) window.clearTimeout(flipTimerRef.current);
+    };
+  }, []);
+
+  // ✅ 카드가 뒤집히는 동안은 아예 렌더링 안 함
+  const showAdminActions = isAdmin && !hideAdminActions && !isFlipAnimating;
+
+  // ✅ 완전히 뒤집힌(Back=흰 카드) 상태면: 동그라미/테두리 싹 제거(아이콘만)
+  const isBackFace = isFlipped && !isFlipAnimating;
+
+  const adminBtnClass = isBackFace
+    ? "w-9 h-9 bg-transparent border-0 rounded-none shadow-none hover:bg-transparent transition-all flex items-center justify-center"
+    : "w-9 h-9 rounded-full bg-black/80 border border-white/25 hover:border-white/50 hover:bg-black transition-all flex items-center justify-center";
+
+  const adminIconClass = isBackFace ? "text-black" : "text-white";
 
   return (
     <div
       className="relative group h-full"
-      onMouseEnter={() => setIsFlipped(true)}
-      onMouseLeave={() => setIsFlipped(false)}
+      onMouseEnter={() => startFlip(true)}
+      onMouseLeave={() => startFlip(false)}
+      style={{ isolation: "isolate" }}
     >
-      {isAdmin && !hideAdminActions && (
-        <div className="absolute right-3 top-3 z-50 flex gap-2 pointer-events-auto">
+      {/* ✅ 관리자 액션: 우측상단 고정 / flip 중에는 렌더링 X */}
+      {showAdminActions && (
+        <div
+          className="pointer-events-auto flex gap-0.5"
+          style={{
+            position: "absolute",
+            top: 4,
+            right: 6,
+            zIndex: 99999,
+            isolation: "isolate",
+            pointerEvents: "auto",
+          }}
+        >
           <button
             type="button"
             title="수정"
@@ -274,9 +338,12 @@ function IssueCard({
               e.stopPropagation();
               onEdit(issue);
             }}
-            className="w-9 h-9 rounded-full bg-black/70 border border-white/20 hover:border-white/40 hover:bg-black/90 transition-all flex items-center justify-center"
+            className={adminBtnClass}
+            style={{
+              transform: "translateX(8px)", // ✅ 수정 버튼만 삭제쪽으로 붙임
+            }}
           >
-            <Pencil className="w-4 h-4 text-white" />
+            <Pencil className={`w-4 h-4 ${adminIconClass}`} />
           </button>
 
           <button
@@ -287,15 +354,18 @@ function IssueCard({
               e.stopPropagation();
               onDelete(issue);
             }}
-            className="w-9 h-9 rounded-full bg-black/70 border border-white/20 hover:border-white/40 hover:bg-black/90 transition-all flex items-center justify-center"
+            className={adminBtnClass}
           >
-            <X className="w-5 h-5 text-white" />
+            <X className={`w-5 h-5 ${adminIconClass}`} />
           </button>
         </div>
       )}
 
       <Link to={`/balance/${issue.id}`} className="block h-full">
-        <div className="relative h-full preserve-3d" style={{ perspective: "1000px" }}>
+        <div
+          className="relative h-full preserve-3d"
+          style={{ perspective: "1000px" }}
+        >
           <motion.div
             className="relative w-full h-full"
             animate={{ rotateY: isFlipped ? 180 : 0 }}
@@ -350,7 +420,9 @@ function IssueCard({
                       <span className="font-bold text-2xl sm:text-3xl text-white">
                         {participantsSafe.toLocaleString()}
                       </span>
-                      <span className="text-sm text-gray-400 font-semibold">명</span>
+                      <span className="text-sm text-gray-400 font-semibold">
+                        명
+                      </span>
                     </div>
                   </div>
 
@@ -373,7 +445,9 @@ function IssueCard({
               <div className="relative p-6 sm:p-8 h-full flex flex-col">
                 <div className="flex items-center space-x-3 sm:space-x-4 mb-6">
                   <span className="text-4xl sm:text-5xl">{issue.emoji}</span>
-                  <h3 className="text-xl sm:text-2xl font-bold text-black">{issue.title}</h3>
+                  <h3 className="text-xl sm:text-2xl font-bold text-black">
+                    {issue.title}
+                  </h3>
                 </div>
 
                 <div className="flex-1 flex flex-col justify-center">
@@ -381,15 +455,21 @@ function IssueCard({
                     <div className="flex items-center justify-between mb-3">
                       <div className="flex items-center space-x-2">
                         <div className="w-2 h-2 bg-black rounded-full" />
-                        <span className="text-sm font-semibold text-black">찬성</span>
-                        <span className="text-2xl font-bold text-black">{agreePercentSafe}%</span>
+                        <span className="text-sm font-semibold text-black">
+                          찬성
+                        </span>
+                        <span className="text-2xl font-bold text-black">
+                          {agreePercentSafe}%
+                        </span>
                       </div>
 
                       <div className="flex items-center space-x-2">
                         <span className="text-2xl font-bold text-gray-600">
                           {disagreePercentSafe}%
                         </span>
-                        <span className="text-sm font-semibold text-gray-600">반대</span>
+                        <span className="text-sm font-semibold text-gray-600">
+                          반대
+                        </span>
                         <div className="w-2 h-2 bg-gray-400 rounded-full" />
                       </div>
                     </div>
@@ -404,14 +484,18 @@ function IssueCard({
 
                   <div className="grid grid-cols-2 gap-3">
                     <div className="text-center p-3 bg-black/5 rounded-xl">
-                      <div className="text-xs text-gray-600 font-semibold mb-1">찬성</div>
+                      <div className="text-xs text-gray-600 font-semibold mb-1">
+                        찬성
+                      </div>
                       <div className="text-lg font-bold text-black">
                         {agreeCountSafe.toLocaleString()}명
                       </div>
                     </div>
 
                     <div className="text-center p-3 bg-black/5 rounded-xl">
-                      <div className="text-xs text-gray-600 font-semibold mb-1">반대</div>
+                      <div className="text-xs text-gray-600 font-semibold mb-1">
+                        반대
+                      </div>
                       <div className="text-lg font-bold text-gray-600">
                         {disagreeCountSafe.toLocaleString()}명
                       </div>
@@ -430,7 +514,7 @@ function IssueCard({
                 </div>
               </div>
             </div>
-
+            {/* /Back Side */}
           </motion.div>
         </div>
       </Link>
@@ -701,19 +785,21 @@ export function IssueList() {
           ))}
         </motion.div>
 
-        {isLoading && <div className="text-center text-gray-400 py-16">불러오는 중...</div>}
+        {isLoading && (
+          <div className="text-center text-gray-400 py-16">불러오는 중...</div>
+        )}
 
         {!isLoading && errorMessage && (
           <div className="text-center text-gray-400 py-16">{errorMessage}</div>
         )}
 
-        {!isLoading && !errorMessage && (
-          filteredIssues.length === 0 ? (
+        {!isLoading && !errorMessage &&
+          (filteredIssues.length === 0 ? (
             <div className="text-center text-gray-400 py-16">
               {filter === "completed"
-                ? (isLoggedIn
-                    ? "아직 참여한 이슈가 없어요."
-                    : "로그인 후 참여완료를 확인할 수 있어요.")
+                ? isLoggedIn
+                  ? "아직 참여한 이슈가 없어요."
+                  : "로그인 후 참여완료를 확인할 수 있어요."
                 : "표시할 이슈가 없어요."}
             </div>
           ) : (
@@ -737,8 +823,7 @@ export function IssueList() {
                 </motion.div>
               ))}
             </div>
-          )
-        )}
+          ))}
 
         <motion.div
           initial={{ opacity: 0 }}
