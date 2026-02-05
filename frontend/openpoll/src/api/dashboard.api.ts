@@ -46,8 +46,9 @@ export const subscribeToStream = (
   onMessage: (data: DashboardStats) => void,
   onError?: (error: Event) => void,
 ): EventSource => {
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000/api";
   const eventSource = new EventSource(
-    "http://localhost:3000/api/dashboard/stream",
+    `${API_BASE_URL}/dashboard/stream`,
   );
 
   eventSource.onmessage = (event) => {
