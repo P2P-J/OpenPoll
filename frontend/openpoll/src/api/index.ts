@@ -7,6 +7,7 @@ export * as pointApi from "./point.api";
 export * as dashboardApi from "./dashboard.api";
 export * as dosApi from "./dos.api";
 export * as issueApi from "./issue.api";
+export * as newsApi from "./news.api";
 
 // Export client utilities
 export { apiClient, getErrorMessage } from "./client";
