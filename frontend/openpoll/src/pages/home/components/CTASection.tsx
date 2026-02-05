@@ -1,6 +1,6 @@
-import { memo } from 'react';
-import { Link } from 'react-router-dom';
-import { ArrowRight } from 'lucide-react';
+import { memo } from "react";
+import { Link } from "react-router-dom";
+import { ArrowRight } from "lucide-react";
 
 export const CTASection = memo(function CTASection() {
   return (
@@ -13,10 +13,10 @@ export const CTASection = memo(function CTASection() {
           3분이면 나의 정치 성향을 알 수 있어요
         </p>
         <Link
-          to="/mbti"
+          to="/dos"
           className="inline-flex items-center space-x-2 px-6 sm:px-8 py-3 sm:py-4 bg-white text-black rounded-full font-semibold text-base sm:text-lg hover:bg-gray-100 transition-colors"
         >
-          <span>정치 MBTI 테스트 시작</span>
+          <span>DOS 테스트 시작</span>
           <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
         </Link>
       </div>
