@@ -73,7 +73,7 @@ export function VotingProvider({ children }: { children: ReactNode }) {
         setSseStatus("connected");
         reconnectAttempts.current = 0; // 성공 시 재시도 횟수 초기화
       },
-      (event) => {
+      () => {
         // 네트워크 에러는 조용히 처리
         if (reconnectAttempts.current === 0) {
           console.warn("SSE connection error: Cannot connect to server. Please ensure backend is running.");

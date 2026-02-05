@@ -1,86 +1,399 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'motion/react';
-import { ExternalLink, Sparkles } from 'lucide-react';
+import { ExternalLink, Sparkles, ChevronLeft, ChevronRight } from 'lucide-react';
+import { newsApi } from '@/api';
+import type { NewsArticle } from '@/types/api.types';
 
 const categories = ['전체', '경제', '외교', '국회', '선거', '사회'];
 
-const newsData = [
-  {
-    id: 1,
-    category: '국회',
-    title: '국회, 예산안 처리 두고 여야 이견',
-    summary: [
-      '여당은 경제 활성화를 위한 예산 증액을 주장',
-      '야당은 재정 건전성 우려로 신중한 접근 요구',
-      '합의점 도출을 위한 협상 지속 중',
-    ],
-    tags: ['예산안', '여야갈등', '국회'],
-    source: '한국일보',
-    publishedAt: '2시간 전',
-    isNeutralized: true,
-  },
-  {
-    id: 2,
-    category: '외교',
-    title: '한미 정상회담 결과 발표',
-    summary: [
-      '경제 협력 강화 및 반도체 동맹 구축 합의',
-      '양국 간 교역 증대를 위한 협력 방안 논의',
-      '다음 회담은 6개월 후 워싱턴에서 개최 예정',
-    ],
-    tags: ['한미관계', '정상회담', '외교'],
-    source: 'SBS',
-    publishedAt: '4시간 전',
-    isNeutralized: true,
-  },
-  {
-    id: 3,
-    category: '경제',
-    title: '기준금리 동결 결정, 경제 전망은',
-    summary: [
-      '한국은행, 물가 안정과 경제 성장 균형 고려',
-      '전문가들은 향후 3개월간 추가 동결 전망',
-      '부동산 시장과 가계 부채에 미치는 영향 주목',
-    ],
-    tags: ['금리', '한국은행', '경제정책'],
-    source: '중앙일보',
-    publishedAt: '6시간 전',
-    isNeutralized: true,
-  },
-  {
-    id: 4,
-    category: '사회',
-    title: '청년 일자리 정책 개선안 발표',
-    summary: [
-      '정부, 청년 고용 지원 예산 20% 증액 계획',
-      '중소기업 취업자 대상 인센티브 확대',
-      '전문가들은 실효성에 대한 면밀한 검토 필요성 제기',
-    ],
-    tags: ['청년정책', '일자리', '고용'],
-    source: '한겨레',
-    publishedAt: '8시간 전',
-    isNeutralized: true,
-  },
-];
+const ITEMS_PER_PAGE = 5;
+
+// Helper function to get category from tags
+const getCategoryFromTags = (tags: string[]): string => {
+  const categoryMap: Record<string, string> = {
+    '경제': '경제',
+    '금리': '경제',
+    '수출': '경제',
+    '물가': '경제',
+    '외교': '외교',
+    '정상회담': '외교',
+    '국제협력': '외교',
+    '국회': '국회',
+    '법안': '국회',
+    '예산안': '국회',
+    '선거': '선거',
+    '투표': '선거',
+    '여론조사': '선거',
+    '사회': '사회',
+    '복지': '사회',
+    '교육': '사회',
+    '민생': '국회',
+    '개혁': '국회',
+  };
+
+  for (const tag of tags) {
+    if (categoryMap[tag]) {
+      return categoryMap[tag];
+    }
+  }
+  return '사회'; // 기본값
+};
+
+// Helper function to format time ago
+const getTimeAgo = (createdAt: string): string => {
+  const now = new Date();
+  const created = new Date(createdAt);
+  const diffInMinutes = Math.floor((now.getTime() - created.getTime()) / (1000 * 60));
+
+  if (diffInMinutes < 60) {
+    return `${diffInMinutes}분 전`;
+  } else if (diffInMinutes < 1440) {
+    const hours = Math.floor(diffInMinutes / 60);
+    return `${hours}시간 전`;
+  } else {
+    const days = Math.floor(diffInMinutes / 1440);
+    return `${days}일 전`;
+  }
+};
+
+interface NewsCardProps {
+  news: NewsArticle;
+  index: number;
+  category: string;
+}
+
+function NewsCard({ news, index, category }: NewsCardProps) {
+  const summaryLines = news.shortSummary.split('\n').filter(line => line.trim());
+
+  return (
+    <motion.article
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.1 }}
+      className="bg-white rounded-3xl overflow-hidden border border-gray-200 shadow-lg hover:shadow-xl transition-shadow p-8 sm:p-10"
+    >
+      {/* Card Header */}
+      <div className="mb-6 sm:mb-7">
+        <div className="flex items-center justify-between pb-6 sm:pb-7 border-b border-gray-100">
+          <div className="flex items-center space-x-4">
+            <div
+              className="bg-gradient-to-br from-gray-900 to-gray-700 rounded-full flex items-center justify-center"
+              style={{ width: '56px', height: '56px', minWidth: '56px', minHeight: '56px' }}
+            >
+              <Sparkles className="w-7 h-7 text-white" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="font-bold text-lg">{news.press}</span>
+                <div
+                  className="rounded-full flex items-center justify-center"
+                  style={{ width: '16px', height: '16px', minWidth: '16px', backgroundColor: '#3b82f6' }}
+                >
+                  <div
+                    className="rounded-full bg-white"
+                    style={{ width: '8px', height: '8px' }}
+                  />
+                </div>
+              </div>
+              <span className="text-sm text-gray-500">{getTimeAgo(news.createdAt)}</span>
+            </div>
+          </div>
+          <span className="px-4 py-1.5 bg-black text-white text-sm font-bold rounded-full">
+            {category}
+          </span>
+        </div>
+      </div>
+
+      {/* Main Content Area */}
+      <Link to={`/news/${news.id}`} className="block">
+        <div className="py-8 sm:py-9">
+          {/* Title */}
+          <h2 className="text-xl sm:text-2xl font-bold mb-6 sm:mb-7 leading-tight hover:text-gray-600 transition-colors">
+            {news.refinedTitle}
+          </h2>
+
+          {/* Summary */}
+          <div className="space-y-3 mb-6 sm:mb-7">
+            {summaryLines.map((line, i) => (
+              <div key={i} className="flex items-start text-base text-gray-700">
+                <span className="text-gray-400 font-bold text-lg" style={{ marginRight: '16px' }}>·</span>
+                <span className="leading-relaxed">{line}</span>
+              </div>
+            ))}
+          </div>
+
+          {/* Tags */}
+          <div className="flex flex-wrap gap-2">
+            {news.relatedTags.slice(0, 4).map((tag) => (
+              <span
+                key={tag}
+                className="text-sm sm:text-base text-blue-600 font-medium hover:underline cursor-pointer"
+              >
+                #{tag}
+              </span>
+            ))}
+          </div>
+        </div>
+      </Link>
+
+      {/* Action Buttons */}
+      <div>
+        <hr className="border-t border-gray-100 mb-6 sm:mb-7" />
+        <div className="flex gap-3">
+          <Link
+            to={`/news/${news.id}`}
+            className="flex-1 py-3 bg-black text-white rounded-xl font-semibold text-base text-center hover:bg-gray-800 transition-colors"
+          >
+            전문 보기
+          </Link>
+          <a
+            href={news.originalUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-6 py-3 bg-gray-100 text-gray-900 rounded-xl font-semibold text-base hover:bg-gray-200 transition-colors flex items-center justify-center space-x-2"
+          >
+            <span>원문</span>
+            <ExternalLink className="w-4 h-4" />
+          </a>
+        </div>
+      </div>
+    </motion.article>
+  );
+}
+
+function Pagination({ currentPage, totalPages, onPageChange }: {
+  currentPage: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
+}) {
+  const getPageNumbers = () => {
+    const pages = [];
+    const showEllipsis = totalPages > 7;
+
+    if (!showEllipsis) {
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      if (currentPage <= 4) {
+        for (let i = 1; i <= 5; i++) pages.push(i);
+        pages.push('ellipsis');
+        pages.push(totalPages);
+      } else if (currentPage >= totalPages - 3) {
+        pages.push(1);
+        pages.push('ellipsis');
+        for (let i = totalPages - 4; i <= totalPages; i++) pages.push(i);
+      } else {
+        pages.push(1);
+        pages.push('ellipsis');
+        for (let i = currentPage - 1; i <= currentPage + 1; i++) pages.push(i);
+        pages.push('ellipsis');
+        pages.push(totalPages);
+      }
+    }
+
+    return pages;
+  };
+
+  return (
+    <div className="flex items-center justify-center space-x-2">
+      {/* Previous Button */}
+      <button
+        onClick={() => onPageChange(currentPage - 1)}
+        disabled={currentPage === 1}
+        className={`p-2 rounded-xl border transition-all ${currentPage === 1
+          ? 'border-gray-200 text-gray-300 cursor-not-allowed'
+          : 'border-gray-300 text-gray-700 hover:bg-gray-100'
+          }`}
+      >
+        <ChevronLeft className="w-5 h-5" />
+      </button>
+
+      {/* Page Numbers */}
+      {getPageNumbers().map((page, index) => {
+        if (page === 'ellipsis') {
+          return (
+            <span key={`ellipsis-${index}`} className="px-2 text-gray-400">
+              ...
+            </span>
+          );
+        }
+
+        return (
+          <button
+            key={page}
+            onClick={() => onPageChange(page as number)}
+            className={`min-w-[40px] h-10 px-3 rounded-xl font-semibold transition-all ${currentPage === page
+              ? 'bg-black text-white shadow-lg'
+              : 'bg-white border border-gray-200 text-gray-700 hover:border-gray-400'
+              }`}
+          >
+            {page}
+          </button>
+        );
+      })}
+
+      {/* Next Button */}
+      <button
+        onClick={() => onPageChange(currentPage + 1)}
+        disabled={currentPage === totalPages}
+        className={`p-2 rounded-xl border transition-all ${currentPage === totalPages
+          ? 'border-gray-200 text-gray-300 cursor-not-allowed'
+          : 'border-gray-300 text-gray-700 hover:bg-gray-100'
+          }`}
+      >
+        <ChevronRight className="w-5 h-5" />
+      </button>
+    </div>
+  );
+}
 
 export function NewsList() {
   const [selectedCategory, setSelectedCategory] = useState('전체');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [articles, setArticles] = useState<NewsArticle[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Fetch articles function
+  const fetchArticles = async () => {
+    try {
+      const data = await newsApi.getArticles();
+      setArticles(data);
+      setError(null);
+    } catch (err) {
+      console.error('Failed to fetch articles:', err);
+      setError('뉴스를 불러오는데 실패했습니다.');
+    }
+  };
+
+  // Refresh news (trigger crawling + fetch new articles)
+  const refreshNews = async () => {
+    try {
+      console.log('[News Polling] Triggering news refresh...');
+      await newsApi.refreshNews();
+      console.log('[News Polling] Refresh complete, fetching articles...');
+      await fetchArticles();
+      console.log('[News Polling] Articles updated');
+    } catch (err) {
+      console.error('[News Polling] Failed to refresh news:', err);
+      // Don't show error to user for background polling failures
+    }
+  };
+
+  // Scroll to top on mount
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
+  // Initial fetch on mount
+  useEffect(() => {
+    const initialFetch = async () => {
+      try {
+        setIsLoading(true);
+        await fetchArticles();
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    initialFetch();
+  }, []);
+
+  // Polling: trigger crawling every 40 seconds (for testing)
+  // Note: This only triggers backend crawling, does NOT auto-update the UI
+  // Users must manually refresh the browser to see new articles
+  useEffect(() => {
+    const POLLING_INTERVAL = 40 * 1000; // 40 seconds (테스트용)
+    // const POLLING_INTERVAL = 5 * 60 * 1000; // 5 minutes (프로덕션용)
+
+    console.log('[News Polling] Starting crawling trigger with interval:', POLLING_INTERVAL / 1000, 'seconds');
+
+    const intervalId = setInterval(() => {
+      // 크롤링만 트리거, UI는 업데이트하지 않음
+      console.log('[News Polling] Triggering backend crawling (UI will NOT auto-update)...');
+      newsApi.refreshNews()
+        .then(() => {
+          console.log('[News Polling] Crawling triggered successfully. Refresh browser to see new articles.');
+        })
+        .catch((err) => {
+          console.error('[News Polling] Failed to trigger crawling:', err);
+        });
+    }, POLLING_INTERVAL);
+
+    // Cleanup on unmount
+    return () => {
+      console.log('[News Polling] Stopping crawling trigger');
+      clearInterval(intervalId);
+    };
+  }, []);
+
+  // Add category to each article based on tags
+  const articlesWithCategory = articles.map(article => ({
+    ...article,
+    category: getCategoryFromTags(article.relatedTags),
+  }));
 
   const filteredNews = selectedCategory === '전체'
-    ? newsData
-    : newsData.filter((news) => news.category === selectedCategory);
+    ? articlesWithCategory
+    : articlesWithCategory.filter((news) => news.category === selectedCategory);
+
+  const totalPages = Math.ceil(filteredNews.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = startIndex + ITEMS_PER_PAGE;
+  const currentNews = filteredNews.slice(startIndex, endIndex);
+
+  const handleCategoryChange = (category: string) => {
+    setSelectedCategory(category);
+    setCurrentPage(1);
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  if (isLoading) {
+    return (
+      <div className="pt-16 min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <Sparkles className="w-12 h-12 mx-auto mb-4 animate-pulse" />
+          <p className="text-gray-600">뉴스를 불러오는 중...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="pt-16 min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-600 mb-4">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-6 py-3 bg-black text-white rounded-xl font-semibold hover:bg-gray-800 transition-colors"
+          >
+            다시 시도
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="pt-16 min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-6 sm:mb-8"
+          className="text-center mb-8 sm:mb-10"
         >
-          <h1 className="text-3xl sm:text-4xl font-bold mb-2 sm:mb-3">중립 뉴스</h1>
+          <div className="inline-flex items-center justify-center space-x-2 mb-3">
+            <Sparkles className="w-7 h-7 sm:w-8 sm:h-8" />
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold">중립 뉴스</h1>
+          </div>
           <p className="text-gray-600 text-base sm:text-lg">
             AI가 순화한 중립적이고 객관적인 정치 뉴스
           </p>
@@ -91,101 +404,56 @@ export function NewsList() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.1 }}
-          className="flex overflow-x-auto space-x-2 mb-6 sm:mb-8 pb-2"
+          className="flex overflow-x-auto space-x-3 mb-8 pb-2 scrollbar-hide"
+          style={{
+            scrollbarWidth: 'none',
+            msOverflowStyle: 'none',
+          }}
         >
           {categories.map((category) => (
             <button
               key={category}
-              onClick={() => setSelectedCategory(category)}
-              className={`flex-shrink-0 px-4 sm:px-5 py-2 sm:py-2.5 rounded-full font-semibold text-sm sm:text-base transition-all ${
-                selectedCategory === category
-                  ? 'bg-black text-white'
-                  : 'bg-white text-gray-600 hover:bg-gray-100'
-              }`}
+              onClick={() => handleCategoryChange(category)}
+              className={`flex-shrink-0 px-6 py-3 rounded-full font-bold text-base transition-all ${selectedCategory === category
+                ? 'bg-black text-white shadow-lg'
+                : 'bg-white text-gray-700 border border-gray-200 hover:border-gray-400'
+                }`}
             >
               {category}
             </button>
           ))}
         </motion.div>
 
-        {/* News List */}
-        <div className="space-y-4 sm:space-y-6">
-          {filteredNews.map((news, index) => (
-            <motion.article
-              key={news.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 + index * 0.05 }}
-              className="bg-gradient-to-br from-white to-gray-50 rounded-xl sm:rounded-2xl p-5 sm:p-6 lg:p-8 border-2 border-black hover:border-gray-800 transition-all hover:shadow-2xl shadow-lg"
-            >
-              {/* Header */}
-              <div className="flex items-start justify-between mb-3 sm:mb-4">
-                <div className="flex-1">
-                  <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
-                    <span className="px-2.5 sm:px-3 py-1 bg-gray-100 text-gray-700 text-xs sm:text-sm font-semibold rounded-full">
-                      {news.category}
-                    </span>
-                    {news.isNeutralized && (
-                      <div className="flex items-center space-x-1 text-blue-600 text-xs sm:text-sm font-semibold">
-                        <Sparkles className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-                        <span>AI 중립화</span>
-                      </div>
-                    )}
-                  </div>
-                  <h2 className="text-xl sm:text-2xl font-bold mb-2 sm:mb-3 leading-tight">
-                    {news.title}
-                  </h2>
-                </div>
-              </div>
+        {/* News Feed */}
+        {currentNews.length > 0 ? (
+          <>
+            <div className="space-y-6 mb-8">
+              {currentNews.map((news, index) => (
+                <NewsCard key={news.id} news={news} index={index} category={news.category} />
+              ))}
+            </div>
 
-              {/* Summary */}
-              <div className="mb-3 sm:mb-4">
-                <h3 className="text-xs sm:text-sm font-semibold text-gray-600 mb-2">
-                  📝 3줄 요약
-                </h3>
-                <ul className="space-y-1.5 sm:space-y-2">
-                  {news.summary.map((line, i) => (
-                    <li key={i} className="flex items-start text-gray-700 text-sm sm:text-base">
-                      <span className="mr-2 text-gray-400">•</span>
-                      <span>{line}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              {/* Tags */}
-              <div className="flex flex-wrap gap-2 mb-3 sm:mb-4">
-                {news.tags.map((tag) => (
-                  <span
-                    key={tag}
-                    className="px-2.5 sm:px-3 py-1 bg-gray-50 text-gray-600 text-xs sm:text-sm font-medium rounded-lg"
-                  >
-                    #{tag}
-                  </span>
-                ))}
-              </div>
-
-              {/* Footer */}
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0 pt-3 sm:pt-4 border-t border-gray-100">
-                <div className="text-xs sm:text-sm text-gray-500">
-                  {news.source} · {news.publishedAt}
-                </div>
-                <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
-                  <Link
-                    to={`/news/${news.id}`}
-                    className="px-4 py-2 bg-black text-white rounded-lg font-semibold text-xs sm:text-sm hover:bg-gray-800 transition-colors text-center"
-                  >
-                    전문 보기
-                  </Link>
-                  <button className="flex items-center justify-center space-x-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg font-semibold text-xs sm:text-sm hover:bg-gray-200 transition-colors">
-                    <span>원문 보기</span>
-                    <ExternalLink className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-                  </button>
-                </div>
-              </div>
-            </motion.article>
-          ))}
-        </div>
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.3 }}
+                className="mt-12"
+              >
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={handlePageChange}
+                />
+              </motion.div>
+            )}
+          </>
+        ) : (
+          <div className="text-center py-12">
+            <p className="text-gray-500">해당 카테고리의 뉴스가 없습니다.</p>
+          </div>
+        )}
       </div>
     </div>
   );

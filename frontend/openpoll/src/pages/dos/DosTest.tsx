@@ -10,8 +10,7 @@ import type { DosQuestion } from '@/types/api.types';
 import { Toast } from '@/components/molecules/toast/Toast';
 
 // Swiper CSS
-import 'swiper/css';
-import 'swiper/css/effect-coverflow';
+import 'swiper/swiper-bundle.css';
 import './DosTest.css';
 
 

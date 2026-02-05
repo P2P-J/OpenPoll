@@ -131,6 +131,7 @@ export interface VoteResponse {
     name: string;
     color: string;
   };
+  remainingPoints: number;
 }
 
 export interface UserVoteStats {
@@ -227,4 +228,18 @@ export interface DosStatistics {
     count: number;
     percentage: string;
   }>;
+}
+
+// ============ News Types ============
+
+export interface NewsArticle {
+  id: number;
+  naverUrl: string;
+  originalUrl: string;
+  refinedTitle: string;
+  refinedSummary: string;
+  shortSummary: string;
+  relatedTags: string[];
+  press: string;
+  createdAt: string;
 }
