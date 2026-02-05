@@ -493,13 +493,13 @@ export function Profile() {
 
           <button
             onClick={() => setShowPasswordModal(true)}
-            className="group w-full sm:w-auto h-14 px-8 bg-black hover:bg-gray-800 dark:bg-white dark:hover:bg-gray-100 text-white dark:text-black font-bold rounded-xl transition-all duration-200 flex items-center justify-center gap-2.5 shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]"
+            className="w-full py-4 bg-gradient-to-br from-gray-900 to-gray-700 dark:from-gray-100 dark:to-gray-300 hover:from-black hover:to-gray-800 dark:hover:from-white dark:hover:to-gray-200 text-white dark:text-black font-bold rounded-2xl transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-3 group"
           >
-            <Lock className="w-5 h-5 group-hover:scale-110 transition-transform duration-200" />
+            <Lock className="w-5 h-5 group-hover:scale-110 transition-transform" />
             <span className="text-base">비밀번호 변경</span>
           </button>
 
-          <div className="mt-6 p-4 bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
+          <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
             <p className="text-sm text-gray-700 dark:text-gray-300 flex items-start gap-2">
               <Info className="w-4 h-4 flex-shrink-0 mt-0.5 text-gray-500 dark:text-gray-400" />
               <span>정기적인 비밀번호 변경으로 계정을 안전하게 보호하세요</span>
