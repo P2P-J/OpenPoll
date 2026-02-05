@@ -23,7 +23,7 @@ export function MainLayout() {
 
       <main
         id="main-content"
-        className={isAuthPage || location.pathname === '/dos' ? '' : 'pb-20 sm:pb-0'}
+        className=""
       >
         <Outlet />
       </main>
