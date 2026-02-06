@@ -17,11 +17,14 @@ import {
   Info,
   Plus,
   Minus,
+  Lock,
+  Shield,
 } from "lucide-react";
 import { useUser } from "@/contexts/UserContext";
 import { userApi } from "@/api";
 import type { PointRecord, UserVoteStats } from "@/types/api.types";
 import { ROUTES } from "@/shared/constants";
+import { PasswordChangeModal } from "@/components/molecules/passwordChangeModal";
 
 export function Profile() {
   const navigate = useNavigate();
@@ -30,6 +33,7 @@ export function Profile() {
   const [pointHistory, setPointHistory] = useState<PointRecord[]>([]);
   const [voteStats, setVoteStats] = useState<UserVoteStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
 
   // 로그인하지 않은 경우 로그인 페이지로 리다이렉트
   useEffect(() => {
@@ -106,7 +110,10 @@ export function Profile() {
     const expectedPoints = pointInfo[type];
 
     // 포인트 정보가 있고 실제 금액과 다른 경우 둘 다 표시
-    if (expectedPoints && Math.abs(amount).toString() !== expectedPoints.replace(/[+\-P]/g, '')) {
+    if (
+      expectedPoints &&
+      Math.abs(amount).toString() !== expectedPoints.replace(/[+\-P]/g, "")
+    ) {
       return `${baseName} (${expectedPoints})`;
     }
 
@@ -174,7 +181,9 @@ export function Profile() {
                 </div>
                 <div className="flex items-center space-x-2 text-sm text-gray-500 dark:text-gray-400">
                   <Award className="w-4 h-4" />
-                  <span>총 {(user.totalEarnedPoints || 0).toLocaleString()}P 획득</span>
+                  <span>
+                    총 {(user.totalEarnedPoints || 0).toLocaleString()}P 획득
+                  </span>
                 </div>
               </div>
             </div>
@@ -274,7 +283,10 @@ export function Profile() {
                           animate={{
                             width: `${(item.count / voteStats.totalVotes) * 100}%`,
                           }}
-                          transition={{ delay: 0.3 + index * 0.1, duration: 0.5 }}
+                          transition={{
+                            delay: 0.3 + index * 0.1,
+                            duration: 0.5,
+                          }}
                         />
                       </div>
                     </div>
@@ -310,9 +322,7 @@ export function Profile() {
         >
           <div className="flex items-center space-x-3 mb-6">
             <Info className="w-6 h-6 text-gray-700 dark:text-gray-300" />
-            <h3 className="text-xl font-bold dark:text-white">
-              포인트 가이드
-            </h3>
+            <h3 className="text-xl font-bold dark:text-white">포인트 가이드</h3>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -322,32 +332,56 @@ export function Profile() {
                 <div className="w-8 h-8 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
                   <Plus className="w-5 h-5 text-green-600 dark:text-green-400" />
                 </div>
-                <h4 className="font-bold text-lg dark:text-white">포인트 획득</h4>
+                <h4 className="font-bold text-lg dark:text-white">
+                  포인트 획득
+                </h4>
               </div>
               <div className="space-y-3">
                 <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                  <span className="text-sm dark:text-gray-300">회원가입 완료</span>
-                  <span className="font-bold text-green-600 dark:text-green-400">+500P</span>
+                  <span className="text-sm dark:text-gray-300">
+                    회원가입 완료
+                  </span>
+                  <span className="font-bold text-green-600 dark:text-green-400">
+                    +500P
+                  </span>
                 </div>
                 <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                  <span className="text-sm dark:text-gray-300">정치 MBTI 완료</span>
-                  <span className="font-bold text-green-600 dark:text-green-400">+300P</span>
+                  <span className="text-sm dark:text-gray-300">
+                    정치 MBTI 완료
+                  </span>
+                  <span className="font-bold text-green-600 dark:text-green-400">
+                    +300P
+                  </span>
                 </div>
                 <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                  <span className="text-sm dark:text-gray-300">밸런스 게임 참여 (1회)</span>
-                  <span className="font-bold text-green-600 dark:text-green-400">+50P</span>
+                  <span className="text-sm dark:text-gray-300">
+                    밸런스 게임 참여 (1회)
+                  </span>
+                  <span className="font-bold text-green-600 dark:text-green-400">
+                    +50P
+                  </span>
                 </div>
                 <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
                   <span className="text-sm dark:text-gray-300">일일 출석</span>
-                  <span className="font-bold text-green-600 dark:text-green-400">+30P</span>
+                  <span className="font-bold text-green-600 dark:text-green-400">
+                    +30P
+                  </span>
                 </div>
                 <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                  <span className="text-sm dark:text-gray-300">연속 출석 보너스 (7일)</span>
-                  <span className="font-bold text-green-600 dark:text-green-400">+20P</span>
+                  <span className="text-sm dark:text-gray-300">
+                    연속 출석 보너스 (7일)
+                  </span>
+                  <span className="font-bold text-green-600 dark:text-green-400">
+                    +20P
+                  </span>
                 </div>
                 <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                  <span className="text-sm dark:text-gray-300">뉴스 읽기 (1개)</span>
-                  <span className="font-bold text-green-600 dark:text-green-400">+10P</span>
+                  <span className="text-sm dark:text-gray-300">
+                    뉴스 읽기 (1개)
+                  </span>
+                  <span className="font-bold text-green-600 dark:text-green-400">
+                    +10P
+                  </span>
                 </div>
               </div>
             </div>
@@ -358,16 +392,23 @@ export function Profile() {
                 <div className="w-8 h-8 bg-red-100 dark:bg-red-900/30 rounded-lg flex items-center justify-center">
                   <Minus className="w-5 h-5 text-red-600 dark:text-red-400" />
                 </div>
-                <h4 className="font-bold text-lg dark:text-white">포인트 사용</h4>
+                <h4 className="font-bold text-lg dark:text-white">
+                  포인트 사용
+                </h4>
               </div>
               <div className="space-y-3">
                 <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                  <span className="text-sm dark:text-gray-300">정당 지지 투표</span>
-                  <span className="font-bold text-red-600 dark:text-red-400">-5P</span>
+                  <span className="text-sm dark:text-gray-300">
+                    정당 지지 투표
+                  </span>
+                  <span className="font-bold text-red-600 dark:text-red-400">
+                    -5P
+                  </span>
                 </div>
                 <div className="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
                   <p className="text-sm text-blue-800 dark:text-blue-300">
-                    💡 포인트가 부족하신가요? 위의 활동들을 통해 포인트를 획득하세요!
+                    💡 포인트가 부족하신가요? 위의 활동들을 통해 포인트를
+                    획득하세요!
                   </p>
                 </div>
               </div>
@@ -380,13 +421,11 @@ export function Profile() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
-          className="bg-white dark:bg-gray-900 rounded-3xl border border-gray-200 dark:border-gray-800 shadow-sm p-6 sm:p-8"
+          className="bg-white dark:bg-gray-900 rounded-3xl border border-gray-200 dark:border-gray-800 shadow-sm p-6 sm:p-8 mb-6"
         >
           <div className="flex items-center space-x-3 mb-6">
             <History className="w-6 h-6 text-gray-700 dark:text-gray-300" />
-            <h3 className="text-xl font-bold dark:text-white">
-              포인트 내역
-            </h3>
+            <h3 className="text-xl font-bold dark:text-white">포인트 내역</h3>
             <span className="text-sm text-gray-500 dark:text-gray-400">
               (최근 20개)
             </span>
@@ -411,7 +450,8 @@ export function Profile() {
                     )}
                     <div>
                       <p className="font-semibold dark:text-white">
-                        {item.description || getPointTypeText(item.type, item.amount)}
+                        {item.description ||
+                          getPointTypeText(item.type, item.amount)}
                       </p>
                       <p className="text-xs text-gray-500 dark:text-gray-400">
                         {formatDate(item.createdAt)}
@@ -438,7 +478,41 @@ export function Profile() {
             </div>
           )}
         </motion.div>
+
+        {/* Password Change Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+          className="bg-white dark:bg-gray-900 rounded-3xl border border-gray-200 dark:border-gray-800 shadow-sm p-6 sm:p-8"
+        >
+          <div className="flex items-center space-x-3 mb-6">
+            <Shield className="w-6 h-6 text-gray-700 dark:text-gray-300" />
+            <h3 className="text-xl font-bold dark:text-white">보안 설정</h3>
+          </div>
+
+          <button
+            onClick={() => setShowPasswordModal(true)}
+            className="w-full py-4 bg-gradient-to-br from-gray-900 to-gray-700 dark:from-gray-100 dark:to-gray-300 hover:from-black hover:to-gray-800 dark:hover:from-white dark:hover:to-gray-200 text-white dark:text-black font-bold rounded-2xl transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-3 group"
+          >
+            <Lock className="w-5 h-5 group-hover:scale-110 transition-transform" />
+            <span className="text-base">비밀번호 변경</span>
+          </button>
+
+          <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
+            <p className="text-sm text-gray-700 dark:text-gray-300 flex items-start gap-2">
+              <Info className="w-4 h-4 flex-shrink-0 mt-0.5 text-gray-500 dark:text-gray-400" />
+              <span>정기적인 비밀번호 변경으로 계정을 안전하게 보호하세요</span>
+            </p>
+          </div>
+        </motion.div>
       </div>
+
+      {/* Password Change Modal */}
+      <PasswordChangeModal
+        isOpen={showPasswordModal}
+        onClose={() => setShowPasswordModal(false)}
+      />
     </div>
   );
 }
