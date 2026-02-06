@@ -45,7 +45,6 @@ export const getOverallStats = async (skipCache = false) => {
   const totalVotes = voteCounts.reduce((sum, v) => sum + v._count.id, 0);
 
   const parties = await prisma.party.findMany({
-    where: { isActive: true },
     orderBy: { order: 'asc' },
   });
 
@@ -104,7 +103,6 @@ export const getStatsByAge = async () => {
   });
 
   const parties = await prisma.party.findMany({
-    where: { isActive: true },
     orderBy: { order: 'asc' },
   });
 
@@ -160,7 +158,6 @@ export const getStatsByRegion = async () => {
   });
 
   const parties = await prisma.party.findMany({
-    where: { isActive: true },
     orderBy: { order: 'asc' },
   });
 

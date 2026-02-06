@@ -1,4 +1,4 @@
 export * from './home';
-export * from './mbti';
+export * from './dos';
 export * from './balance';
 export * from './news';

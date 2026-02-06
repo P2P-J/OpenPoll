@@ -3,7 +3,7 @@ import { Brain, Newspaper, Scale, Home } from 'lucide-react';
 
 const navItems = [
   { icon: Home, label: '홈', path: '/' },
-  { icon: Brain, label: '정치 MBTI', path: '/mbti' },
+  { icon: Brain, label: '정치 DOS', path: '/dos' },
   { icon: Scale, label: '밸런스 게임', path: '/balance' },
   { icon: Newspaper, label: '뉴스', path: '/news' },
 ];

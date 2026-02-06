@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { ArrowRight, Mail, Lock, Gift, Home } from 'lucide-react';
 import { motion } from 'motion/react';
 import { ROUTES } from '@/shared/constants';
@@ -12,6 +12,7 @@ type LoginErrors = {
 
 export function Login() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { login, isLoading } = useUser();
 
   const [email, setEmail] = useState('');
@@ -36,7 +37,8 @@ export function Login() {
 
     try {
       await login(email.trim(), password);
-      navigate(ROUTES.HOME);
+      const from = (location.state as { from?: string })?.from;
+      navigate(from || ROUTES.HOME);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : '로그인에 실패했습니다.';
       setErrors((prev) => ({ ...prev, password: errorMessage }));

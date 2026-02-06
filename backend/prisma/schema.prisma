@@ -11,18 +11,22 @@ model User {
   id           String   @id @default(uuid())
   email        String   @unique
   password     String
-  nickname     String
+  nickname     String   @unique
   age          Int
   region       String
   gender       String
+  role         String   @default("USER") // USER, ADMIN
   points       Int      @default(0)
   hasTakenDos  Boolean  @default(false) // DOS 검사 여부(포인트 지급용)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  pointHistory PointHistory[]
-  votes        Vote[]
-  attendances  Attendance[]
+  pointHistory    PointHistory[]
+  votes           Vote[]
+  attendances     Attendance[]
+  balanceVotes        BalanceVote[]
+  balanceComments     BalanceComment[]
+  balanceCommentLikes BalanceCommentLike[]
 
   @@map("users")
 }
@@ -30,10 +34,9 @@ model User {
 model Party {
   id        Int     @id @default(autoincrement())
   name      String  @unique
-  color     String  // 정당 대표 색상 (HEX)
+  color     String  // 정당 대표 색상
   logoUrl   String? // 로고 이미지 URL
-  isActive  Boolean @default(true)
-  order     Int     @default(0)
+  order     Int     @default(0) // 정렬 순서
   voteCount Int     @default(0) // 누적 투표 수
 
   votes Vote[]
@@ -82,33 +85,109 @@ model Attendance {
   @@map("attendances")
 }
 
-// DOS(DNA Of Society) 검사 질문
 model DosQuestion {
   id        Int    @id @default(autoincrement())
   question  String
   axis      String // distribution(분배), rights(권리), change(변화), development(발전)
   direction Int    @default(1) // 1: 정방향(1-3이 첫번째 문자), -1: 역방향(1-3이 두번째 문자)
   weight    Float  @default(1.0)
-  order     Int    @default(0)
 
   @@map("dos_questions")
 }
 
-// DOS 결과 유형
 model DosResultType {
-  id          String @id // MFCD, EOSN 등 4자리 조합
-  name        String // 유형 이름
-  description String @db.Text
-  traits      String @db.Text
+  id          String @id // CMFD, SEON 등 4자리 조합
+  name        String // 유형 이름(~형)
+  description String @db.Text // 짧은 설명
+  detail      String @db.Text // 마크다운 상세 설명
+  features    String @db.Text // 특징 배열 (JSON)
+  tag         String @db.Text // 태그 배열 (JSON)
 
   @@map("dos_result_types")
 }
 
-// DOS 통계
 model DosStatistics {
   resultType String   @id
   count      Int      @default(0)
   updatedAt  DateTime @updatedAt
 
   @@map("dos_statistics")
+}
+
+model BalanceGame {
+  id            Int      @id @default(autoincrement())
+  title         String
+  subtitle      String   // 소제목 (목록 페이지)
+  description   String   @db.Text // 상세 내용(상세 페이지)
+  agreeCount    Int      @default(0)
+  disagreeCount Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  votes    BalanceVote[]
+  comments BalanceComment[]
+
+  @@map("balance_games")
+}
+
+model BalanceVote {
+  id        Int      @id @default(autoincrement())
+  userId    String
+  gameId    Int
+  isAgree   Boolean  // true: 찬성, false: 반대
+  createdAt DateTime @default(now())
+
+  user User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  game BalanceGame @relation(fields: [gameId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, gameId]) // 사안당 1회 투표
+  @@map("balance_votes")
+}
+
+model BalanceComment {
+  id        Int      @id @default(autoincrement())
+  userId    String
+  gameId    Int
+  content   String
+  parentId  Int?     // 대댓글용
+  createdAt DateTime @default(now())
+
+  user    User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  game    BalanceGame      @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  parent  BalanceComment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies BalanceComment[] @relation("CommentReplies")
+
+  likes   BalanceCommentLike[]
+
+  @@index([gameId, createdAt])
+  @@map("balance_comments")
+}
+
+model BalanceCommentLike {
+  id        Int      @id @default(autoincrement())
+  userId    String
+  commentId Int
+  createdAt DateTime @default(now())
+
+  user    User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  comment BalanceComment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, commentId])
+  @@map("balance_comment_likes")
+}
+
+model Article {
+  id            Int      @id @default(autoincrement())
+  naverUrl      String   @unique
+  originalUrl   String  
+
+  refinedTitle   String  
+  refinedSummary String  
+  shortSummary   String  
+  relatedTags    String[]
+  press String?
+
+  createdAt     DateTime @default(now())
+
+  @@map("articles")
 }

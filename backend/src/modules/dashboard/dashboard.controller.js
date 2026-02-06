@@ -9,7 +9,7 @@ export const streamDashboard = async (req, res) => {
   res.setHeader('Content-Type', 'text/event-stream');
   res.setHeader('Cache-Control', 'no-cache');
   res.setHeader('Connection', 'keep-alive');
-  res.setHeader('X-Accel-Buffering', 'no'); // nginx 버퍼링 비활성화
+  res.setHeader('X-Accel-Buffering', 'no');
   res.flushHeaders();
 
   // 클라이언트 등록

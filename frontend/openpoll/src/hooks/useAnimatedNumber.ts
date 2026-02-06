@@ -68,10 +68,11 @@ export function useAnimatedNumber(
     };
   }, [targetValue, duration, decimals]);
 
-  // 초기값 설정
+  // 초기값 설정 (마운트 시 한 번만 실행)
   useEffect(() => {
     previousValue.current = targetValue;
     setDisplayValue(targetValue);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return { displayValue, isAnimating };
@@ -81,7 +82,7 @@ export function useAnimatedNumber(
  * 이전 값을 추적하는 훅
  */
 export function usePrevious<T>(value: T): T | undefined {
-  const ref = useRef<T>();
+  const ref = useRef<T | undefined>(undefined);
 
   useEffect(() => {
     ref.current = value;

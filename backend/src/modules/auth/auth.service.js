@@ -107,6 +107,31 @@ export const refreshAccessToken = async (refreshToken) => {
 };
 
 
+export const changePassword = async (userId, currentPassword, newPassword) => {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+  });
+  if (!user) {
+    throw AppError.notFound('사용자를 찾을 수 없습니다.');
+  }
+
+  const isPasswordValid = await bcrypt.compare(currentPassword, user.password);
+  if (!isPasswordValid) {
+    throw AppError.unauthorized('현재 비밀번호가 올바르지 않습니다.');
+  }
+
+  const hashedPassword = await bcrypt.hash(newPassword, 12);
+
+  await prisma.user.update({
+    where: { id: userId },
+    data: { password: hashedPassword },
+  });
+
+  // 보안을 위해 기존 refresh token 삭제 (재로그인 필요)
+  await redis.del(`${CACHE_KEYS.USER_REFRESH_TOKEN}${userId}`);
+};
+
+
 const generateTokens = async (userId) => {
   const accessToken = jwt.sign(
     { userId },

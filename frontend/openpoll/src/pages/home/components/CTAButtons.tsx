@@ -12,10 +12,10 @@ export const CTAButtons = memo(function CTAButtons() {
       className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 px-4"
     >
       <Link
-        to="/mbti"
+        to="/dos"
         className="group w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 bg-white text-black rounded-full font-semibold text-base sm:text-lg hover:bg-gray-100 transition-colors flex items-center justify-center space-x-2"
       >
-        <span>정치 MBTI 시작하기</span>
+        <span>정치 DOS 시작하기</span>
         <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform" />
       </Link>
       <Link

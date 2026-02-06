@@ -1,0 +1,1 @@
+export { PasswordChangeModal } from "./PasswordChangeModal";

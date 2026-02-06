@@ -1,12 +1,5 @@
-import {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  useCallback,
-  useRef,
-  ReactNode,
-} from "react";
+import { createContext, useContext, useState, useEffect, useCallback, useRef } from "react";
+import type { ReactNode } from "react";
 import { voteApi, dashboardApi, partyApi, getErrorMessage } from "@/api";
 import type { Party, DashboardStats } from "@/types/api.types";
 import { useUser } from "@/contexts/UserContext";
@@ -80,7 +73,7 @@ export function VotingProvider({ children }: { children: ReactNode }) {
         setSseStatus("connected");
         reconnectAttempts.current = 0; // 성공 시 재시도 횟수 초기화
       },
-      (event) => {
+      () => {
         // 네트워크 에러는 조용히 처리
         if (reconnectAttempts.current === 0) {
           console.warn("SSE connection error: Cannot connect to server. Please ensure backend is running.");
