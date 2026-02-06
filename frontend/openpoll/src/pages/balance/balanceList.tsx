@@ -14,99 +14,20 @@ import {
 
 import { issueApi, userApi, getErrorMessage } from "@/api";
 import { getSession } from "@/shared/utils/localAuth";
-import type { IssueListItem } from "@/types/issue.types";
+import type { IssueListItem } from "@/types/balance.types";
 
-const ADMIN_EMAILS = new Set<string>(["oct95@naver.com", "admin@test.com"]);
-const ADMIN_NICKNAMES = new Set<string>(["로운"].map((x) => x.toLowerCase()));
-const ADMIN_USER_IDS = new Set<string>([
-  "62968fae-154c-4d4f-91f4-abf4b67fd7c0", // 로운 userId (accessToken payload)
-]);
+const adminEmailList = [
+  "oct95@naver.com",
+  "admin@test.com",
+] as const;
 
-/** JWT payload 디코드 (서명검증 X / 프론트 판별용) */
-function decodeJwtPayload(token?: string | null): any | null {
-  try {
-    if (!token) return null;
-    const parts = token.split(".");
-    if (parts.length < 2) return null;
 
-    const base64Url = parts[1];
-    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
-    const padded = base64.padEnd(
-      base64.length + ((4 - (base64.length % 4)) % 4),
-      "="
-    );
+const adminEmails = new Set<string>(
+  adminEmailList.map((email) => email.trim().toLowerCase())
+);
 
-    const json = decodeURIComponent(
-      atob(padded)
-        .split("")
-        .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
-        .join("")
-    );
-
-    return JSON.parse(json);
-  } catch {
-    return null;
-  }
-}
-
-/** session/user/me 어디에 있든 userId/email/nickname 최대한 뽑기 */
-function pickIdentityFromAnywhere(): {
-  userId?: string;
-  email?: string;
-  nickname?: string;
-} {
-  const s = getSession() as any;
-
-  // 1) session 쪽
-  const sessionUserId =
-    s?.user?.id || s?.userId || s?.id || s?.user?.userId || s?.profile?.id;
-  const sessionEmail =
-    s?.user?.email || s?.email || s?.userEmail || s?.profile?.email;
-  const sessionNickname =
-    s?.user?.nickname ||
-    s?.nickname ||
-    s?.userNickname ||
-    s?.profile?.nickname;
-
-  if (sessionUserId || sessionEmail || sessionNickname) {
-    return {
-      userId: sessionUserId,
-      email: sessionEmail,
-      nickname: sessionNickname,
-    };
-  }
-
-  // 2) accessToken jwt payload
-  const token = localStorage.getItem("accessToken") || undefined;
-  const payload = decodeJwtPayload(token);
-
-  const jwtUserId =
-    payload?.userId || payload?.sub || payload?.user?.id || payload?.data?.userId;
-
-  const jwtEmail = payload?.email || payload?.user?.email || payload?.data?.email;
-
-  const jwtNickname =
-    payload?.nickname ||
-    payload?.user?.nickname ||
-    payload?.data?.nickname;
-
-  return { userId: jwtUserId, email: jwtEmail, nickname: jwtNickname };
-}
-
-function isAdminByIdentity(input: {
-  userId?: string;
-  email?: string;
-  nickname?: string;
-}) {
-  const uid = (input.userId ?? "").trim();
-  const e = (input.email ?? "").toLowerCase().trim();
-  const n = (input.nickname ?? "").toLowerCase().trim();
-
-  if (uid && ADMIN_USER_IDS.has(uid)) return true;
-  if (e && ADMIN_EMAILS.has(e)) return true;
-  if (n && ADMIN_NICKNAMES.has(n)) return true;
-
-  return false;
+function isAdminEmail(email?: string | null): boolean {
+  return adminEmails.has((email ?? "").trim().toLowerCase());
 }
 
 function IssueFormModal({
@@ -285,7 +206,6 @@ function IssueCard({
     setIsFlipAnimating(true);
     setIsFlipped(next);
 
-    // ✅ 애니메이션(0.6s) 동안 버튼 렌더링 X
     flipTimerRef.current = window.setTimeout(() => {
       setIsFlipAnimating(false);
       flipTimerRef.current = null;
@@ -298,10 +218,9 @@ function IssueCard({
     };
   }, []);
 
-  // ✅ 카드가 뒤집히는 동안은 아예 렌더링 안 함
+
   const showAdminActions = isAdmin && !hideAdminActions && !isFlipAnimating;
 
-  // ✅ 완전히 뒤집힌(Back=흰 카드) 상태면: 동그라미/테두리 싹 제거(아이콘만)
   const isBackFace = isFlipped && !isFlipAnimating;
 
   const adminBtnClass = isBackFace
@@ -317,7 +236,6 @@ function IssueCard({
       onMouseLeave={() => startFlip(false)}
       style={{ isolation: "isolate" }}
     >
-      {/* ✅ 관리자 액션: 우측상단 고정 / flip 중에는 렌더링 X */}
       {showAdminActions && (
         <div
           className="pointer-events-auto flex gap-0.5"
@@ -340,7 +258,7 @@ function IssueCard({
             }}
             className={adminBtnClass}
             style={{
-              transform: "translateX(8px)", // ✅ 수정 버튼만 삭제쪽으로 붙임
+              transform: "translateX(8px)", 
             }}
           >
             <Pencil className={`w-4 h-4 ${adminIconClass}`} />
@@ -372,7 +290,6 @@ function IssueCard({
             transition={{ duration: 0.6, ease: "easeInOut" }}
             style={{ transformStyle: "preserve-3d" }}
           >
-            {/* Front Side */}
             <div
               className="absolute inset-0 bg-gradient-to-br from-gray-900 to-black rounded-2xl sm:rounded-3xl overflow-hidden border-2 border-white/10 group-hover:border-white/30 transition-all shadow-lg"
               style={{ backfaceVisibility: "hidden" }}
@@ -434,7 +351,7 @@ function IssueCard({
               </div>
             </div>
 
-            {/* Back Side */}
+
             <div
               className="absolute inset-0 bg-white rounded-2xl sm:rounded-3xl overflow-hidden border-2 border-black shadow-lg"
               style={{
@@ -514,7 +431,6 @@ function IssueCard({
                 </div>
               </div>
             </div>
-            {/* /Back Side */}
           </motion.div>
         </div>
       </Link>
@@ -533,14 +449,12 @@ export function IssueList() {
   const hasToken = !!localStorage.getItem("accessToken");
   const isLoggedIn = !!getSession() || hasToken;
 
-  const [meEmail, setMeEmail] = useState<string>("-");
-  const [meNickname, setMeNickname] = useState<string>("-");
-  const [meUserId, setMeUserId] = useState<string>("-");
   const [isAdmin, setIsAdmin] = useState(false);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState<"create" | "edit">("create");
   const [editing, setEditing] = useState<IssueListItem | null>(null);
+  const [editingDetailDescription, setEditingDetailDescription] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const filters = [
@@ -559,35 +473,18 @@ export function IssueList() {
 
     (async () => {
       try {
-        const fallback = pickIdentityFromAnywhere();
-        if (!mounted) return;
-
-        setMeUserId(fallback.userId ?? "-");
-        setMeEmail(fallback.email ?? "-");
-        setMeNickname(fallback.nickname ?? "-");
-        setIsAdmin(isAdminByIdentity(fallback));
-
-        if (isLoggedIn) {
-          try {
-            const me = await userApi.getMe();
-            if (!mounted) return;
-
-            const merged = {
-              userId: me?.id ?? fallback.userId,
-              email: me?.email ?? fallback.email,
-              nickname: me?.nickname ?? fallback.nickname,
-            };
-
-            setMeUserId(merged.userId ?? "-");
-            setMeEmail(merged.email ?? "-");
-            setMeNickname(merged.nickname ?? "-");
-            setIsAdmin(isAdminByIdentity(merged));
-          } catch (e) {
-            console.warn("[users/me] failed:", e);
-          }
+        if (!isLoggedIn) {
+          if (mounted) setIsAdmin(false);
+          return;
         }
+
+        const me = await userApi.getMe();
+        if (!mounted) return;
+        setIsAdmin(isAdminEmail(me?.email));
       } catch (e) {
-        console.warn("[admin-check] failed:", e);
+        if (!mounted) return;
+        setIsAdmin(false);
+        console.warn("[users/me] failed:", e);
       }
     })();
 
@@ -629,15 +526,15 @@ export function IssueList() {
 
     if (filter === "recent") {
       return [...issues].sort((a, b) => {
-        const at = a.createdAt ? new Date(a.createdAt).getTime() : a.id;
-        const bt = b.createdAt ? new Date(b.createdAt).getTime() : b.id;
+        const at = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+        const bt = b.createdAt ? new Date(b.createdAt).getTime() : 0;
         return bt - at;
       });
     }
 
     return [...issues].sort((a, b) => {
-      const ap = (a.participants ?? a.totalVotes ?? 0) as number;
-      const bp = (b.participants ?? b.totalVotes ?? 0) as number;
+      const ap = a.participants ?? a.totalVotes ?? 0;
+      const bp = b.participants ?? b.totalVotes ?? 0;
       return bp - ap;
     });
   }, [issues, filter, isLoggedIn]);
@@ -646,6 +543,7 @@ export function IssueList() {
     setErrorMessage(null);
     setModalMode("create");
     setEditing(null);
+    setEditingDetailDescription("");
     setIsModalOpen(true);
   };
 
@@ -656,11 +554,8 @@ export function IssueList() {
 
       const detail = await issueApi.getIssueDetail(issue.id);
 
-      setEditing({
-        ...issue,
-        _detailDescription: detail.description ?? "",
-      } as any);
-
+      setEditing(issue);
+      setEditingDetailDescription(detail.description ?? "");
       setIsModalOpen(true);
     } catch (e) {
       setErrorMessage(getErrorMessage(e));
@@ -701,6 +596,7 @@ export function IssueList() {
 
       setIsModalOpen(false);
       setEditing(null);
+      setEditingDetailDescription("");
       await refresh();
     } catch (e) {
       setErrorMessage(getErrorMessage(e));
@@ -718,11 +614,10 @@ export function IssueList() {
       ? {
           title: String(editing.title ?? ""),
           subtitle: String(editing.description ?? ""),
-          description: String((editing as any)._detailDescription ?? ""),
+          description: String(editingDetailDescription ?? ""),
         }
       : undefined;
 
-  // ✅ 모달이 열려있는 동안(등록/수정 모두) 카드의 관리자 액션 숨김
   const hideAdminActions = isModalOpen;
 
   return (
