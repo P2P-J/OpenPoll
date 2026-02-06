@@ -15,6 +15,7 @@ env:
   # TODO: 아래 값들을 실제 값으로 변경하세요
   EC2_INSTANCE_ID: i-0123456789abcdef0
   IAM_ROLE_ARN: arn:aws:iam::123456789012:role/OpenPoll-GitHubActions-Role
+  DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
 jobs:
   # CI: Backend 테스트
