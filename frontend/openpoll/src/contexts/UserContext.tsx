@@ -94,9 +94,10 @@ export function UserProvider({ children }: { children: ReactNode }) {
       } catch (err) {
         // 에러 타입에 따라 다르게 처리
         const isNetworkError = err instanceof Error && err.message.includes("Network Error");
+        const axiosError = err as { response?: { status?: number } };
         const isAuthError =
-          (err as any)?.response?.status === 401 ||
-          (err as any)?.response?.status === 403;
+          axiosError?.response?.status === 401 ||
+          axiosError?.response?.status === 403;
 
         if (isNetworkError) {
           // 네트워크 에러: 서버가 꺼져있거나 연결 불가
@@ -141,15 +142,15 @@ export function UserProvider({ children }: { children: ReactNode }) {
           const session = JSON.parse(sessionStr);
           // 세션 정보로 최소한의 User 객체 생성
           setUser({
-            id: 0, // ID는 알 수 없음
+            id: "", // ID는 알 수 없음
             email: session.email || "",
             nickname: session.nickname || "",
             points: session.points || 0,
             age: 0,
             gender: "MALE",
             region: "",
+            hasTakenDos: false,
             createdAt: "",
-            updatedAt: "",
           });
           console.log("[Auth] Loaded cached session data");
         }
