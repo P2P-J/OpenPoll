@@ -30,6 +30,5 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["src"],
-  "exclude": ["src/components/ui"]
+  "include": ["src"]
 }
