@@ -1,4 +1,4 @@
-import { memo, useEffect, useRef } from "react";
+import { memo, useEffect, useRef, useState } from "react";
 import { motion, useSpring, useTransform } from "motion/react";
 
 interface AnimatedNumberProps {
@@ -31,6 +31,8 @@ export const AnimatedNumber = memo(function AnimatedNumber({
 }: AnimatedNumberProps) {
   const prevValue = useRef(value);
   const isFirstRender = useRef(true);
+  const [changeAmount, setChangeAmount] = useState(0);
+  const [hasChanged, setHasChanged] = useState(false);
 
   // framer-motion spring 애니메이션
   const spring = useSpring(value, {
@@ -46,10 +48,6 @@ export const AnimatedNumber = memo(function AnimatedNumber({
       : Math.round(latest).toLocaleString()
   );
 
-  // 변화량 계산
-  const changeAmount = value - prevValue.current;
-  const hasChanged = !isFirstRender.current && changeAmount !== 0;
-
   useEffect(() => {
     spring.set(value);
   }, [value, spring]);
@@ -58,6 +56,9 @@ export const AnimatedNumber = memo(function AnimatedNumber({
     if (isFirstRender.current) {
       isFirstRender.current = false;
     } else {
+      const diff = value - prevValue.current;
+      setChangeAmount(diff);
+      setHasChanged(diff !== 0);
       prevValue.current = value;
     }
   }, [value]);

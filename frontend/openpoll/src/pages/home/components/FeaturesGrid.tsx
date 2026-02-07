@@ -24,8 +24,8 @@ export const FeaturesGrid = memo(function FeaturesGrid({ features }: FeaturesGri
         transition={{ delay: 0.3 }}
         className="text-center mb-8 sm:mb-12 lg:mb-16"
       >
-        <h2 className="text-3xl sm:text-4xl font-bold mb-3 sm:mb-4">주요 기능</h2>
-        <p className="text-lg sm:text-xl text-gray-600">
+        <h2 className="text-3xl sm:text-4xl font-bold mb-3 sm:mb-4 dark:text-white">주요 기능</h2>
+        <p className="text-lg sm:text-xl text-gray-600 dark:text-gray-400">
           오픈폴과 함께 정치에 참여하는 새로운 방법
         </p>
       </motion.div>

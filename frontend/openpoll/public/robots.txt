@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+Disallow: /login
+Disallow: /signup
+Disallow: /register
+Disallow: /profile
+Disallow: /dos/test
+Disallow: /dos/result/
+
+Sitemap: https://openpoll.kr/sitemap.xml
