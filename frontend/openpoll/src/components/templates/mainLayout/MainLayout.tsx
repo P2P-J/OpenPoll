@@ -1,9 +1,11 @@
 import { Outlet, useLocation } from 'react-router-dom';
 import { Header } from '@/components/organisms/header';
 import { Navigation } from '@/components/organisms/navigation';
+import { useScrollToTop } from '@/hooks';
 
 export function MainLayout() {
   const location = useLocation();
+  useScrollToTop();
   const isAuthPage =
     location.pathname === '/login' || location.pathname === '/register';
 

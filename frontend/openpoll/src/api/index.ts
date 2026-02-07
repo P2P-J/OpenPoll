@@ -6,7 +6,24 @@ export * as voteApi from "./vote.api";
 export * as pointApi from "./point.api";
 export * as dashboardApi from "./dashboard.api";
 export * as dosApi from "./dos.api";
-export * as balanceApi from "./balance.api";
+export {
+  getBalanceList,
+  getBalanceDetail,
+  getBalanceComments,
+  voteBalance,
+  createComment,
+  toggleCommentLike,
+  updateComment,
+  deleteComment,
+  createBalance,
+  updateBalance,
+  deleteBalance,
+} from "./balance.api";
+export type {
+  CreateBalanceCommentPayload,
+  CreateBalancePayload,
+  UpdateBalancePayload,
+} from "./balance.api";
 export * as newsApi from "./news.api";
 
 // Export client utilities
