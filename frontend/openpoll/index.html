@@ -2,16 +2,76 @@
 <html lang="ko">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="정치 성향 테스트, 이슈 투표, 중립 뉴스를 한 곳에서" />
-    <meta name="keywords" content="정치, MBTI, 투표, 뉴스, 중립, 여론조사" />
-    <meta property="og:title" content="OpenPoll - 열린 여론조사" />
-    <meta property="og:description" content="정치 성향 테스트, 이슈 투표, 중립 뉴스를 한 곳에서" />
+    <title>OpenPoll - 열린 여론조사 | 정치 성향 테스트 · 밸런스 게임 · 중립 뉴스</title>
+
+    <!-- SEO Meta -->
+    <meta name="description" content="정치 성향 DOS 테스트, 밸런스 게임 투표, AI 중립 뉴스를 한 곳에서. 나의 정치적 좌표를 찾고 이슈에 참여하세요." />
+    <meta name="keywords" content="정치 성향 테스트, 정치 MBTI, 밸런스 게임, 중립 뉴스, 여론조사, 정치 참여, 투표" />
+    <meta name="author" content="OpenPoll" />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://openpoll.kr/" />
+
+    <!-- Open Graph -->
     <meta property="og:type" content="website" />
-    <title>OpenPoll - 열린 여론조사</title>
+    <meta property="og:site_name" content="OpenPoll" />
+    <meta property="og:title" content="OpenPoll - 열린 여론조사" />
+    <meta property="og:description" content="정치 성향 DOS 테스트, 밸런스 게임 투표, AI 중립 뉴스를 한 곳에서. 나의 정치적 좌표를 찾고 이슈에 참여하세요." />
+    <meta property="og:url" content="https://openpoll.kr/" />
+    <meta property="og:locale" content="ko_KR" />
+    <meta property="og:image" content="https://openpoll.kr/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="OpenPoll - 정치 성향 테스트와 열린 여론조사 플랫폼" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="OpenPoll - 열린 여론조사" />
+    <meta name="twitter:description" content="정치 성향 DOS 테스트, 밸런스 게임 투표, AI 중립 뉴스를 한 곳에서." />
+    <meta name="twitter:image" content="https://openpoll.kr/og-image.png" />
+    <meta name="twitter:image:alt" content="OpenPoll - 정치 성향 테스트와 열린 여론조사 플랫폼" />
+
+    <!-- Mobile / PWA -->
+    <meta name="theme-color" content="#000000" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="OpenPoll" />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <link rel="apple-touch-icon" href="/vite.svg" />
+
+    <!-- Structured Data: WebSite -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "OpenPoll",
+      "alternateName": "열린 여론조사",
+      "url": "https://openpoll.kr/",
+      "description": "정치 성향 DOS 테스트, 밸런스 게임 투표, AI 중립 뉴스를 한 곳에서.",
+      "inLanguage": "ko"
+    }
+    </script>
+
+    <!-- Structured Data: Organization -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "OpenPoll",
+      "url": "https://openpoll.kr/",
+      "logo": "https://openpoll.kr/vite.svg"
+    }
+    </script>
   </head>
   <body>
+    <noscript>
+      <div style="padding:2rem;text-align:center;font-family:sans-serif;">
+        <h1>OpenPoll - 열린 여론조사</h1>
+        <p>이 사이트를 이용하려면 JavaScript를 활성화해주세요.</p>
+      </div>
+    </noscript>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
