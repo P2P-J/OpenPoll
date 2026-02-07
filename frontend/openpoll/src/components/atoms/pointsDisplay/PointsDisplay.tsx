@@ -16,17 +16,18 @@ export function PointsDisplay({
   const [prevPoints, setPrevPoints] = useState(points);
   const [delta, setDelta] = useState(0);
 
-  useEffect(() => {
-    if (points !== prevPoints) {
-      setDelta(points - prevPoints);
-      setPrevPoints(points);
+  // Render-time 변화 감지 (React 권장 패턴)
+  if (points !== prevPoints) {
+    setDelta(points - prevPoints);
+    setPrevPoints(points);
+  }
 
-      // Clear delta after animation
-      if (showAnimation) {
-        setTimeout(() => setDelta(0), 1000);
-      }
+  useEffect(() => {
+    if (delta !== 0 && showAnimation) {
+      const timer = setTimeout(() => setDelta(0), 1000);
+      return () => clearTimeout(timer);
     }
-  }, [points, prevPoints, showAnimation]);
+  }, [delta, showAnimation]);
 
   const isLowPoints = points < 25; // Warning when less than 5 votes remaining
   const isCriticalPoints = points < 5; // Can't vote anymore
