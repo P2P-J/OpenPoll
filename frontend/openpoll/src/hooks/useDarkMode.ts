@@ -15,37 +15,25 @@ export function useDarkMode() {
     return savedTheme || 'light';
   });
 
-  const [isDark, setIsDark] = useState(false);
+  // Render-time에서 isDark 계산 (React 권장 패턴)
+  const shouldBeDark = theme === 'dark' ||
+    (theme === 'system' && typeof window !== 'undefined' &&
+     window.matchMedia('(prefers-color-scheme: dark)').matches);
 
+  const [isDark, setIsDark] = useState(shouldBeDark);
+
+  if (shouldBeDark !== isDark) {
+    setIsDark(shouldBeDark);
+  }
+
+  // Effect는 DOM 조작만 담당
   useEffect(() => {
     const root = window.document.documentElement;
-
-    // Remove existing theme classes
     root.classList.remove('light', 'dark');
-
-    // Determine if dark mode should be enabled
-    let shouldBeDark = false;
-
-    if (theme === 'dark') {
-      shouldBeDark = true;
-    } else if (theme === 'system') {
-      shouldBeDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    }
-
-    // Apply theme
-    if (shouldBeDark) {
-      root.classList.add('dark');
-      root.setAttribute('data-theme', 'dark');
-    } else {
-      root.classList.add('light');
-      root.setAttribute('data-theme', 'light');
-    }
-
-    setIsDark(shouldBeDark);
-
-    // Save to localStorage
+    root.classList.add(isDark ? 'dark' : 'light');
+    root.setAttribute('data-theme', isDark ? 'dark' : 'light');
     localStorage.setItem('theme', theme);
-  }, [theme]);
+  }, [theme, isDark]);
 
   // Listen to system theme changes when in system mode
   useEffect(() => {

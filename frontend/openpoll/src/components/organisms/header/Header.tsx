@@ -12,7 +12,7 @@ export function Header() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // 드롭다운 외부 클릭 감지
+  // 드롭다운 외부 클릭 및 Escape 키 감지
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -23,12 +23,20 @@ export function Header() {
       }
     };
 
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setIsDropdownOpen(false);
+      }
+    };
+
     if (isDropdownOpen) {
       document.addEventListener("mousedown", handleClickOutside);
+      document.addEventListener("keydown", handleKeyDown);
     }
 
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleKeyDown);
     };
   }, [isDropdownOpen]);
 
@@ -51,8 +59,8 @@ export function Header() {
     try {
       await logout();
       navigate(ROUTES.HOME);
-    } catch (error) {
-      console.error("Logout failed:", error);
+    } catch {
+      // 로그아웃 실패는 무시
     }
   };
 

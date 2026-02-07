@@ -1,4 +1,4 @@
-import { apiClient } from "./client";
+import { apiClient, API_BASE_URL } from "./client";
 import type {
   DashboardStats,
   AgeGroupStats,
@@ -46,7 +46,6 @@ export const subscribeToStream = (
   onMessage: (data: DashboardStats) => void,
   onError?: (error: Event) => void,
 ): EventSource => {
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000/api";
   const eventSource = new EventSource(
     `${API_BASE_URL}/dashboard/stream`,
   );
@@ -57,8 +56,8 @@ export const subscribeToStream = (
       if (data.type === "init" || data.type === "vote_update") {
         onMessage(data.stats);
       }
-    } catch (error) {
-      console.error("Failed to parse SSE data:", error);
+    } catch {
+      // SSE 데이터 파싱 실패는 무시
     }
   };
 
