@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react';
 import { motion } from 'motion/react';
 import { Check, Loader2 } from 'lucide-react';
-import { playSoundEffect } from '@/utils/sound';
+import { playSoundEffect } from '@/shared/utils/sound';
 
 export interface VoteButtonProps {
   isSelected: boolean;
