@@ -70,7 +70,6 @@ export function PasswordChangeModal({
     try {
       setIsChangingPassword(true);
       // 실제 API 호출
-      // @ts-ignore: Promise<void> await is required for async flow control
       await changePassword(currentPassword, newPassword);
 
       setPasswordSuccess(true);

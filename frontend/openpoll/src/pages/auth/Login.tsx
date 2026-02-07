@@ -13,7 +13,7 @@ type LoginErrors = {
 export function Login() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { login, isLoading } = useUser();
+  const { login } = useUser();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
