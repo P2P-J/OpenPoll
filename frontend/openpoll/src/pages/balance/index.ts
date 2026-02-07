@@ -1,2 +1,2 @@
-export * from "./IssueList";
-export * from "./IssueDetail";
+export { BalanceList } from "./balanceList";
+export { BalanceDetail } from "./balanceDetail";

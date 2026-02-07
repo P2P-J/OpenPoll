@@ -135,28 +135,31 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
     // 로컬 세션 정보로 임시 사용자 데이터 설정
     const tryLoadLocalSession = () => {
-      try {
-        const sessionStr = localStorage.getItem("openpoll_session_v1");
-        if (sessionStr) {
-          const session = JSON.parse(sessionStr);
-          // 세션 정보로 최소한의 User 객체 생성
-          setUser({
-            id: 0, // ID는 알 수 없음
-            email: session.email || "",
-            nickname: session.nickname || "",
-            points: session.points || 0,
-            age: 0,
-            gender: "MALE",
-            region: "",
-            createdAt: "",
-            updatedAt: "",
-          });
-          console.log("[Auth] Loaded cached session data");
+        try {
+          const sessionStr = localStorage.getItem("openpoll_session_v1");
+          if (sessionStr) {
+            const session = JSON.parse(sessionStr);
+
+            setUser({
+              id: "local-session",
+              email: session.email ?? "",
+              nickname: session.nickname ?? "",
+              points: Number(session.points ?? 0),
+              age: 0,
+              gender: "MALE",
+              region: "",
+              hasTakenDos: false,
+              role: "USER",
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString(),
+            } as User);
+
+            console.log("[Auth] Loaded cached session data");
+          }
+        } catch (e) {
+          console.error("[Auth] Failed to load local session:", e);
         }
-      } catch (e) {
-        console.error("[Auth] Failed to load local session:", e);
-      }
-    };
+      };
 
     initializeAuth();
 
