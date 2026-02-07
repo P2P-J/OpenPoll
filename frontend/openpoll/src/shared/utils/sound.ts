@@ -19,9 +19,10 @@ class SoundManager {
   private initAudioContext() {
     if (!this.audioContext && typeof window !== 'undefined') {
       try {
-        this.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-      } catch (error) {
-        console.warn('Web Audio API not supported:', error);
+        const Win = window as unknown as { webkitAudioContext?: typeof AudioContext };
+        this.audioContext = new (window.AudioContext || Win.webkitAudioContext!)();
+      } catch {
+        // Web Audio API not supported
       }
     }
   }
@@ -50,8 +51,8 @@ class SoundManager {
 
       oscillator.start(this.audioContext.currentTime);
       oscillator.stop(this.audioContext.currentTime + duration / 1000);
-    } catch (error) {
-      console.warn('Failed to play sound:', error);
+    } catch {
+      // 사운드 재생 실패는 무시
     }
   }
 

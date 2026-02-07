@@ -14,6 +14,7 @@ import {
   cancelProactiveRefresh,
   clearTokens,
 } from "@/api/client";
+import type { AxiosError } from "axios";
 import type { User, AuthResponse } from "@/types/api.types";
 
 interface UserContextType {
@@ -57,10 +58,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
       try {
         // Access Token이 만료됐으면 Refresh Token으로 갱신 시도
         if (isTokenExpired()) {
-          console.log("[Auth] Access token expired, attempting refresh...");
-
           if (!refreshToken) {
-            console.log("[Auth] No refresh token available");
             clearTokens();
             setIsLoading(false);
             return;
@@ -68,13 +66,10 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
           const result = await refreshTokens();
           if (!result) {
-            console.log("[Auth] Token refresh failed");
             clearTokens();
             setIsLoading(false);
             return;
           }
-
-          console.log("[Auth] Token refreshed successfully");
         }
 
         // 사용자 정보 조회
@@ -94,22 +89,19 @@ export function UserProvider({ children }: { children: ReactNode }) {
       } catch (err) {
         // 에러 타입에 따라 다르게 처리
         const isNetworkError = err instanceof Error && err.message.includes("Network Error");
+        const axiosErr = err as AxiosError;
         const isAuthError =
-          (err as any)?.response?.status === 401 ||
-          (err as any)?.response?.status === 403;
+          axiosErr?.response?.status === 401 ||
+          axiosErr?.response?.status === 403;
 
         if (isNetworkError) {
           // 네트워크 에러: 서버가 꺼져있거나 연결 불가
-          console.warn("[Auth] Cannot connect to server. Please ensure backend is running.");
-          // 로컬 세션 정보가 있으면 임시로 사용
           tryLoadLocalSession();
         } else if (isAuthError) {
           // 인증 에러: 토큰이 유효하지 않음
-          console.error("[Auth] Authentication failed. Clearing tokens.");
           clearTokens();
         } else {
           // 기타 서버 에러 (500 등): 토큰을 유지하고 로컬 세션 사용
-          console.warn("[Auth] Server error during initialization. Using cached session.");
           tryLoadLocalSession();
           // 백그라운드에서 재시도
           setTimeout(async () => {
@@ -122,9 +114,8 @@ export function UserProvider({ children }: { children: ReactNode }) {
                 points: userData.points,
               };
               localStorage.setItem("openpoll_session_v1", JSON.stringify(session));
-              console.log("[Auth] Successfully refreshed user data in background");
-            } catch (retryErr) {
-              console.warn("[Auth] Background refresh failed:", retryErr);
+            } catch {
+              // 백그라운드 갱신 실패는 무시
             }
           }, 5000);
         }
@@ -151,10 +142,9 @@ export function UserProvider({ children }: { children: ReactNode }) {
             createdAt: "",
             hasTakenDos: false,
           });
-          console.log("[Auth] Loaded cached session data");
         }
-      } catch (e) {
-        console.error("[Auth] Failed to load local session:", e);
+      } catch {
+        // 로컬 세션 로드 실패는 무시
       }
     };
 
@@ -250,8 +240,8 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
     try {
       await authApi.logout();
-    } catch (err) {
-      console.error("Logout error:", err);
+    } catch {
+      // 로그아웃 API 에러는 무시
     } finally {
       // Clear tokens and user regardless of API call success
       clearTokens();
@@ -280,8 +270,8 @@ export function UserProvider({ children }: { children: ReactNode }) {
       };
       localStorage.setItem("openpoll_session_v1", JSON.stringify(session));
       window.dispatchEvent(new Event("storage"));
-    } catch (err) {
-      console.error("Failed to refresh user:", err);
+    } catch {
+      // 사용자 갱신 실패는 무시
     }
   }, []);
 
