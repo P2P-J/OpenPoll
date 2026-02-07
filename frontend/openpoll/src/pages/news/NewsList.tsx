@@ -1,61 +1,37 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { ExternalLink, Sparkles, ChevronLeft, ChevronRight } from 'lucide-react';
 import { newsApi } from '@/api';
 import type { NewsArticle } from '@/types/api.types';
 
-const categories = ['전체', '경제', '외교', '국회', '선거', '사회'];
-
+const CATEGORIES = ['전체', '경제', '외교', '국회', '선거', '사회'] as const;
 const ITEMS_PER_PAGE = 5;
+const POLLING_INTERVAL_MS = 40 * 1000; // 40 seconds (테스트용)
+// const POLLING_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes (프로덕션용)
 
-// Helper function to get category from tags
-const getCategoryFromTags = (tags: string[]): string => {
-  const categoryMap: Record<string, string> = {
-    '경제': '경제',
-    '금리': '경제',
-    '수출': '경제',
-    '물가': '경제',
-    '외교': '외교',
-    '정상회담': '외교',
-    '국제협력': '외교',
-    '국회': '국회',
-    '법안': '국회',
-    '예산안': '국회',
-    '선거': '선거',
-    '투표': '선거',
-    '여론조사': '선거',
-    '사회': '사회',
-    '복지': '사회',
-    '교육': '사회',
-    '민생': '국회',
-    '개혁': '국회',
-  };
-
-  for (const tag of tags) {
-    if (categoryMap[tag]) {
-      return categoryMap[tag];
-    }
-  }
-  return '사회'; // 기본값
+const CATEGORY_TAG_MAP: Record<string, string> = {
+  '경제': '경제',
+  '금리': '경제',
+  '수출': '경제',
+  '물가': '경제',
+  '외교': '외교',
+  '정상회담': '외교',
+  '국제협력': '외교',
+  '국회': '국회',
+  '법안': '국회',
+  '예산안': '국회',
+  '선거': '선거',
+  '투표': '선거',
+  '여론조사': '선거',
+  '사회': '사회',
+  '복지': '사회',
+  '교육': '사회',
+  '민생': '국회',
+  '개혁': '국회',
 };
 
-// Helper function to format time ago
-const getTimeAgo = (createdAt: string): string => {
-  const now = new Date();
-  const created = new Date(createdAt);
-  const diffInMinutes = Math.floor((now.getTime() - created.getTime()) / (1000 * 60));
-
-  if (diffInMinutes < 60) {
-    return `${diffInMinutes}분 전`;
-  } else if (diffInMinutes < 1440) {
-    const hours = Math.floor(diffInMinutes / 60);
-    return `${hours}시간 전`;
-  } else {
-    const days = Math.floor(diffInMinutes / 1440);
-    return `${days}일 전`;
-  }
-};
+const DEFAULT_CATEGORY = '사회';
 
 interface NewsCardProps {
   news: NewsArticle;
@@ -63,8 +39,136 @@ interface NewsCardProps {
   category: string;
 }
 
+interface PaginationProps {
+  currentPage: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
+}
+
+interface ArticleWithCategory extends NewsArticle {
+  category: string;
+}
+
+const getCategoryFromTags = (tags: string[]): string => {
+  for (const tag of tags) {
+    if (CATEGORY_TAG_MAP[tag]) {
+      return CATEGORY_TAG_MAP[tag];
+    }
+  }
+  return DEFAULT_CATEGORY;
+};
+
+const getTimeAgo = (createdAt: string): string => {
+  const now = new Date();
+  const created = new Date(createdAt);
+  const diffInMinutes = Math.floor((now.getTime() - created.getTime()) / (1000 * 60));
+
+  if (diffInMinutes < 60) {
+    return `${diffInMinutes}분 전`;
+  }
+  if (diffInMinutes < 1440) {
+    return `${Math.floor(diffInMinutes / 60)}시간 전`;
+  }
+  return `${Math.floor(diffInMinutes / 1440)}일 전`;
+};
+
+interface UseNewsArticlesReturn {
+  articles: NewsArticle[];
+  isLoading: boolean;
+  error: string | null;
+}
+
+const useNewsArticles = (): UseNewsArticlesReturn => {
+  const [articles, setArticles] = useState<NewsArticle[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchArticles = useCallback(async () => {
+    try {
+      const data = await newsApi.getArticles();
+      setArticles(data);
+      setError(null);
+    } catch (err) {
+      console.error('Failed to fetch articles:', err);
+      setError('뉴스를 불러오는데 실패했습니다.');
+    }
+  }, []);
+
+  // Scroll to top on mount
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
+  // Initial fetch on mount
+  useEffect(() => {
+    const initialFetch = async () => {
+      setIsLoading(true);
+      await fetchArticles();
+      setIsLoading(false);
+    };
+    initialFetch();
+  }, [fetchArticles]);
+
+  // Polling: trigger crawling periodically
+  useEffect(() => {
+    console.log('[News Polling] Starting crawling trigger with interval:', POLLING_INTERVAL_MS / 1000, 'seconds');
+
+    const intervalId = setInterval(() => {
+      console.log('[News Polling] Triggering backend crawling (UI will NOT auto-update)...');
+      newsApi.refreshNews()
+        .then(() => console.log('[News Polling] Crawling triggered successfully.'))
+        .catch((err) => console.error('[News Polling] Failed to trigger crawling:', err));
+    }, POLLING_INTERVAL_MS);
+
+    return () => {
+      console.log('[News Polling] Stopping crawling trigger');
+      clearInterval(intervalId);
+    };
+  }, []);
+
+  return { articles, isLoading, error };
+};
+
+function LoadingState() {
+  return (
+    <div className="pt-16 min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="text-center">
+        <Sparkles className="w-12 h-12 mx-auto mb-4 animate-pulse" />
+        <p className="text-gray-600">뉴스를 불러오는 중...</p>
+      </div>
+    </div>
+  );
+}
+
+function ErrorState({ message }: { message: string }) {
+  return (
+    <div className="pt-16 min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="text-center">
+        <p className="text-red-600 mb-4">{message}</p>
+        <button
+          onClick={() => window.location.reload()}
+          className="px-6 py-3 bg-black text-white rounded-xl font-semibold hover:bg-gray-800 transition-colors"
+        >
+          다시 시도
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function EmptyState() {
+  return (
+    <div className="text-center py-12">
+      <p className="text-gray-500">해당 카테고리의 뉴스가 없습니다.</p>
+    </div>
+  );
+}
+
 function NewsCard({ news, index, category }: NewsCardProps) {
-  const summaryLines = news.shortSummary.split('\n').filter(line => line.trim());
+  const summaryLines = useMemo(
+    () => news.shortSummary.split('\n').filter(line => line.trim()),
+    [news.shortSummary]
+  );
 
   return (
     <motion.article
@@ -90,10 +194,7 @@ function NewsCard({ news, index, category }: NewsCardProps) {
                   className="rounded-full flex items-center justify-center"
                   style={{ width: '16px', height: '16px', minWidth: '16px', backgroundColor: '#3b82f6' }}
                 >
-                  <div
-                    className="rounded-full bg-white"
-                    style={{ width: '8px', height: '8px' }}
-                  />
+                  <div className="rounded-full bg-white" style={{ width: '8px', height: '8px' }} />
                 </div>
               </div>
               <span className="text-sm text-gray-500">{getTimeAgo(news.createdAt)}</span>
@@ -108,12 +209,10 @@ function NewsCard({ news, index, category }: NewsCardProps) {
       {/* Main Content Area */}
       <Link to={`/news/${news.id}`} className="block">
         <div className="py-8 sm:py-9">
-          {/* Title */}
           <h2 className="text-xl sm:text-2xl font-bold mb-6 sm:mb-7 leading-tight hover:text-gray-600 transition-colors">
             {news.refinedTitle}
           </h2>
 
-          {/* Summary */}
           <div className="space-y-3 mb-6 sm:mb-7">
             {summaryLines.map((line, i) => (
               <div key={i} className="flex items-start text-base text-gray-700">
@@ -123,7 +222,6 @@ function NewsCard({ news, index, category }: NewsCardProps) {
             ))}
           </div>
 
-          {/* Tags */}
           <div className="flex flex-wrap gap-2">
             {news.relatedTags.slice(0, 4).map((tag) => (
               <span
@@ -162,45 +260,35 @@ function NewsCard({ news, index, category }: NewsCardProps) {
   );
 }
 
-function Pagination({ currentPage, totalPages, onPageChange }: {
-  currentPage: number;
-  totalPages: number;
-  onPageChange: (page: number) => void;
-}) {
-  const getPageNumbers = () => {
-    const pages = [];
+function Pagination({ currentPage, totalPages, onPageChange }: PaginationProps) {
+  const pageNumbers = useMemo(() => {
+    const pages: (number | 'ellipsis')[] = [];
     const showEllipsis = totalPages > 7;
 
     if (!showEllipsis) {
-      for (let i = 1; i <= totalPages; i++) {
-        pages.push(i);
-      }
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+    } else if (currentPage <= 4) {
+      for (let i = 1; i <= 5; i++) pages.push(i);
+      pages.push('ellipsis', totalPages);
+    } else if (currentPage >= totalPages - 3) {
+      pages.push(1, 'ellipsis');
+      for (let i = totalPages - 4; i <= totalPages; i++) pages.push(i);
     } else {
-      if (currentPage <= 4) {
-        for (let i = 1; i <= 5; i++) pages.push(i);
-        pages.push('ellipsis');
-        pages.push(totalPages);
-      } else if (currentPage >= totalPages - 3) {
-        pages.push(1);
-        pages.push('ellipsis');
-        for (let i = totalPages - 4; i <= totalPages; i++) pages.push(i);
-      } else {
-        pages.push(1);
-        pages.push('ellipsis');
-        for (let i = currentPage - 1; i <= currentPage + 1; i++) pages.push(i);
-        pages.push('ellipsis');
-        pages.push(totalPages);
-      }
+      pages.push(1, 'ellipsis');
+      for (let i = currentPage - 1; i <= currentPage + 1; i++) pages.push(i);
+      pages.push('ellipsis', totalPages);
     }
 
     return pages;
-  };
+  }, [currentPage, totalPages]);
+
+  const handlePrevious = useCallback(() => onPageChange(currentPage - 1), [currentPage, onPageChange]);
+  const handleNext = useCallback(() => onPageChange(currentPage + 1), [currentPage, onPageChange]);
 
   return (
     <div className="flex items-center justify-center space-x-2">
-      {/* Previous Button */}
       <button
-        onClick={() => onPageChange(currentPage - 1)}
+        onClick={handlePrevious}
         disabled={currentPage === 1}
         className={`p-2 rounded-xl border transition-all ${currentPage === 1
           ? 'border-gray-200 text-gray-300 cursor-not-allowed'
@@ -210,20 +298,13 @@ function Pagination({ currentPage, totalPages, onPageChange }: {
         <ChevronLeft className="w-5 h-5" />
       </button>
 
-      {/* Page Numbers */}
-      {getPageNumbers().map((page, index) => {
-        if (page === 'ellipsis') {
-          return (
-            <span key={`ellipsis-${index}`} className="px-2 text-gray-400">
-              ...
-            </span>
-          );
-        }
-
-        return (
+      {pageNumbers.map((page, index) =>
+        page === 'ellipsis' ? (
+          <span key={`ellipsis-${index}`} className="px-2 text-gray-400">...</span>
+        ) : (
           <button
             key={page}
-            onClick={() => onPageChange(page as number)}
+            onClick={() => onPageChange(page)}
             className={`min-w-[40px] h-10 px-3 rounded-xl font-semibold transition-all ${currentPage === page
               ? 'bg-black text-white shadow-lg'
               : 'bg-white border border-gray-200 text-gray-700 hover:border-gray-400'
@@ -231,12 +312,11 @@ function Pagination({ currentPage, totalPages, onPageChange }: {
           >
             {page}
           </button>
-        );
-      })}
+        )
+      )}
 
-      {/* Next Button */}
       <button
-        onClick={() => onPageChange(currentPage + 1)}
+        onClick={handleNext}
         disabled={currentPage === totalPages}
         className={`p-2 rounded-xl border transition-all ${currentPage === totalPages
           ? 'border-gray-200 text-gray-300 cursor-not-allowed'
@@ -249,137 +329,51 @@ function Pagination({ currentPage, totalPages, onPageChange }: {
   );
 }
 
+
 export function NewsList() {
   const [selectedCategory, setSelectedCategory] = useState('전체');
   const [currentPage, setCurrentPage] = useState(1);
-  const [articles, setArticles] = useState<NewsArticle[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { articles, isLoading, error } = useNewsArticles();
 
-  // Fetch articles function
-  const fetchArticles = async () => {
-    try {
-      const data = await newsApi.getArticles();
-      setArticles(data);
-      setError(null);
-    } catch (err) {
-      console.error('Failed to fetch articles:', err);
-      setError('뉴스를 불러오는데 실패했습니다.');
-    }
-  };
+  // Memoized: articles with category
+  const articlesWithCategory = useMemo<ArticleWithCategory[]>(
+    () => articles.map(article => ({
+      ...article,
+      category: getCategoryFromTags(article.relatedTags),
+    })),
+    [articles]
+  );
 
-  // Refresh news (trigger crawling + fetch new articles)
-  const refreshNews = async () => {
-    try {
-      console.log('[News Polling] Triggering news refresh...');
-      await newsApi.refreshNews();
-      console.log('[News Polling] Refresh complete, fetching articles...');
-      await fetchArticles();
-      console.log('[News Polling] Articles updated');
-    } catch (err) {
-      console.error('[News Polling] Failed to refresh news:', err);
-      // Don't show error to user for background polling failures
-    }
-  };
+  // Memoized: filtered news by category
+  const filteredNews = useMemo(
+    () => selectedCategory === '전체'
+      ? articlesWithCategory
+      : articlesWithCategory.filter(news => news.category === selectedCategory),
+    [articlesWithCategory, selectedCategory]
+  );
 
-  // Scroll to top on mount
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);
+  // Memoized: pagination values
+  const { totalPages, currentNews } = useMemo(() => {
+    const total = Math.ceil(filteredNews.length / ITEMS_PER_PAGE);
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const current = filteredNews.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+    return { totalPages: total, currentNews: current };
+  }, [filteredNews, currentPage]);
 
-  // Initial fetch on mount
-  useEffect(() => {
-    const initialFetch = async () => {
-      try {
-        setIsLoading(true);
-        await fetchArticles();
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    initialFetch();
-  }, []);
-
-  // Polling: trigger crawling every 40 seconds (for testing)
-  // Note: This only triggers backend crawling, does NOT auto-update the UI
-  // Users must manually refresh the browser to see new articles
-  useEffect(() => {
-    const POLLING_INTERVAL = 40 * 1000; // 40 seconds (테스트용)
-    // const POLLING_INTERVAL = 5 * 60 * 1000; // 5 minutes (프로덕션용)
-
-    console.log('[News Polling] Starting crawling trigger with interval:', POLLING_INTERVAL / 1000, 'seconds');
-
-    const intervalId = setInterval(() => {
-      // 크롤링만 트리거, UI는 업데이트하지 않음
-      console.log('[News Polling] Triggering backend crawling (UI will NOT auto-update)...');
-      newsApi.refreshNews()
-        .then(() => {
-          console.log('[News Polling] Crawling triggered successfully. Refresh browser to see new articles.');
-        })
-        .catch((err) => {
-          console.error('[News Polling] Failed to trigger crawling:', err);
-        });
-    }, POLLING_INTERVAL);
-
-    // Cleanup on unmount
-    return () => {
-      console.log('[News Polling] Stopping crawling trigger');
-      clearInterval(intervalId);
-    };
-  }, []);
-
-  // Add category to each article based on tags
-  const articlesWithCategory = articles.map(article => ({
-    ...article,
-    category: getCategoryFromTags(article.relatedTags),
-  }));
-
-  const filteredNews = selectedCategory === '전체'
-    ? articlesWithCategory
-    : articlesWithCategory.filter((news) => news.category === selectedCategory);
-
-  const totalPages = Math.ceil(filteredNews.length / ITEMS_PER_PAGE);
-  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const endIndex = startIndex + ITEMS_PER_PAGE;
-  const currentNews = filteredNews.slice(startIndex, endIndex);
-
-  const handleCategoryChange = (category: string) => {
+  // Callbacks
+  const handleCategoryChange = useCallback((category: string) => {
     setSelectedCategory(category);
     setCurrentPage(1);
-  };
+  }, []);
 
-  const handlePageChange = (page: number) => {
+  const handlePageChange = useCallback((page: number) => {
     setCurrentPage(page);
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
+  }, []);
 
-  if (isLoading) {
-    return (
-      <div className="pt-16 min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <Sparkles className="w-12 h-12 mx-auto mb-4 animate-pulse" />
-          <p className="text-gray-600">뉴스를 불러오는 중...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="pt-16 min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-red-600 mb-4">{error}</p>
-          <button
-            onClick={() => window.location.reload()}
-            className="px-6 py-3 bg-black text-white rounded-xl font-semibold hover:bg-gray-800 transition-colors"
-          >
-            다시 시도
-          </button>
-        </div>
-      </div>
-    );
-  }
+  // Render states
+  if (isLoading) return <LoadingState />;
+  if (error) return <ErrorState message={error} />;
 
   return (
     <div className="pt-16 min-h-screen bg-gray-50">
@@ -405,12 +399,9 @@ export function NewsList() {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.1 }}
           className="flex overflow-x-auto space-x-3 mb-8 pb-2 scrollbar-hide"
-          style={{
-            scrollbarWidth: 'none',
-            msOverflowStyle: 'none',
-          }}
+          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
-          {categories.map((category) => (
+          {CATEGORIES.map((category) => (
             <button
               key={category}
               onClick={() => handleCategoryChange(category)}
@@ -433,7 +424,6 @@ export function NewsList() {
               ))}
             </div>
 
-            {/* Pagination */}
             {totalPages > 1 && (
               <motion.div
                 initial={{ opacity: 0 }}
@@ -450,9 +440,7 @@ export function NewsList() {
             )}
           </>
         ) : (
-          <div className="text-center py-12">
-            <p className="text-gray-500">해당 카테고리의 뉴스가 없습니다.</p>
-          </div>
+          <EmptyState />
         )}
       </div>
     </div>
