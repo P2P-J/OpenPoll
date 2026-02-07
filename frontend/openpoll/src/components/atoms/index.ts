@@ -7,3 +7,5 @@ export * from './icon';
 export * from './progressBar';
 export * from './voteButton';
 export * from './pointsDisplay';
+export * from './loadingSpinner';
+export * from './themeToggle';

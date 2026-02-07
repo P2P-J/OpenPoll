@@ -1,2 +1,2 @@
-export * from "./IssueList";
-export * from "./IssueDetail";
+export * from "./BalanceList";
+export * from "./BalanceDetail";
