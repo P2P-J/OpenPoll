@@ -12,9 +12,9 @@ import {
   Plus,
 } from "lucide-react";
 
-import { issueApi, userApi, getErrorMessage } from "@/api";
+import { balanceApi, userApi, getErrorMessage } from "@/api";
 import { getSession } from "@/shared/utils/localAuth";
-import type { IssueListItem } from "@/types/issue.types";
+import type { BalanceListItem } from "@/types/balance.types";
 
 const ADMIN_EMAILS = new Set<string>(["oct95@naver.com", "admin@test.com"]);
 const ADMIN_NICKNAMES = new Set<string>(["로운"].map((x) => x.toLowerCase()));
@@ -250,12 +250,12 @@ function IssueCard({
   onEdit,
   onDelete,
 }: {
-  issue: IssueListItem;
+  issue: BalanceListItem;
   isLoggedIn: boolean;
   isAdmin: boolean;
   hideAdminActions: boolean;
-  onEdit: (issue: IssueListItem) => void;
-  onDelete: (issue: IssueListItem) => void;
+  onEdit: (issue: BalanceListItem) => void;
+  onDelete: (issue: BalanceListItem) => void;
 }) {
   const [isFlipped, setIsFlipped] = useState(false);
   const [isFlipAnimating, setIsFlipAnimating] = useState(false);
@@ -522,11 +522,11 @@ function IssueCard({
   );
 }
 
-export function IssueList() {
+export function BalanceList() {
   const location = useLocation();
 
   const [filter, setFilter] = useState<"hot" | "recent" | "completed">("hot");
-  const [issues, setIssues] = useState<IssueListItem[]>([]);
+  const [issues, setIssues] = useState<BalanceListItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -540,7 +540,7 @@ export function IssueList() {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState<"create" | "edit">("create");
-  const [editing, setEditing] = useState<IssueListItem | null>(null);
+  const [editing, setEditing] = useState<BalanceListItem | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const filters = [
@@ -550,7 +550,7 @@ export function IssueList() {
   ];
 
   const refresh = async () => {
-    const data = await issueApi.getIssueList();
+    const data = await balanceApi.getBalanceList();
     setIssues(data);
   };
 
@@ -604,7 +604,7 @@ export function IssueList() {
         setIsLoading(true);
         setErrorMessage(null);
 
-        const data = await issueApi.getIssueList();
+        const data = await balanceApi.getBalanceList();
         if (!mounted) return;
         setIssues(data);
       } catch (e) {
@@ -649,12 +649,12 @@ export function IssueList() {
     setIsModalOpen(true);
   };
 
-  const openEdit = async (issue: IssueListItem) => {
+  const openEdit = async (issue: BalanceListItem) => {
     try {
       setErrorMessage(null);
       setModalMode("edit");
 
-      const detail = await issueApi.getIssueDetail(issue.id);
+      const detail = await balanceApi.getBalanceDetail(issue.id);
 
       setEditing({
         ...issue,
@@ -667,14 +667,14 @@ export function IssueList() {
     }
   };
 
-  const handleDelete = async (issue: IssueListItem) => {
+  const handleDelete = async (issue: BalanceListItem) => {
     const ok = window.confirm(`"${issue.title}" 이슈를 삭제할까요?`);
     if (!ok) return;
 
     try {
       setIsSubmitting(true);
       setErrorMessage(null);
-      await issueApi.deleteIssue(issue.id);
+      await balanceApi.deleteBalance(issue.id);
       await refresh();
     } catch (e) {
       setErrorMessage(getErrorMessage(e));
@@ -693,10 +693,10 @@ export function IssueList() {
       setErrorMessage(null);
 
       if (modalMode === "create") {
-        await issueApi.createIssue(payload);
+        await balanceApi.createBalance(payload);
       } else {
         if (!editing) throw new Error("수정 대상을 찾을 수 없습니다.");
-        await issueApi.updateIssue(editing.id, payload);
+        await balanceApi.updateBalance(editing.id, payload);
       }
 
       setIsModalOpen(false);

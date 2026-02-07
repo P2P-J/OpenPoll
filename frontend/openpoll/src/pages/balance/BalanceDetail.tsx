@@ -12,13 +12,13 @@ import {
   Check,
 } from "lucide-react";
 
-import { issueApi, getErrorMessage } from "@/api";
+import { balanceApi, getErrorMessage } from "@/api";
 import { LoginModal } from "@/components/molecules/loginModal";
 import { useUser } from "@/contexts/UserContext";
-import type { IssueDetail as IssueDetailType } from "@/types/issue.types";
-import type { IssueVoteOption } from "@/types/issue.types";
+import type { BalanceDetail as BalanceDetailType } from "@/types/balance.types";
+import type { BalanceVoteOption } from "@/types/balance.types";
 
-function getAgreeCountSafe(issue: IssueDetailType) {
+function getAgreeCountSafe(issue: BalanceDetailType) {
   const total = issue.totalVotes ?? 0;
   if (typeof (issue as any).agreeCount === "number")
     return (issue as any).agreeCount as number;
@@ -244,7 +244,7 @@ function getAuthorLabel(c: any) {
   return "익명";
 }
 
-function getDisagreeCountSafe(issue: IssueDetailType) {
+function getDisagreeCountSafe(issue: BalanceDetailType) {
   const total = issue.totalVotes ?? 0;
   if (typeof (issue as any).disagreeCount === "number")
     return (issue as any).disagreeCount as number;
@@ -252,7 +252,7 @@ function getDisagreeCountSafe(issue: IssueDetailType) {
   return Math.max(0, total - agree);
 }
 
-function getTotalVotesSafe(issue: IssueDetailType) {
+function getTotalVotesSafe(issue: BalanceDetailType) {
   const anyIssue = issue as any;
 
   if (typeof anyIssue.totalVotes === "number") return anyIssue.totalVotes;
@@ -266,10 +266,10 @@ function getTotalVotesSafe(issue: IssueDetailType) {
 }
 
 function applyVoteOptimistic(
-  issue: IssueDetailType,
-  prevVote: IssueVoteOption | null,
-  nextVote: IssueVoteOption | null
-): IssueDetailType {
+  issue: BalanceDetailType,
+  prevVote: BalanceVoteOption | null,
+  nextVote: BalanceVoteOption | null
+): BalanceDetailType {
   let totalVotes = getTotalVotesSafe(issue);
   let agreeCount = getAgreeCountSafe(issue);
   let disagreeCount = getDisagreeCountSafe(issue);
@@ -307,17 +307,17 @@ function applyVoteOptimistic(
     disagreeCount,
     agreePercent,
     disagreePercent,
-  } as IssueDetailType;
+  } as BalanceDetailType;
 }
 
-export function IssueDetail() {
+export function BalanceDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [isAdmin, setIsAdmin] = useState(false);
 
   const { isAuthenticated } = useUser();
 
-  const [selectedOption, setSelectedOption] = useState<IssueVoteOption | null>(null);
+  const [selectedOption, setSelectedOption] = useState<BalanceVoteOption | null>(null);
   const [comment, setComment] = useState("");
 
   const [replyToId, setReplyToId] = useState<string | null>(null);
@@ -326,7 +326,7 @@ export function IssueDetail() {
   const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
   const [editingContent, setEditingContent] = useState("");
 
-  const [issue, setIssue] = useState<IssueDetailType | null>(null);
+  const [issue, setIssue] = useState<BalanceDetailType | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -361,7 +361,7 @@ export function IssueDetail() {
       if (!mounted) return;
       setIsAdmin(nextAdmin);
     } catch (e) {
-      console.warn("[IssueDetail admin-check failed]", e);
+      console.warn("[BalanceDetail admin-check failed]", e);
     }
   })();
 
@@ -389,7 +389,7 @@ export function IssueDetail() {
     if (Number.isNaN(commentIdNum)) return;
 
     try {
-      await (issueApi as any).deleteComment(issue.id, commentIdNum);
+      await (balanceApi as any).deleteComment(issue.id, commentIdNum);
 
       const remove = (nodes: any[]): any[] => {
         return (nodes ?? [])
@@ -434,7 +434,7 @@ export function IssueDetail() {
         const issueId = Number(id);
         if (!id || Number.isNaN(issueId)) throw new Error("잘못된 이슈 ID 입니다.");
 
-        const data = await issueApi.getIssueDetail(issueId);
+        const data = await balanceApi.getBalanceDetail(issueId);
         if (!mounted) return;
 
         setIssue(data);
@@ -455,7 +455,7 @@ export function IssueDetail() {
   }, [id, isAuthenticated]);
 
   // ✅ 투표: 1회만 허용
-  const handleVote = async (option: IssueVoteOption) => {
+  const handleVote = async (option: BalanceVoteOption) => {
     if (!issue || isVoting) return;
 
     if (!isLoggedInNow()) {
@@ -467,7 +467,7 @@ export function IssueDetail() {
     if (selectedOption) return;
 
     const prevIssue = issue;
-    const nextVote: IssueVoteOption = option;
+    const nextVote: BalanceVoteOption = option;
 
     const nextIssue = applyVoteOptimistic(prevIssue, null, nextVote);
 
@@ -477,7 +477,7 @@ export function IssueDetail() {
     try {
       setIsVoting(true);
       setErrorMessage(null);
-      await issueApi.voteIssue(prevIssue.id, nextVote);
+      await balanceApi.voteBalance(prevIssue.id, nextVote);
     } catch (e) {
       setSelectedOption(null);
       setIssue(prevIssue);
@@ -503,7 +503,7 @@ export function IssueDetail() {
   setComment("");
 
   try {
-    const newComment = await issueApi.createComment(issue.id, {
+    const newComment = await balanceApi.createComment(issue.id, {
       content,
     } as any);
 
@@ -574,7 +574,7 @@ export function IssueDetail() {
     setReplyToId(null);
 
     try {
-      const newReply = await issueApi.createComment(issue.id, {
+      const newReply = await balanceApi.createComment(issue.id, {
         content,
         parentId: parentIdNum,
       } as any);
@@ -671,7 +671,7 @@ export function IssueDetail() {
     setIssue(nextIssue as any);
 
     try {
-      const res = await (issueApi as any).toggleCommentLike(prevIssue.id, commentIdNum);
+      const res = await (balanceApi as any).toggleCommentLike(prevIssue.id, commentIdNum);
 
       const sync = (nodes: any[]): any[] => {
         return (nodes ?? []).map((n) => {
@@ -740,7 +740,7 @@ export function IssueDetail() {
     try {
       setErrorMessage(null);
 
-      const updated = await (issueApi as any).updateComment(issue.id, commentIdNum, {
+      const updated = await (balanceApi as any).updateComment(issue.id, commentIdNum, {
         content,
       });
 
