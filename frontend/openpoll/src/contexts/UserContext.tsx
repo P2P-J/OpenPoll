@@ -151,6 +151,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
             region: "",
             hasTakenDos: false,
             createdAt: "",
+            hasTakenDos: false,
           });
           console.log("[Auth] Loaded cached session data");
         }
