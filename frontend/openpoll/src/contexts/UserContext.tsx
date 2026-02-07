@@ -141,7 +141,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
           const session = JSON.parse(sessionStr);
           // 세션 정보로 최소한의 User 객체 생성
           setUser({
-            id: 0, // ID는 알 수 없음
+            id: "", // ID는 알 수 없음
             email: session.email || "",
             nickname: session.nickname || "",
             points: session.points || 0,
@@ -149,7 +149,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
             gender: "MALE",
             region: "",
             createdAt: "",
-            updatedAt: "",
+            hasTakenDos: false,
           });
           console.log("[Auth] Loaded cached session data");
         }

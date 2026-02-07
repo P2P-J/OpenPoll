@@ -5,7 +5,7 @@ import { Share2, Download, RotateCcw, Home } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { dosApi } from "@/api";
 import type { DosResult, DosResultType } from "@/types/api.types";
-import { dosResultTypes } from "@/constants/dosResultTypes";
+import { dosResultTypes } from "@/shared/constants/dosResultTypes";
 
 export function DosResult() {
   const { type } = useParams<{ type: string }>();

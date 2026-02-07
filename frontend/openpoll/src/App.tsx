@@ -26,11 +26,11 @@ const NewsList = lazy(() =>
 const NewsDetail = lazy(() =>
   import("@/pages/news").then((m) => ({ default: m.NewsDetail })),
 );
-const IssueList = lazy(() =>
-  import("@/pages/balance").then((m) => ({ default: m.IssueList })),
+const BalanceList = lazy(() =>
+  import("@/pages/balance").then((m) => ({ default: m.BalanceList })),
 );
-const IssueDetail = lazy(() =>
-  import("@/pages/balance").then((m) => ({ default: m.IssueDetail })),
+const BalanceDetail = lazy(() =>
+  import("@/pages/balance").then((m) => ({ default: m.BalanceDetail })),
 );
 const LoginPage = lazy(() =>
   import("@/pages/auth").then((m) => ({ default: m.LoginPage })),
@@ -70,8 +70,8 @@ export default function App() {
                   <Route path="/dos" element={<DosIntro />} />
                   <Route path="/news" element={<NewsList />} />
                   <Route path="/news/:id" element={<NewsDetail />} />
-                  <Route path="/balance" element={<IssueList />} />
-                  <Route path="/balance/:id" element={<IssueDetail />} />
+                  <Route path="/balance" element={<BalanceList />} />
+                  <Route path="/balance/:id" element={<BalanceDetail />} />
                   <Route path="/profile" element={<Profile />} />
                 </Route>
               </Routes>

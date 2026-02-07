@@ -14,6 +14,12 @@ export default defineConfig({
     host: true, // localhost와 네트워크 접근 모두 허용
     port: 5173,
     strictPort: false,
+    proxy: {
+      '/api': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+      },
+    },
   },
   build: {
     // Image optimization
