@@ -58,7 +58,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
               <p className="text-gray-600 mb-6">
                 예상치 못한 오류가 발생했습니다. 잠시 후 다시 시도해주세요.
               </p>
-              {process.env.NODE_ENV === 'development' && this.state.error && (
+              {import.meta.env.DEV && this.state.error && (
                 <details className="mb-6 text-left bg-gray-100 p-4 rounded-lg">
                   <summary className="cursor-pointer font-semibold text-sm text-gray-700 mb-2">
                     오류 상세 정보
