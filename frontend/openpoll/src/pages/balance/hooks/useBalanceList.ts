@@ -30,6 +30,14 @@ export function useBalanceList(isLoggedIn: boolean) {
   const [editingDetailDescription, setEditingDetailDescription] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const buildTitleWithEmoji = (emoji: string | undefined, title: string) => {
+    const trimmed = String(title ?? "").trim();
+    if (!emoji) return trimmed;
+    if (!trimmed) return emoji;
+    if (trimmed.startsWith(emoji)) return trimmed;
+    return `${emoji} ${trimmed}`;
+  };
+
   const refresh = useCallback(async () => {
     const data = await getBalanceList();
     setIssues(data);
@@ -132,7 +140,8 @@ export function useBalanceList(isLoggedIn: boolean) {
         await createBalance(payload);
       } else {
         if (!editing) throw new Error("수정 대상을 찾을 수 없습니다.");
-        await updateBalance(editing.id, payload);
+        const title = buildTitleWithEmoji(editing.emoji, payload.title);
+        await updateBalance(editing.id, { ...payload, title });
       }
 
       setIsModalOpen(false);
@@ -153,7 +162,7 @@ export function useBalanceList(isLoggedIn: boolean) {
       ? undefined
       : editing
         ? {
-            title: String(editing.title ?? ""),
+            title: buildTitleWithEmoji(editing.emoji, editing.title ?? ""),
             subtitle: String(
               (editing as BalanceListItemExtended).subtitle ??
                 editing.description ??

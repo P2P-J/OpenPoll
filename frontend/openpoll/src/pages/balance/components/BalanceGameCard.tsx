@@ -70,14 +70,21 @@ export function BalanceGameCard({
     };
   }, []);
 
-  const showAdminActions = isAdmin && !hideAdminActions && !isFlipAnimating;
+  useEffect(() => {
+    if (!hideAdminActions) return;
+    if (flipTimerRef.current) window.clearTimeout(flipTimerRef.current);
+    flipTimerRef.current = null;
+    setIsFlipAnimating(false);
+    setIsFlipped(false);
+  }, [hideAdminActions]);
+
   const isBackFace = isFlipped && !isFlipAnimating;
+  const showAdminActions = isAdmin && !hideAdminActions && isBackFace;
 
-  const adminBtnClass = isBackFace
-    ? "w-11 h-11 bg-transparent border-0 rounded-none shadow-none hover:bg-transparent transition-all flex items-center justify-center"
-    : "w-11 h-11 rounded-full bg-black/80 border border-white/25 hover:border-white/50 hover:bg-black transition-all flex items-center justify-center";
-
-  const adminIconClass = isBackFace ? "text-black" : "text-white";
+  const editBtnClass =
+    "h-10 px-3 rounded-xl bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 transition-all flex items-center gap-1.5";
+  const deleteBtnClass =
+    "h-10 px-3 rounded-xl bg-red-500 text-white border border-red-500 hover:bg-red-400 transition-all flex items-center gap-1.5";
 
   return (
     <div
@@ -88,7 +95,7 @@ export function BalanceGameCard({
     >
       {showAdminActions && (
         <div
-          className="pointer-events-auto flex gap-0.5"
+          className="pointer-events-auto flex gap-2"
           style={{
             position: "absolute",
             top: 4,
@@ -106,10 +113,10 @@ export function BalanceGameCard({
               e.stopPropagation();
               onEdit(issue);
             }}
-            className={adminBtnClass}
-            style={{ transform: "translateX(8px)" }}
+            className={editBtnClass}
           >
-            <Pencil className={`w-5 h-5 ${adminIconClass}`} />
+            <Pencil className="w-4 h-4" />
+            <span className="text-sm font-semibold">수정</span>
           </button>
 
           <button
@@ -120,9 +127,11 @@ export function BalanceGameCard({
               e.stopPropagation();
               onDelete(issue);
             }}
-            className={adminBtnClass}
+            className={deleteBtnClass}
+            style={{ backgroundColor: "#ef4444", borderColor: "#ef4444", color: "#ffffff" }}
           >
-            <X className={`w-5 h-5 ${adminIconClass}`} />
+            <X className="w-4 h-4" />
+            <span className="text-sm font-semibold">삭제</span>
           </button>
         </div>
       )}
