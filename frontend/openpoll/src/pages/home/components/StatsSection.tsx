@@ -7,14 +7,14 @@ interface Stat {
 }
 
 interface StatsSectionProps {
-  stats: readonly Stat[];
+  stats: readonly Stat[] | Stat[];
 }
 
 export const StatsSection = memo(function StatsSection({ stats }: StatsSectionProps) {
   return (
     <section className="bg-gray-50 dark:bg-gray-950 py-12 sm:py-16 lg:py-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8">
           {stats.map((stat, index) => (
             <motion.div
               key={stat.label}
