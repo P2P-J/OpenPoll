@@ -70,6 +70,9 @@ npx prisma generate
 log "DB 마이그레이션..."
 npx prisma migrate deploy
 
+log "Seed 데이터 추가..."
+npx prisma db seed
+
 log "PM2로 백엔드 재시작..."
 pm2 restart backend 2>/dev/null || pm2 start npm --name "backend" -- start
 
