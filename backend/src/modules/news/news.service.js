@@ -24,8 +24,8 @@ function getBullConnection() {
 
 function getQueue() {
     if (!queue) {
-        queue = new Queue('article', { connection: getBullConnection() });
-        queueEvents = new QueueEvents('article', { connection: getBullConnection() });
+        queue = new Queue('article', { connection: getBullConnection(), prefix : '{bull}' });
+        queueEvents = new QueueEvents('article', { connection: getBullConnection(), prefix : '{bull}' });
     }
     return { queue, queueEvents };
 }
@@ -93,6 +93,7 @@ function startWorkerOnce() {
     },
         {
             connection: getBullConnection(),
+            prefix : '{bull}',
             concurrency: 3,
             removeOnComplete: { count: 200 },
             removeOnFail: { count: 200 },
