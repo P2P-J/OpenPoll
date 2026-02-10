@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Brain, Scale, Newspaper } from "lucide-react";
-import { dosApi, dashboardApi } from "@/api";
+import { dosApi } from "@/api";
 import { usePageMeta } from "@/hooks/usePageMeta";
 import {
   HeroSection,
@@ -189,3 +189,4 @@ export function Home() {
     </>
   );
 }
+
