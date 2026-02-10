@@ -3,7 +3,6 @@ import { newsApi } from "@/api";
 import type { NewsArticle } from "@/types/api.types";
 import {
   ITEMS_PER_PAGE,
-  POLLING_INTERVAL_MS,
   getCategoryFromTags,
 } from "@/shared/utils/newsHelpers";
 
@@ -45,14 +44,6 @@ export function useNewsArticles(): UseNewsArticlesReturn {
     initialFetch();
   }, [fetchArticles]);
 
-  useEffect(() => {
-    const intervalId = setInterval(() => {
-      newsApi.refreshNews().catch(() => {});
-    }, POLLING_INTERVAL_MS);
-
-    return () => clearInterval(intervalId);
-  }, []);
-
   return { articles, isLoading, error };
 }
 
@@ -86,8 +77,8 @@ export function useNewsList(): UseNewsListReturn {
       selectedCategory === "전체"
         ? articlesWithCategory
         : articlesWithCategory.filter(
-            (news) => news.category === selectedCategory
-          ),
+          (news) => news.category === selectedCategory
+        ),
     [articlesWithCategory, selectedCategory]
   );
 
