@@ -5,6 +5,7 @@ const redis = new Redis(config.redisUrl, {
   maxRetriesPerRequest: 3,
   retryDelayOnFailover: 100,
   lazyConnect: true,
+  tls: config.redisUrl?.startsWith('rediss://') ? {} : undefined,
 });
 
 redis.on('connect', () => {
