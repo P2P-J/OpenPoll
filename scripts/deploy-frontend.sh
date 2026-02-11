@@ -44,6 +44,9 @@ load_env_from_parameter_store() {
     log "환경변수 로드 완료"
 }
 
+# SSM은 root로 실행되므로 git safe.directory 설정 필요
+git config --global --add safe.directory "$APP_DIR"
+
 log "========== Frontend 배포 시작 =========="
 
 cd "$APP_DIR"
