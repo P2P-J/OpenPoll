@@ -2,6 +2,10 @@
 
 set -e
 
+# Node.js PATH 설정 (sudo/SSM 실행 시 nvm PATH가 없으므로)
+export NVM_DIR="/home/ec2-user/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+
 # 설정
 APP_DIR="/home/ec2-user/OpenPoll"
 LOG_FILE="/home/ec2-user/deploy-backend.log"
