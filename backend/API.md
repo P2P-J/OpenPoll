@@ -2,7 +2,7 @@
 
 Base URL: `http://localhost:3000/api`
 
---- 
+---
 
 ## 인증 (Auth)
 
