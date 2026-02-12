@@ -2,9 +2,8 @@
 
 set -e
 
-# Node.js PATH 설정 (sudo/SSM 실행 시 nvm PATH가 없으므로)
-export NVM_DIR="/home/ec2-user/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+export HOME=/home/ec2-user
+sudo -u ec2-user -H bash -lc 'cd /home/ec2-user/OpenPoll && git pull'
 
 # 설정
 APP_DIR="/home/ec2-user/OpenPoll"
@@ -21,17 +20,17 @@ log() {
 # Parameter Store에서 환경변수 로드
 load_env_from_parameter_store() {
     log "Parameter Store에서 환경변수 로드..."
-    
+
     ENV_FILE="$APP_DIR/frontend/openpoll/.env"
-    
+
     # 기존 .env 백업 (있으면)
     if [ -f "$ENV_FILE" ]; then
         cp "$ENV_FILE" "$ENV_FILE.backup"
     fi
-    
+
     # 빈 .env 파일 생성
     > "$ENV_FILE"
-    
+
     # Parameter Store에서 값 가져오기
     aws ssm get-parameters-by-path \
         --path "$PARAMETER_PATH" \
@@ -44,7 +43,7 @@ load_env_from_parameter_store() {
             echo "$key=$value" >> "$ENV_FILE"
             log "  - $key 로드 완료"
         done
-    
+
     log "환경변수 로드 완료"
 }
 
@@ -52,15 +51,12 @@ load_env_from_parameter_store() {
 git config --global --add safe.directory "$APP_DIR"
 
 log "========== Frontend 배포 시작 =========="
-
-cd "$APP_DIR"
-log "현재 디렉토리: $(pwd)"
-
+log "현재 디렉토리: $APP_DIR"
 # 최신 코드 가져오기
 log "Git pull 실행..."
-git fetch origin "$BRANCH"
-git reset --hard "origin/$BRANCH"
-log "Git pull 완료: $(git rev-parse --short HEAD)"
+sudo -u ec2-user -H bash -lc "cd $APP_DIR && git fetch origin $BRANCH"
+sudo -u ec2-user -H bash -lc "cd $APP_DIR && git reset --hard origin/$BRANCH"
+log "Git pull 완료: $(cd $APP_DIR && git rev-parse --short HEAD)"
 
 # Frontend 배포
 cd "$APP_DIR/frontend/openpoll"
@@ -69,10 +65,10 @@ cd "$APP_DIR/frontend/openpoll"
 load_env_from_parameter_store
 
 log "의존성 설치..."
-npm ci
+sudo -u ec2-user -H bash -lc "cd $APP_DIR/frontend/openpoll && npm ci"
 
 log "빌드..."
-npm run build
+sudo -u ec2-user -H bash -lc "cd $APP_DIR/frontend/openpoll && npm run build"
 
 # 빌드 결과물을 Nginx가 서빙하는 디렉토리로 복사
 log "빌드 파일 복사..."
