@@ -12,8 +12,8 @@ permissions:
 
 env:
   AWS_REGION: ap-northeast-2
-  EC2_BACKEND_ID: i-097baefb76d7579cb
-  EC2_FRONTEND_ID: i-00c892519b2604dbf
+  EC2_BACKEND_ID: i-0c15dd1fafd976688
+  EC2_FRONTEND_ID: i-061633a495bdfeac2
   IAM_ROLE_ARN: arn:aws:iam::174170816230:role/OpenPoll-OIDC-Provider
 
 jobs:
