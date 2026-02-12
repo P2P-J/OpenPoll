@@ -2,9 +2,8 @@
 
 set -e
 
-# Node.js PATH 설정 (sudo/SSM 실행 시 nvm PATH가 없으므로)
-export NVM_DIR="/home/ec2-user/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+export HOME=/home/ec2-user
+sudo -u ec2-user -H bash -lc 'cd /home/ec2-user/OpenPoll && git pull'
 
 # 설정
 APP_DIR="/home/ec2-user/OpenPoll"
@@ -21,17 +20,17 @@ log() {
 # Parameter Store에서 환경변수 로드
 load_env_from_parameter_store() {
     log "Parameter Store에서 환경변수 로드..."
-    
+
     ENV_FILE="$APP_DIR/backend/.env"
-    
+
     # 기존 .env 백업 (있으면)
     if [ -f "$ENV_FILE" ]; then
         cp "$ENV_FILE" "$ENV_FILE.backup"
     fi
-    
+
     # 빈 .env 파일 생성
     > "$ENV_FILE"
-    
+
     # Parameter Store에서 값 가져오기
     aws ssm get-parameters-by-path \
         --path "$PARAMETER_PATH" \
@@ -44,7 +43,7 @@ load_env_from_parameter_store() {
             echo "$key=$value" >> "$ENV_FILE"
             log "  - $key 로드 완료"
         done
-    
+
     log "환경변수 로드 완료"
 }
 
@@ -53,14 +52,13 @@ git config --global --add safe.directory "$APP_DIR"
 
 log "========== Backend 배포 시작 =========="
 
-cd "$APP_DIR"
-log "현재 디렉토리: $(pwd)"
+log "현재 디렉토리: $APP_DIR"
 
 # 최신 코드 가져오기
 log "Git pull 실행..."
-git fetch origin "$BRANCH"
-git reset --hard "origin/$BRANCH"
-log "Git pull 완료: $(git rev-parse --short HEAD)"
+sudo -u ec2-user -H bash -lc "cd $APP_DIR && git fetch origin $BRANCH"
+sudo -u ec2-user -H bash -lc "cd $APP_DIR && git reset --hard origin/$BRANCH"
+log "Git pull 완료: $(cd $APP_DIR && git rev-parse --short HEAD)"
 
 # Backend 배포
 cd "$APP_DIR/backend"
@@ -69,21 +67,21 @@ cd "$APP_DIR/backend"
 load_env_from_parameter_store
 
 log "의존성 설치..."
-npm ci --production
+sudo -u ec2-user -H bash -lc "cd $APP_DIR/backend && npm ci --production"
 
 log "Prisma 클라이언트 생성..."
-npx prisma generate
+sudo -u ec2-user -H bash -lc "cd $APP_DIR/backend && npx prisma generate"
 
 log "DB 마이그레이션..."
-npx prisma migrate deploy
+sudo -u ec2-user -H bash -lc "cd $APP_DIR/backend && npx prisma migrate deploy"
 
 log "Seed 데이터 추가..."
-npx prisma db seed
+sudo -u ec2-user -H bash -lc "cd $APP_DIR/backend && npx prisma db seed"
 
 log "PM2로 백엔드 재시작..."
-pm2 restart backend 2>/dev/null || pm2 start npm --name "backend" -- start
+sudo -u ec2-user -H bash -lc "pm2 restart backend 2>/dev/null || pm2 start npm --name backend -- start"
 
 log "========== Backend 배포 완료 =========="
-log "Status: $(pm2 show backend 2>/dev/null | grep status || echo 'running')"
+log "Status: $(sudo -u ec2-user -H bash -lc 'pm2 show backend 2>/dev/null | grep status' || echo 'running')"
 
 exit 0
