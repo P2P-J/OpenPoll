@@ -17,7 +17,7 @@ export interface BalanceListItem {
   participants?: number;
   agreePercent?: number;
   disagreePercent?: number;
-  myVote: boolean | null;
+  myVote: VoteState;
   createdAt?: string;
 }
 
@@ -58,7 +58,7 @@ export interface BalanceDetail {
   agreePercent?: number;
   disagreePercent?: number;
   commentCount?: number;
-  myVote: boolean | null;
+  myVote: VoteState;
   createdAt?: string;
   comments?: BalanceComment[];
 }

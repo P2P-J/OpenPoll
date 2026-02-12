@@ -1,5 +1,4 @@
 import { useState, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
 import { Brain, Scale, Newspaper } from "lucide-react";
 import { usePageMeta } from "@/hooks/usePageMeta";
 import {
@@ -49,7 +48,6 @@ const STATS_DATA = [
 
 export function Home() {
   usePageMeta("홈", "정치 성향 테스트, 밸런스 게임, 중립 뉴스를 한 곳에서. OpenPoll과 함께 정치 참여의 첫 걸음을 내딛어보세요.");
-  const navigate = useNavigate();
   const { parties, stats, castVote, sseStatus } = useVoting();
   const { user, isAuthenticated } = useUser();
   const [selectedParty, setSelectedParty] = useState<number | null>(null);
@@ -117,7 +115,6 @@ export function Home() {
       <LoginModal
         isOpen={showLoginModal}
         onClose={() => setShowLoginModal(false)}
-        onLogin={() => navigate("/login")}
       />
 
       <div className="pt-16">
