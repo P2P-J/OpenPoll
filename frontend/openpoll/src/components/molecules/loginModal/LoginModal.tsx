@@ -1,13 +1,53 @@
-import { LogIn, X } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { X, Mail, Lock, ArrowRight, Gift, Home } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
+import { ROUTES } from "@/shared/constants";
+import { useUser } from "@/contexts/UserContext";
 
 interface LoginModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onLogin: () => void;
 }
 
-export function LoginModal({ isOpen, onClose, onLogin }: LoginModalProps) {
+export function LoginModal({ isOpen, onClose }: LoginModalProps) {
+  const { login } = useUser();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (!isOpen) {
+      setEmail("");
+      setPassword("");
+      setErrorMessage(null);
+      setIsSubmitting(false);
+    }
+  }, [isOpen]);
+
+  const onSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const trimmedEmail = email.trim();
+    if (!trimmedEmail || !password) {
+      setErrorMessage("이메일과 비밀번호를 입력해 주세요.");
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+      setErrorMessage(null);
+      await login(trimmedEmail, password);
+      onClose();
+    } catch (err) {
+      const msg =
+        err instanceof Error ? err.message : "로그인에 실패했습니다.";
+      setErrorMessage(msg);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -31,71 +71,107 @@ export function LoginModal({ isOpen, onClose, onLogin }: LoginModalProps) {
               duration: 0.3,
               ease: [0.4, 0, 0.2, 1], // Custom easing
             }}
-            className="relative bg-gradient-to-br from-gray-900 via-black to-gray-900 border border-white/20 rounded-3xl shadow-2xl w-[360px] aspect-square flex flex-col items-center justify-center p-8 overflow-hidden"
+            className="relative bg-black border border-white/15 rounded-3xl shadow-2xl p-8 text-white"
+            style={{ width: "min(350px, calc(100vw - 32px))" }}
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Gradient Orbs Background */}
-            <div className="absolute top-0 right-0 w-40 h-40 bg-blue-500/10 rounded-full blur-3xl" />
-            <div className="absolute bottom-0 left-0 w-40 h-40 bg-purple-500/10 rounded-full blur-3xl" />
-
-            {/* Close Button */}
             <button
               onClick={onClose}
-              className="absolute top-5 right-5 text-gray-500 hover:text-white transition-all duration-200 hover:rotate-90 z-10"
+              className="absolute z-10 w-6 h-6 flex items-center justify-center text-white transition-all hover:scale-125 hover:text-white/90"
+              style={{ top: 12, right: 12, transform: "scale(1.2)" }}
               aria-label="닫기"
             >
               <X className="w-5 h-5" />
             </button>
 
-            {/* Icon with Animation */}
-            <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ delay: 0.1, type: "spring", stiffness: 200 }}
-              className="mb-6 relative z-10"
-            >
-              <div className="w-20 h-20 bg-gradient-to-br from-blue-500/20 to-purple-500/20 border border-white/20 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/10">
-                <LogIn className="w-10 h-10 text-white" />
-              </div>
-            </motion.div>
-
-            {/* Message */}
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.15 }}
-              className="text-center mb-8 relative z-10"
+              className="relative z-10"
             >
-              <h3 className="text-2xl font-bold text-white mb-3 bg-clip-text text-transparent">
-                로그인이 필요합니다
-              </h3>
-              <p className="text-sm text-gray-400 leading-relaxed">
-                투표에 참여하려면
-                <br />
-                <span className="text-gray-300">로그인</span>해주세요
-              </p>
-            </motion.div>
+              <h1 className="text-4xl font-extrabold text-center mb-2">로그인</h1>
+              <p className="text-center text-gray-400 mb-8">해당 기능은 로그인이 필요한 기능입니다.</p>
 
-            {/* Buttons */}
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="w-full space-y-3 relative z-10"
-            >
-              <button
-                onClick={onLogin}
-                className="w-full h-12 bg-gradient-to-r from-black to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold rounded-xl transition-all duration-200 flex items-center justify-center gap-2 shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 hover:scale-[1.02] active:scale-[0.98]"
-              >
-                <LogIn className="w-4 h-4" />
-                로그인하기
-              </button>
-              <button
-                onClick={onClose}
-                className="w-full h-12 bg-white/5 hover:bg-white/10 border border-white/10 text-gray-300 hover:text-white font-semibold rounded-xl transition-all duration-200 hover:border-white/20"
-              >
-                취소
-              </button>
+              <form onSubmit={onSubmit} className="space-y-6">
+                <div>
+                  <label className="block text-sm font-semibold mb-2">
+                    이메일
+                  </label>
+                  <div className="flex items-center gap-3 h-14 rounded-2xl bg-white/5 px-4 border border-white/10">
+                    <Mail className="w-5 h-5 text-gray-400" />
+                    <input
+                      className="w-full bg-transparent outline-none text-sm placeholder:text-gray-500"
+                      placeholder="your@email.com"
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold mb-2">
+                    비밀번호
+                  </label>
+                  <div className="flex items-center gap-3 h-14 rounded-2xl bg-white/5 px-4 border border-white/10">
+                    <Lock className="w-5 h-5 text-gray-400" />
+                    <input
+                      className="w-full bg-transparent outline-none text-sm placeholder:text-gray-500"
+                      placeholder="••••••••"
+                      type="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                {errorMessage && (
+                  <p className="text-xs text-red-400">{errorMessage}</p>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="w-full h-14 rounded-2xl bg-white text-black font-bold flex items-center justify-center gap-2 hover:bg-gray-100 transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
+                >
+                  {isSubmitting ? "로그인 중..." : "로그인"}{" "}
+                  <ArrowRight className="w-5 h-5" />
+                </button>
+
+                <div className="w-full h-14 rounded-2xl border border-green-500/25 bg-green-500/10 shadow-[0_0_40px_rgba(34,197,94,0.15)] flex items-center justify-center gap-2 font-semibold">
+                  <Gift className="w-5 h-5 text-green-400" />
+                  <span className="text-green-400">로그인 시 500P 지급!</span>
+                </div>
+
+                <p className="text-center text-sm text-gray-400">
+                  아직 계정이 없으신가요?{" "}
+                  <Link
+                    to={ROUTES.REGISTER}
+                    onClick={onClose}
+                    className="text-white font-semibold hover:underline"
+                  >
+                    회원가입
+                  </Link>
+                </p>
+
+                <div className="flex items-center gap-4 pt-1">
+                  <div className="h-px flex-1 bg-white/10" />
+                  <span className="text-xs text-gray-500">또는</span>
+                  <div className="h-px flex-1 bg-white/10" />
+                </div>
+
+                <div className="flex justify-center pt-1">
+                  <Link
+                    to={ROUTES.HOME}
+                    onClick={onClose}
+                    className="group w-full h-14 rounded-xl bg-gradient-to-r from-gray-800 to-gray-900 hover:from-gray-700 hover:to-gray-800 border border-white/20 hover:border-white/30 transition-all duration-300 flex items-center justify-center gap-3 font-bold text-base shadow-lg hover:shadow-xl"
+                  >
+                    <Home className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                    <span>이전 페이지로</span>
+                  </Link>
+                </div>
+              </form>
             </motion.div>
           </motion.div>
         </motion.div>
