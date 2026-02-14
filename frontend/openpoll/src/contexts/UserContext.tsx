@@ -139,8 +139,8 @@ export function UserProvider({ children }: { children: ReactNode }) {
             age: 0,
             gender: "MALE",
             region: "",
-            createdAt: "",
             hasTakenDos: false,
+            createdAt: "",
           });
         }
       } catch {

@@ -30,7 +30,7 @@ if (config.isDev) {
 }
 
 // 헬스체크 API
-app.get('/health', (req, res) => {
+app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
