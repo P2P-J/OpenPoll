@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Lock, X, Eye, EyeOff, AlertCircle, CheckCircle2, Shield } from "lucide-react";
+import { Lock, X, AlertCircle, CheckCircle2, Shield } from "lucide-react";
 import { changePassword } from "@/api/user.api";
 
 interface PasswordChangeModalProps {
@@ -19,19 +19,12 @@ export function PasswordChangeModal({
   const [passwordSuccess, setPasswordSuccess] = useState(false);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
 
-  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
-  const [showNewPassword, setShowNewPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-
   const handleClose = () => {
     setCurrentPassword("");
     setNewPassword("");
     setConfirmPassword("");
     setPasswordError("");
     setPasswordSuccess(false);
-    setShowCurrentPassword(false);
-    setShowNewPassword(false);
-    setShowConfirmPassword(false);
     onClose();
   };
 
@@ -141,29 +134,14 @@ export function PasswordChangeModal({
                 <label className="block text-base font-bold text-gray-900 dark:text-gray-100 mb-2">
                   현재 비밀번호
                 </label>
-                <div className="relative">
-                  <input
-                    type={showCurrentPassword ? "text" : "password"}
-                    value={currentPassword}
-                    onChange={(e) => setCurrentPassword(e.target.value)}
-                    className="w-full px-5 py-4 pr-14 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-lg dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-black dark:focus:ring-white focus:border-transparent transition-all outline-none"
-                    placeholder="현재 비밀번호를 입력하세요"
-                    disabled={isChangingPassword}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                    className="absolute inset-y-0 right-0 w-14 flex items-center justify-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
-                    disabled={isChangingPassword}
-                    tabIndex={-1}
-                  >
-                    {showCurrentPassword ? (
-                      <EyeOff className="w-5 h-5" />
-                    ) : (
-                      <Eye className="w-5 h-5" />
-                    )}
-                  </button>
-                </div>
+                <input
+                  type="password"
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
+                  className="w-full px-5 py-4 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-lg dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-black dark:focus:ring-white focus:border-transparent transition-all outline-none"
+                  placeholder="현재 비밀번호를 입력하세요"
+                  disabled={isChangingPassword}
+                />
               </div>
 
               {/* New Password */}
@@ -171,29 +149,14 @@ export function PasswordChangeModal({
                 <label className="block text-base font-bold text-gray-900 dark:text-gray-100 mb-2">
                   새 비밀번호
                 </label>
-                <div className="relative">
-                  <input
-                    type={showNewPassword ? "text" : "password"}
-                    value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
-                    className="w-full px-5 py-4 pr-14 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-lg dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-black dark:focus:ring-white focus:border-transparent transition-all outline-none"
-                    placeholder="영문 + 숫자 포함, 8자 이상"
-                    disabled={isChangingPassword}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowNewPassword(!showNewPassword)}
-                    className="absolute inset-y-0 right-0 w-14 flex items-center justify-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
-                    disabled={isChangingPassword}
-                    tabIndex={-1}
-                  >
-                    {showNewPassword ? (
-                      <EyeOff className="w-5 h-5" />
-                    ) : (
-                      <Eye className="w-5 h-5" />
-                    )}
-                  </button>
-                </div>
+                <input
+                  type="password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  className="w-full px-5 py-4 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-lg dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-black dark:focus:ring-white focus:border-transparent transition-all outline-none"
+                  placeholder="영문 + 숫자 포함, 8자 이상"
+                  disabled={isChangingPassword}
+                />
                 <p className="mt-1.5 text-xs text-gray-400 dark:text-gray-500">
                   영문자와 숫자를 포함하여 8자 이상
                 </p>
@@ -204,29 +167,14 @@ export function PasswordChangeModal({
                 <label className="block text-base font-bold text-gray-900 dark:text-gray-100 mb-2">
                   새 비밀번호 확인
                 </label>
-                <div className="relative">
-                  <input
-                    type={showConfirmPassword ? "text" : "password"}
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="w-full px-5 py-4 pr-14 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-lg dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-black dark:focus:ring-white focus:border-transparent transition-all outline-none"
-                    placeholder="새 비밀번호를 다시 입력하세요"
-                    disabled={isChangingPassword}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute inset-y-0 right-0 w-14 flex items-center justify-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
-                    disabled={isChangingPassword}
-                    tabIndex={-1}
-                  >
-                    {showConfirmPassword ? (
-                      <EyeOff className="w-5 h-5" />
-                    ) : (
-                      <Eye className="w-5 h-5" />
-                    )}
-                  </button>
-                </div>
+                <input
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className="w-full px-5 py-4 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-lg dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-black dark:focus:ring-white focus:border-transparent transition-all outline-none"
+                  placeholder="새 비밀번호를 다시 입력하세요"
+                  disabled={isChangingPassword}
+                />
               </div>
 
               {/* Error Message */}
