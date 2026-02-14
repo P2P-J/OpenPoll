@@ -4,6 +4,7 @@ import { ArrowRight, Mail, Lock, Gift, Home } from 'lucide-react';
 import { motion } from 'motion/react';
 import { ROUTES } from '@/shared/constants';
 import { useUser } from '@/contexts/UserContext';
+import { AuthSidePanel } from '@/components/organisms';
 
 type LoginErrors = {
   email?: string;
@@ -50,23 +51,30 @@ export function Login() {
     showError(key) ? '#ef4444' : 'rgba(255,255,255,0.10)';
 
   return (
-    <div
-      style={{
-        minHeight: '100dvh',
-        background: '#000',
-        color: '#fff',
-        overflowY: 'scroll',
-        overscrollBehaviorY: 'contain',
-      }}
-    >
-      <div style={{ paddingTop: 220, paddingBottom: 120, paddingLeft: 16, paddingRight: 16 }}>
+    <div className="min-h-screen bg-black text-white">
+      <div
+        className="relative grid min-h-screen"
+        style={{ gridTemplateColumns: '50% 50%' }}
+      >
+        <div
+          className="pointer-events-none absolute top-0 bottom-0 w-px"
+          style={{
+            left: "50%",
+            transform: "translateX(-0.5px)",
+            background:
+              "linear-gradient(to bottom, rgba(255,255,255,0.12), rgba(255,255,255,0.05), rgba(255,255,255,0.12))",
+          }}
+        />
+        <AuthSidePanel />
+
+    <section className="flex items-center justify-center px-8 py-10 sm:px-10">
         <motion.div
-          style={{ width: 450, maxWidth: '100%', margin: '0 auto' }}
+          style={{ width: 450, maxWidth: '100%' }}
           initial={{ opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.25 }}
         >
-          <h1 className="text-4xl font-extrabold text-center mb-2">로그인</h1>
+           <h1 className="text-4xl font-extrabold text-center mb-2">로그인</h1>
           <p className="text-center text-gray-400 mb-10">오픈폴에 오신 것을 환영합니다</p>
 
           <form onSubmit={onSubmit} className="space-y-6">
@@ -156,7 +164,8 @@ export function Login() {
             </div>
           </form>
         </motion.div>
-      </div>
+      </section>
     </div>
-  );
+  </div>
+);
 }

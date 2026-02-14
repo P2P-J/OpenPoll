@@ -1,9 +1,10 @@
-import { useMemo } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { useMemo, useState } from "react";
+import { Link, useParams } from "react-router-dom";
 import { ChevronLeft } from "lucide-react";
 import { usePageMeta } from "@/hooks/usePageMeta";
 
 import { LoginModal } from "@/components/molecules/loginModal";
+import { Toast } from "@/components/molecules/toast/Toast";
 import { useBalanceDetail } from "./hooks/useBalanceDetail";
 import {
   BalanceDetailHero,
@@ -25,9 +26,13 @@ import type { BalanceComment } from "@/types/balance.types";
 
 export function BalanceDetail() {
   const { id } = useParams();
-  const navigate = useNavigate();
 
   const vm = useBalanceDetail(id);
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
+  const [toastType, setToastType] = useState<"success" | "error" | "info">(
+    "info"
+  );
   usePageMeta(
     vm.issue ? `${vm.issue.title} - 밸런스 게임` : "밸런스 게임 상세",
     vm.issue?.description,
@@ -61,6 +66,16 @@ export function BalanceDetail() {
 
   const openLoginModal = () => {
     vm.setIsLoginModalOpen(true);
+  };
+
+  const handleVote = (option: "agree" | "disagree") => {
+    if (vm.selectedOption) {
+      setToastMessage("이미 투표에 참여하셨습니다.");
+      setToastType("info");
+      setShowToast(true);
+      return;
+    }
+    vm.handleVote(option);
   };
 
   if (vm.isLoading) {
@@ -115,13 +130,16 @@ export function BalanceDetail() {
 
   return (
     <div className="pt-16 min-h-screen bg-black text-white pb-24">
+      <Toast
+        message={toastMessage}
+        type={toastType}
+        isVisible={showToast}
+        onClose={() => setShowToast(false)}
+      />
+
       <LoginModal
         isOpen={vm.isLoginModalOpen}
         onClose={() => vm.setIsLoginModalOpen(false)}
-        onLogin={() => {
-          vm.setIsLoginModalOpen(false);
-          navigate("/login");
-        }}
       />
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
@@ -144,7 +162,7 @@ export function BalanceDetail() {
           totalVotesSafe={totalVotesSafe}
           agreePercentBar={agreePercentBar}
           disagreePercentBar={disagreePercentBar}
-          onVote={vm.handleVote}
+          onVote={handleVote}
         />
 
         <BalanceCommentSection

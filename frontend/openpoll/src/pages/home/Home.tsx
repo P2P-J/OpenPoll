@@ -147,7 +147,6 @@ export function Home() {
       <LoginModal
         isOpen={showLoginModal}
         onClose={() => setShowLoginModal(false)}
-        onLogin={() => navigate("/login")}
       />
 
       <div className="pt-16">
