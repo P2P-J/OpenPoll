@@ -13,23 +13,35 @@ export function SecuritySection({ onOpenPasswordModal }: SecuritySectionProps) {
       transition={{ delay: 0.5 }}
       className="bg-white dark:bg-gray-900 rounded-3xl border border-gray-200 dark:border-gray-800 shadow-sm p-6 sm:p-8"
     >
-      <div className="flex items-center space-x-3 mb-6">
+      <div className="flex items-center gap-3 mb-6">
         <Shield className="w-6 h-6 text-gray-700 dark:text-gray-300" />
         <h3 className="text-xl font-bold dark:text-white">보안 설정</h3>
       </div>
 
-      <button
-        onClick={onOpenPasswordModal}
-        className="w-full py-4 bg-gradient-to-br from-gray-900 to-gray-700 dark:from-gray-100 dark:to-gray-300 hover:from-black hover:to-gray-800 dark:hover:from-white dark:hover:to-gray-200 text-white dark:text-black font-bold rounded-2xl transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-3 group"
-      >
-        <Lock className="w-5 h-5 group-hover:scale-110 transition-transform" />
-        <span className="text-base">비밀번호 변경</span>
-      </button>
+      <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-xl">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center">
+            <Lock className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+          </div>
+          <div>
+            <p className="font-semibold dark:text-white">비밀번호</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              정기적인 변경을 권장합니다
+            </p>
+          </div>
+        </div>
+        <button
+          onClick={onOpenPasswordModal}
+          className="px-5 py-2.5 bg-black dark:bg-white text-white dark:text-black text-sm font-bold rounded-xl hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors"
+        >
+          변경
+        </button>
+      </div>
 
-      <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
-        <p className="text-sm text-gray-700 dark:text-gray-300 flex items-start gap-2">
-          <Info className="w-4 h-4 flex-shrink-0 mt-0.5 text-gray-500 dark:text-gray-400" />
-          <span>정기적인 비밀번호 변경으로 계정을 안전하게 보호하세요</span>
+      <div className="mt-4 flex items-start gap-2 px-1">
+        <Info className="w-4 h-4 flex-shrink-0 mt-0.5 text-gray-400 dark:text-gray-500" />
+        <p className="text-xs text-gray-500 dark:text-gray-400">
+          안전한 계정 보호를 위해 주기적으로 비밀번호를 변경해주세요
         </p>
       </div>
     </motion.div>
