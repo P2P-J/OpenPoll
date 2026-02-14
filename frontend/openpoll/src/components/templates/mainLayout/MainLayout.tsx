@@ -1,11 +1,28 @@
+import { useEffect } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { Header } from '@/components/organisms/header';
 import { Navigation } from '@/components/organisms/navigation';
+import { useScrollToTop } from '@/hooks';
+import { newsApi } from '@/api';
+import { POLLING_INTERVAL_MS } from '@/shared/utils/newsHelpers';
 
 export function MainLayout() {
   const location = useLocation();
+  useScrollToTop();
   const isAuthPage =
     location.pathname === '/login' || location.pathname === '/register';
+  const isNewsPage = location.pathname.startsWith('/news');
+
+  // 뉴스 페이지(/news, /news/:id)에 있는 동안 크롤링 폴링 유지
+  useEffect(() => {
+    if (!isNewsPage) return;
+
+    const intervalId = setInterval(() => {
+      newsApi.refreshNews().catch(() => { });
+    }, POLLING_INTERVAL_MS);
+
+    return () => clearInterval(intervalId);
+  }, [isNewsPage]);
 
   return (
     <div className={`min-h-screen ${isAuthPage ? 'bg-black' : 'bg-white'}`}>
@@ -17,13 +34,13 @@ export function MainLayout() {
           본문으로 건너뛰기
         </a>
       )}
-      
+
       {!isAuthPage && <Header />}
-      {!isAuthPage && <Navigation />}
-      
-      <main 
-        id="main-content" 
-        className={isAuthPage ? '' : 'pb-20 sm:pb-0'}
+      {!isAuthPage && location.pathname !== '/dos' && <Navigation />}
+
+      <main
+        id="main-content"
+        className=""
       >
         <Outlet />
       </main>

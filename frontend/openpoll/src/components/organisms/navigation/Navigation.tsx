@@ -3,14 +3,14 @@ import { Brain, Newspaper, Scale, Home } from 'lucide-react';
 
 const navItems = [
   { icon: Home, label: '홈', path: '/' },
-  { icon: Brain, label: '정치 MBTI', path: '/mbti' },
+  { icon: Brain, label: '정치 DOS', path: '/dos' },
   { icon: Scale, label: '밸런스 게임', path: '/balance' },
   { icon: Newspaper, label: '뉴스', path: '/news' },
 ];
 
 export function Navigation() {
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-100 sm:hidden" aria-label="주요 메뉴">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-gray-900 border-t border-gray-100 dark:border-gray-800 sm:hidden" aria-label="주요 메뉴">
       <div className="grid grid-cols-4">
         {navItems.map((item) => (
           <NavLink
@@ -18,7 +18,7 @@ export function Navigation() {
             to={item.path}
             className={({ isActive }) =>
               `flex flex-col items-center justify-center py-3 px-2 space-y-1 min-h-[44px] transition-colors ${
-                isActive ? 'text-black' : 'text-gray-400'
+                isActive ? 'text-black dark:text-white' : 'text-gray-400 dark:text-gray-500'
               }`
             }
           >

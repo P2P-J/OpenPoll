@@ -1,6 +1,8 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Brain, Scale, Newspaper } from "lucide-react";
+import { dosApi } from "@/api";
+import { usePageMeta } from "@/hooks/usePageMeta";
 import {
   HeroSection,
   SupportRateSection,
@@ -17,35 +19,30 @@ import { useUser } from "@/contexts/UserContext";
 const FEATURES = [
   {
     icon: Brain,
-    title: "정치 MBTI",
-    description: "8values 기반 테스트로 나의 정치 성향을 발견하세요",
-    link: "/mbti",
+    title: "DOS 테스트",
+    description:
+      "정치 MBTI? DOS 테스트로 나의 정치적 DNA를 8가지 차원으로 분석해보세요!",
+    link: "/dos",
     color: "from-gray-900 to-gray-700",
   },
   {
     icon: Scale,
     title: "밸런스 게임",
-    description: "정치 이슈에 대한 찬반 투표로 의견을 나눠보세요",
+    description: "정치 이슈에 대한 찬반 투표로 의견을 나눠보세요!",
     link: "/balance",
     color: "from-gray-700 to-gray-500",
   },
   {
     icon: Newspaper,
     title: "중립 뉴스",
-    description: "AI가 순화한 중립적인 정치 뉴스를 읽어보세요",
+    description: "AI가 순화한 중립적인 정치 뉴스를 읽어보세요!",
     link: "/news",
     color: "from-gray-600 to-gray-400",
   },
 ] as const;
 
-const STATS_DATA = [
-  { label: "전체 사용자", value: "12,458" },
-  { label: "MBTI 완료", value: "8,234" },
-  { label: "투표 참여", value: "15,670" },
-  { label: "뉴스 조회", value: "23,891" },
-] as const;
-
 export function Home() {
+  usePageMeta("홈", "정치 성향 테스트, 밸런스 게임, 중립 뉴스를 한 곳에서. OpenPoll과 함께 정치 참여의 첫 걸음을 내딛어보세요.");
   const navigate = useNavigate();
   const { parties, stats, castVote, sseStatus } = useVoting();
   const { user, isAuthenticated } = useUser();
@@ -56,6 +53,42 @@ export function Home() {
     "info",
   );
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const [dosCompletedCount, setDosCompletedCount] = useState<number>(0);
+  const [balanceParticipants, setBalanceParticipants] = useState<number>(0);
+
+  // Fetch DOS 완료 수 and 밸런스 게임 참여 수 on mount
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        // DOS 통계
+        const dosStats = await dosApi.getStatistics();
+        setDosCompletedCount(dosStats.total);
+      } catch (error) {
+        console.error("Failed to fetch DOS statistics:", error);
+      }
+
+      try {
+        // 밸런스 게임 목록에서 totalVotes 합산
+        const { getBalanceList } = await import("@/api/balance.api");
+        const balanceList = await getBalanceList();
+        const totalBalanceParticipants = balanceList.reduce(
+          (sum, game) => sum + (game.totalVotes || 0),
+          0
+        );
+        setBalanceParticipants(totalBalanceParticipants);
+      } catch (error) {
+        console.error("Failed to fetch balance statistics:", error);
+      }
+    };
+    fetchStats();
+  }, []);
+
+  // Build dynamic stats array
+  const homeStats = useMemo(() => [
+    { label: "DOS 테스트 완료", value: dosCompletedCount.toLocaleString() },
+    { label: "투표 참여", value: (stats?.totalVotes || 0).toLocaleString() },
+    { label: "밸런스 게임 참여", value: balanceParticipants.toLocaleString() },
+  ], [dosCompletedCount, stats?.totalVotes, balanceParticipants]);
 
   const handleVote = useCallback(
     async (partyId: number) => {
@@ -114,7 +147,6 @@ export function Home() {
       <LoginModal
         isOpen={showLoginModal}
         onClose={() => setShowLoginModal(false)}
-        onLogin={() => navigate("/login")}
       />
 
       <div className="pt-16">
@@ -150,9 +182,10 @@ export function Home() {
         </section>
 
         <FeaturesGrid features={FEATURES} />
-        <StatsSection stats={STATS_DATA} />
+        <StatsSection stats={homeStats} />
         <CTASection />
       </div>
     </>
   );
 }
+

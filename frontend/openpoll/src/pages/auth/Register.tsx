@@ -18,7 +18,7 @@ type RegisterErrors = {
 
 export function Register() {
   const navigate = useNavigate();
-  const { signup, isLoading } = useUser();
+  const { signup } = useUser();
 
   const [nickname, setNickname] = useState('');
   const [email, setEmail] = useState('');

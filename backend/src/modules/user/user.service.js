@@ -3,26 +3,40 @@ import AppError from '../../utils/AppError.js';
 import bcrypt from 'bcrypt';
 
 export const getMe = async (userId) => {
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: {
-      id: true,
-      email: true,
-      nickname: true,
-      age: true,
-      region: true,
-      gender: true,
-      points: true,
-      hasTakenDos: true,
-      createdAt: true,
-    },
-  });
+  const [user, totalEarnedStats] = await Promise.all([
+    prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        email: true,
+        nickname: true,
+        age: true,
+        region: true,
+        gender: true,
+        points: true,
+        hasTakenDos: true,
+        createdAt: true,
+      },
+    }),
+    prisma.pointHistory.aggregate({
+      where: {
+        userId,
+        amount: { gt: 0 }, // 양수 포인트만 (획득)
+      },
+      _sum: {
+        amount: true,
+      },
+    }),
+  ]);
 
   if (!user) {
     throw AppError.notFound('사용자를 찾을 수 없습니다.');
   }
 
-  return user;
+  return {
+    ...user,
+    totalEarnedPoints: totalEarnedStats._sum.amount || 0,
+  };
 };
 
 export const updateMe = async (userId, updateData) => {
@@ -81,7 +95,6 @@ export const getMyVoteStats = async (userId) => {
       _count: { id: true },
     }),
     prisma.party.findMany({
-      where: { isActive: true },
       orderBy: { order: 'asc' },
     }),
   ]);

@@ -1,4 +1,4 @@
-import { memo, useState, useRef, useEffect } from "react";
+import { memo, useState, useEffect } from "react";
 import { motion, AnimatePresence, useSpring, useTransform } from "motion/react";
 import type { PartyData } from "@/types/party.types";
 import { VoteButton } from "@/components/atoms";
@@ -33,8 +33,8 @@ const AnimatedValue = memo(function AnimatedValue({
   suffix?: string;
   showChangeIndicator?: boolean;
 }) {
-  const prevValueRef = useRef(value);
-  const isFirstRender = useRef(true);
+  const [prevValue, setPrevValue] = useState(value);
+  const [hasAnimated, setHasAnimated] = useState(false);
   const [changeAmount, setChangeAmount] = useState(0);
   const [showChange, setShowChange] = useState(false);
 
@@ -47,21 +47,26 @@ const AnimatedValue = memo(function AnimatedValue({
     decimals > 0 ? latest.toFixed(decimals) : Math.round(latest).toLocaleString()
   );
 
+  // Render-time 변화 감지 (React 권장 패턴)
+  if (value !== prevValue) {
+    setPrevValue(value);
+    if (hasAnimated && showChangeIndicator) {
+      setChangeAmount(value - prevValue);
+      setShowChange(true);
+    }
+    setHasAnimated(true);
+  }
+
   useEffect(() => {
     spring.set(value);
+  }, [value, spring]);
 
-    if (!isFirstRender.current) {
-      const diff = value - prevValueRef.current;
-      if (diff !== 0 && showChangeIndicator) {
-        setChangeAmount(diff);
-        setShowChange(true);
-        setTimeout(() => setShowChange(false), 2000);
-      }
+  useEffect(() => {
+    if (showChange) {
+      const timeout = setTimeout(() => setShowChange(false), 2000);
+      return () => clearTimeout(timeout);
     }
-
-    prevValueRef.current = value;
-    isFirstRender.current = false;
-  }, [value, spring, showChangeIndicator]);
+  }, [showChange]);
 
   return (
     <span className="relative inline-flex items-center">
@@ -69,7 +74,7 @@ const AnimatedValue = memo(function AnimatedValue({
         key={`animated-${value}`}
         initial={{ scale: 1 }}
         animate={
-          !isFirstRender.current
+          hasAnimated
             ? {
                 scale: [1, 1.12, 1],
                 textShadow: [
@@ -116,23 +121,25 @@ const AnimatedValue = memo(function AnimatedValue({
 const AnimatedProgressBar = memo(function AnimatedProgressBar({
   percentage,
   color,
-  index,
 }: {
   percentage: number;
   color: string;
-  index: number;
 }) {
-  const prevPercentageRef = useRef(percentage);
+  const [prevPercentage, setPrevPercentage] = useState(percentage);
   const [hasChanged, setHasChanged] = useState(false);
 
+  // Render-time 변화 감지 (React 권장 패턴)
+  if (percentage !== prevPercentage) {
+    setPrevPercentage(percentage);
+    setHasChanged(true);
+  }
+
   useEffect(() => {
-    if (prevPercentageRef.current !== percentage) {
-      setHasChanged(true);
+    if (hasChanged) {
       const timeout = setTimeout(() => setHasChanged(false), 600);
-      prevPercentageRef.current = percentage;
       return () => clearTimeout(timeout);
     }
-  }, [percentage]);
+  }, [hasChanged]);
 
   return (
     <div className="relative h-2 sm:h-3 bg-white/10 rounded-full overflow-hidden">
@@ -195,17 +202,21 @@ const PartyCard = memo(function PartyCard({
   disabled: boolean;
   onVote: () => void;
 }) {
-  const prevVotesRef = useRef(party.totalVotes);
+  const [prevVotes, setPrevVotes] = useState(party.totalVotes);
   const [voteJustChanged, setVoteJustChanged] = useState(false);
 
+  // Render-time 변화 감지 (React 권장 패턴)
+  if (party.totalVotes !== prevVotes) {
+    setPrevVotes(party.totalVotes);
+    setVoteJustChanged(true);
+  }
+
   useEffect(() => {
-    if (prevVotesRef.current !== party.totalVotes) {
-      setVoteJustChanged(true);
+    if (voteJustChanged) {
       const timeout = setTimeout(() => setVoteJustChanged(false), 1500);
-      prevVotesRef.current = party.totalVotes;
       return () => clearTimeout(timeout);
     }
-  }, [party.totalVotes]);
+  }, [voteJustChanged]);
 
   return (
     <motion.div
@@ -279,7 +290,6 @@ const PartyCard = memo(function PartyCard({
       <AnimatedProgressBar
         percentage={party.percentage}
         color={party.color}
-        index={index}
       />
     </motion.div>
   );

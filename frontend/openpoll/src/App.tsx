@@ -11,14 +11,17 @@ import { VotingProvider } from "@/contexts/VotingContext";
 const Home = lazy(() =>
   import("@/pages/home").then((m) => ({ default: m.Home })),
 );
-const MbtiIntro = lazy(() =>
-  import("@/pages/mbti").then((m) => ({ default: m.MbtiIntro })),
+const DosIntro = lazy(() =>
+  import("@/pages/dos").then((m) => ({ default: m.DosIntro })),
 );
-const MbtiTest = lazy(() =>
-  import("@/pages/mbti").then((m) => ({ default: m.MbtiTest })),
+const DosTest = lazy(() =>
+  import("@/pages/dos").then((m) => ({ default: m.DosTest })),
 );
-const MbtiResult = lazy(() =>
-  import("@/pages/mbti").then((m) => ({ default: m.MbtiResult })),
+const DosResult = lazy(() =>
+  import("@/pages/dos").then((m) => ({ default: m.DosResult })),
+);
+const DosShare = lazy(() =>
+  import("@/pages/dos").then((m) => ({ default: m.DosShare })),
 );
 const NewsList = lazy(() =>
   import("@/pages/news").then((m) => ({ default: m.NewsList })),
@@ -26,17 +29,20 @@ const NewsList = lazy(() =>
 const NewsDetail = lazy(() =>
   import("@/pages/news").then((m) => ({ default: m.NewsDetail })),
 );
-const IssueList = lazy(() =>
-  import("@/pages/balance").then((m) => ({ default: m.IssueList })),
+const BalanceList = lazy(() =>
+  import("@/pages/balance").then((m) => ({ default: m.BalanceList })),
 );
-const IssueDetail = lazy(() =>
-  import("@/pages/balance").then((m) => ({ default: m.IssueDetail })),
+const BalanceDetail = lazy(() =>
+  import("@/pages/balance").then((m) => ({ default: m.BalanceDetail })),
 );
 const LoginPage = lazy(() =>
   import("@/pages/auth").then((m) => ({ default: m.LoginPage })),
 );
 const SignupPage = lazy(() =>
   import("@/pages/auth").then((m) => ({ default: m.SignupPage })),
+);
+const Profile = lazy(() =>
+  import("@/pages/profile").then((m) => ({ default: m.Profile })),
 );
 
 export default function App() {
@@ -51,7 +57,9 @@ export default function App() {
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/signup" element={<SignupPage />} />
                 <Route path="/register" element={<SignupPage />} /> {/* Redirect for backward compatibility */}
-
+                <Route path="/dos/test" element={<DosTest />} />
+                <Route path="/dos/result/:type" element={<DosResult />} />
+                <Route path="/dos/share/:type" element={<DosShare />} />
                 {/* Public routes with MainLayout */}
                 <Route
                   path="/"
@@ -63,13 +71,12 @@ export default function App() {
                 >
                   {/* All pages are now public */}
                   <Route index element={<Home />} />
-                  <Route path="/mbti" element={<MbtiIntro />} />
-                  <Route path="/mbti/test" element={<MbtiTest />} />
-                  <Route path="/mbti/result/:type" element={<MbtiResult />} />
+                  <Route path="/dos" element={<DosIntro />} />
                   <Route path="/news" element={<NewsList />} />
                   <Route path="/news/:id" element={<NewsDetail />} />
-                  <Route path="/balance" element={<IssueList />} />
-                  <Route path="/balance/:id" element={<IssueDetail />} />
+                  <Route path="/balance" element={<BalanceList />} />
+                  <Route path="/balance/:id" element={<BalanceDetail />} />
+                  <Route path="/profile" element={<Profile />} />
                 </Route>
               </Routes>
             </Suspense>
