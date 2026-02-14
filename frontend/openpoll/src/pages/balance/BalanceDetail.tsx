@@ -35,7 +35,7 @@ export function BalanceDetail() {
   );
   usePageMeta(
     vm.issue ? `${vm.issue.title} - 밸런스 게임` : "밸런스 게임 상세",
-    vm.issue?.description
+    vm.issue?.description,
   );
 
   const isAdmin = useMemo(() => {
@@ -119,7 +119,7 @@ export function BalanceDetail() {
   const disagreeCountView = getDisagreeCountSafe(vm.issue);
   const totalVotesSafe = Math.max(
     0,
-    Number(vm.issue.totalVotes ?? agreeCountView + disagreeCountView)
+    Number(vm.issue.totalVotes ?? agreeCountView + disagreeCountView),
   );
   const agreePercentBar =
     totalVotesSafe === 0
