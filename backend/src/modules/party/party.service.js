@@ -2,7 +2,6 @@ import prisma from '../../config/database.js';
 
 export const getAllParties = async () => {
   const parties = await prisma.party.findMany({
-    where: { isActive: true },
     orderBy: { order: 'asc' },
     select: {
       id: true,

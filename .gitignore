@@ -1,10 +1,9 @@
-# Claude Code settings
-.claude/
-
-# AI Agent skills (local installation)
+# AI Code Editors / Assistants
 .agent/
 .agents/
+.claude/
 .codex/
 .gemini/
 .opencode/
 .windsurf/
+.DS_Store

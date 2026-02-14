@@ -4,8 +4,8 @@ import {
   useState,
   useEffect,
   useCallback,
-  ReactNode,
 } from "react";
+import type { ReactNode } from "react";
 import { authApi, userApi, getErrorMessage } from "@/api";
 import {
   isTokenExpired,
@@ -14,6 +14,7 @@ import {
   cancelProactiveRefresh,
   clearTokens,
 } from "@/api/client";
+import type { AxiosError } from "axios";
 import type { User, AuthResponse } from "@/types/api.types";
 
 interface UserContextType {
@@ -57,10 +58,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
       try {
         // Access Token이 만료됐으면 Refresh Token으로 갱신 시도
         if (isTokenExpired()) {
-          console.log("[Auth] Access token expired, attempting refresh...");
-
           if (!refreshToken) {
-            console.log("[Auth] No refresh token available");
             clearTokens();
             setIsLoading(false);
             return;
@@ -68,32 +66,85 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
           const result = await refreshTokens();
           if (!result) {
-            console.log("[Auth] Token refresh failed");
             clearTokens();
             setIsLoading(false);
             return;
           }
-
-          console.log("[Auth] Token refreshed successfully");
         }
 
         // 사용자 정보 조회
         const userData = await userApi.getMe();
         setUser(userData);
 
+        // Sync with localAuth session
+        const session = {
+          nickname: userData.nickname,
+          email: userData.email,
+          points: userData.points,
+        };
+        localStorage.setItem("openpoll_session_v1", JSON.stringify(session));
+
         // 선제적 토큰 갱신 스케줄 설정
         scheduleProactiveRefresh();
       } catch (err) {
-        // 네트워크 에러인 경우 조용히 처리 (백엔드 서버가 실행되지 않을 수 있음)
+        // 에러 타입에 따라 다르게 처리
         const isNetworkError = err instanceof Error && err.message.includes("Network Error");
+        const axiosErr = err as AxiosError;
+        const isAuthError =
+          axiosErr?.response?.status === 401 ||
+          axiosErr?.response?.status === 403;
+
         if (isNetworkError) {
-          console.warn("[Auth] Cannot connect to server. Please ensure backend is running.");
+          // 네트워크 에러: 서버가 꺼져있거나 연결 불가
+          tryLoadLocalSession();
+        } else if (isAuthError) {
+          // 인증 에러: 토큰이 유효하지 않음
+          clearTokens();
         } else {
-          console.error("Failed to initialize auth:", err);
+          // 기타 서버 에러 (500 등): 토큰을 유지하고 로컬 세션 사용
+          tryLoadLocalSession();
+          // 백그라운드에서 재시도
+          setTimeout(async () => {
+            try {
+              const userData = await userApi.getMe();
+              setUser(userData);
+              const session = {
+                nickname: userData.nickname,
+                email: userData.email,
+                points: userData.points,
+              };
+              localStorage.setItem("openpoll_session_v1", JSON.stringify(session));
+            } catch {
+              // 백그라운드 갱신 실패는 무시
+            }
+          }, 5000);
         }
-        clearTokens();
       } finally {
         setIsLoading(false);
+      }
+    };
+
+    // 로컬 세션 정보로 임시 사용자 데이터 설정
+    const tryLoadLocalSession = () => {
+      try {
+        const sessionStr = localStorage.getItem("openpoll_session_v1");
+        if (sessionStr) {
+          const session = JSON.parse(sessionStr);
+          // 세션 정보로 최소한의 User 객체 생성
+          setUser({
+            id: "", // ID는 알 수 없음
+            email: session.email || "",
+            nickname: session.nickname || "",
+            points: session.points || 0,
+            age: 0,
+            gender: "MALE",
+            region: "",
+            hasTakenDos: false,
+            createdAt: "",
+          });
+        }
+      } catch {
+        // 로컬 세션 로드 실패는 무시
       }
     };
 
@@ -118,6 +169,15 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
       // Set user
       setUser(response.user);
+
+      // Sync with localAuth session for Header compatibility
+      const session = {
+        nickname: response.user.nickname,
+        email: response.user.email,
+        points: response.user.points,
+      };
+      localStorage.setItem("openpoll_session_v1", JSON.stringify(session));
+      window.dispatchEvent(new Event("storage"));
 
       // 선제적 토큰 갱신 스케줄 설정
       scheduleProactiveRefresh();
@@ -152,6 +212,15 @@ export function UserProvider({ children }: { children: ReactNode }) {
         // Set user
         setUser(response.user);
 
+        // Sync with localAuth session for Header compatibility
+        const session = {
+          nickname: response.user.nickname,
+          email: response.user.email,
+          points: response.user.points,
+        };
+        localStorage.setItem("openpoll_session_v1", JSON.stringify(session));
+        window.dispatchEvent(new Event("storage"));
+
         // 선제적 토큰 갱신 스케줄 설정
         scheduleProactiveRefresh();
       } catch (err) {
@@ -171,12 +240,16 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
     try {
       await authApi.logout();
-    } catch (err) {
-      console.error("Logout error:", err);
+    } catch {
+      // 로그아웃 API 에러는 무시
     } finally {
       // Clear tokens and user regardless of API call success
       clearTokens();
       setUser(null);
+
+      // Clear localAuth session
+      localStorage.removeItem("openpoll_session_v1");
+      window.dispatchEvent(new Event("storage"));
     }
   }, []);
 
@@ -188,8 +261,17 @@ export function UserProvider({ children }: { children: ReactNode }) {
     try {
       const userData = await userApi.getMe();
       setUser(userData);
-    } catch (err) {
-      console.error("Failed to refresh user:", err);
+
+      // Sync with localAuth session
+      const session = {
+        nickname: userData.nickname,
+        email: userData.email,
+        points: userData.points,
+      };
+      localStorage.setItem("openpoll_session_v1", JSON.stringify(session));
+      window.dispatchEvent(new Event("storage"));
+    } catch {
+      // 사용자 갱신 실패는 무시
     }
   }, []);
 

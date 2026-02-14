@@ -1,0 +1,12 @@
+(당연하지만 git pull이나 npm install은 알아서)
+1. docker start openpoll-postgres => PostgreSQL DB 컨테이너 켜기
+2. docker start openpoll-redis => Redis DB 컨테이너 켜기
+3. docker ps로 잘 켜졌나 확인
+4. backend 디렉토리로 이동
+5. npx prisma migrate deploy => DB 스키마 적용(도커 컨테이너에)
+(스키마 수정한 백엔드 측은 npx prisma migrate dev --name 변경내용)
+6. npx prisma generate => Prisma Client 재생성(변경사항을 코드에 적용)
+7. npx prisma db seed => 시드 데이터 삽입
+8. npm run dev => 서버 실행
+
+5는 스키마가 수정됐을시에 해주면 되고(이 때 6, 7도 혹시 모르니 해주는게 좋음), 6과 7은 시드 데이터(초기 데이터)가 수정됐을 때 => 두 케이스 모두 백엔드 측에서 공지해줄거임

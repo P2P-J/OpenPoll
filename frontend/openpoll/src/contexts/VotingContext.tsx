@@ -1,12 +1,5 @@
-import {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  useCallback,
-  useRef,
-  ReactNode,
-} from "react";
+import { createContext, useContext, useState, useEffect, useCallback, useRef } from "react";
+import type { ReactNode } from "react";
 import { voteApi, dashboardApi, partyApi, getErrorMessage } from "@/api";
 import type { Party, DashboardStats } from "@/types/api.types";
 import { useUser } from "@/contexts/UserContext";
@@ -53,10 +46,7 @@ export function VotingProvider({ children }: { children: ReactNode }) {
       } catch (err) {
         // 네트워크 에러인 경우 조용히 처리 (백엔드 서버가 실행되지 않을 수 있음)
         const isNetworkError = err instanceof Error && err.message.includes("Network Error");
-        if (isNetworkError) {
-          console.warn("[Voting] Cannot connect to server. Please ensure backend is running.");
-        } else {
-          console.error("Failed to load voting data:", err);
+        if (!isNetworkError) {
           setError(getErrorMessage(err));
         }
       }
@@ -65,6 +55,9 @@ export function VotingProvider({ children }: { children: ReactNode }) {
     loadInitialData();
   }, []);
 
+  // SSE 재연결을 위한 함수 ref (자기참조 해결)
+  const connectSSERef = useRef<() => void>(() => {});
+
   // SSE 연결 함수 (재연결 로직 포함)
   const connectSSE = useCallback(() => {
     // 이전 연결 정리
@@ -72,20 +65,13 @@ export function VotingProvider({ children }: { children: ReactNode }) {
       eventSourceRef.current.close();
     }
 
-    setSseStatus("connecting");
-
     const eventSource = dashboardApi.subscribeToStream(
       (data) => {
         setStats(data);
         setSseStatus("connected");
         reconnectAttempts.current = 0; // 성공 시 재시도 횟수 초기화
       },
-      (event) => {
-        // 네트워크 에러는 조용히 처리
-        if (reconnectAttempts.current === 0) {
-          console.warn("SSE connection error: Cannot connect to server. Please ensure backend is running.");
-        }
-
+      () => {
         // EventSource.CLOSED = 2
         if (eventSource.readyState === 2) {
           setSseStatus("disconnected");
@@ -100,11 +86,11 @@ export function VotingProvider({ children }: { children: ReactNode }) {
 
             reconnectTimeoutRef.current = setTimeout(() => {
               reconnectAttempts.current += 1;
-              connectSSE();
+              setSseStatus("connecting");
+              connectSSERef.current();
             }, delay);
           } else {
             setSseStatus("error");
-            console.warn("SSE max reconnect attempts reached. Backend may not be running.");
           }
         }
       }
@@ -121,6 +107,7 @@ export function VotingProvider({ children }: { children: ReactNode }) {
 
   // Subscribe to real-time updates via SSE
   useEffect(() => {
+    connectSSERef.current = connectSSE;
     connectSSE();
 
     return () => {
@@ -169,7 +156,6 @@ export function VotingProvider({ children }: { children: ReactNode }) {
       setParties(partiesData);
       setStats(statsData);
     } catch (err) {
-      console.error("Failed to refresh stats:", err);
       setError(getErrorMessage(err));
     }
   }, []);

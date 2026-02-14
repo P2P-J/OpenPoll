@@ -3,8 +3,7 @@ import config, { validateConfig } from './config/index.js';
 import prisma from './config/database.js';
 import redis from './config/redis.js';
 
-// 환경변수 검증
-validateConfig();
+validateConfig(); // 환경변수 검증
 
 const startServer = async () => {
   try {

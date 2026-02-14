@@ -2,7 +2,7 @@ import axios, { AxiosError } from "axios";
 import type { AxiosRequestConfig } from "axios";
 
 const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "http://localhost:3000/api";
+  import.meta.env.VITE_API_BASE_URL || "/api";
 
 // Export for use in other files
 export { API_BASE_URL };
@@ -193,16 +193,12 @@ export function scheduleProactiveRefresh() {
   }
 
   proactiveRefreshTimer = setTimeout(async () => {
-    console.log("[Auth] Proactive token refresh triggered");
     const result = await refreshTokens();
     if (result) {
       scheduleProactiveRefresh(); // 새 토큰으로 다시 스케줄
     }
   }, refreshIn);
 
-  console.log(
-    `[Auth] Token refresh scheduled in ${Math.round(refreshIn / 1000)}s`
-  );
 }
 
 /**
@@ -235,7 +231,6 @@ apiClient.interceptors.request.use(
 
     // 토큰이 곧 만료되면 미리 갱신 시도 (선제적 갱신)
     if (token && isTokenExpiringSoon(30)) {
-      console.log("[Auth] Token expiring soon, refreshing proactively");
       const result = await refreshTokens();
       if (result) {
         token = result.accessToken;
