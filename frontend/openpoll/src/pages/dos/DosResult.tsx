@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useState, useMemo } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { usePageMeta } from "@/hooks/usePageMeta";
 import type { DosResult as DosResultData } from "@/types/api.types";
@@ -15,12 +15,14 @@ import {
   ActionButtons,
   NavigationLinks,
 } from "./components";
+import { ShareModal } from "./components/ShareModal";
 
 export function DosResult() {
   usePageMeta("DOS 테스트 결과", "나의 정치 성향 분석 결과를 확인하세요.");
   const { type } = useParams<{ type: string }>();
   const location = useLocation();
   const navigate = useNavigate();
+  const [showShareModal, setShowShareModal] = useState(false);
 
   const { resultTypeInfo, isLoading } = useResultData(type, navigate);
 
@@ -60,9 +62,15 @@ export function DosResult() {
         <DescriptionSection detail={detail} />
         <CharacteristicsSection features={features} tags={tags} />
         <NoticeSection />
-        <ActionButtons />
+        <ActionButtons onShare={() => setShowShareModal(true)} />
         <NavigationLinks />
       </div>
+
+      <ShareModal
+        isOpen={showShareModal}
+        onClose={() => setShowShareModal(false)}
+        type={type || ""}
+      />
     </div>
   );
 }

@@ -20,6 +20,9 @@ const DosTest = lazy(() =>
 const DosResult = lazy(() =>
   import("@/pages/dos").then((m) => ({ default: m.DosResult })),
 );
+const DosShare = lazy(() =>
+  import("@/pages/dos").then((m) => ({ default: m.DosShare })),
+);
 const NewsList = lazy(() =>
   import("@/pages/news").then((m) => ({ default: m.NewsList })),
 );
@@ -56,6 +59,7 @@ export default function App() {
                 <Route path="/register" element={<SignupPage />} /> {/* Redirect for backward compatibility */}
                 <Route path="/dos/test" element={<DosTest />} />
                 <Route path="/dos/result/:type" element={<DosResult />} />
+                <Route path="/dos/share/:type" element={<DosShare />} />
                 {/* Public routes with MainLayout */}
                 <Route
                   path="/"
