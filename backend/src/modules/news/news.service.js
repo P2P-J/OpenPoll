@@ -16,9 +16,9 @@ export const refreshArticles = async () => {
 
   const guard = await tryNewsRefreshGuard();
   if (!guard.ok) {
-    const why = guard.reason === 0 ? 'COOLDOWN' : 'LOCKED';
-    console.log(`[NEWS_REFRESH_Skip] ${why}`);
-    return { skipped: true, reason: why };
+    const notOkReason = guard.reason === 0 ? 'COOLDOWN' : 'LOCKED';
+    console.log(`[NEWS_REFRESH_Skip] ${notOkReason}`);
+    return { skipped: true, reason: notOkReason };
   }
 
   try {
@@ -69,7 +69,7 @@ export const refreshArticles = async () => {
     const jobTime = Number(jobFinish - jobStart) / 1e9;
 
     console.log(`[NEWS_REFRESH_Success] enqueue + work + delete done in ${jobTime.toFixed(2)}s`);
-    
+
     return { enqueued: items.length, urls: items.map((i) => i.naverUrl) };
   } finally {
     await releaseNewsRefreshLock(guard.lockVal);
