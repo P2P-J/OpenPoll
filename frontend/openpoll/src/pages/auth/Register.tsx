@@ -366,7 +366,7 @@ export function Register() {
 
             <button
               type="submit"
-              className="w-full h-14 rounded-2xl bg-white text-black font-extrabold hover:bg-gray-100 transition-colors"
+              className="w-full h-14 rounded-2xl bg-white text-black font-extrabold transition-all duration-200 hover:bg-gray-100 hover:brightness-95 hover:shadow-[0_10px_30px_rgba(255,255,255,0.12)] hover:scale-[1.01] active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
             >
               회원가입 완료
             </button>
