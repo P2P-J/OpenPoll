@@ -98,8 +98,8 @@ export function BalanceGameCard({
           className="pointer-events-auto flex gap-2"
           style={{
             position: "absolute",
-            top: 4,
-            right: 6,
+            top: 12,
+            right: 12,
             zIndex: 99999,
             isolation: "isolate",
             pointerEvents: "auto",

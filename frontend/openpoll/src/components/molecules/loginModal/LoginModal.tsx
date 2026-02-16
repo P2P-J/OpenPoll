@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { X, Mail, Lock, ArrowRight, Gift, Home } from "lucide-react";
+import { X, Mail, Lock, ArrowRight, Gift } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { ROUTES } from "@/shared/constants";
 import { useUser } from "@/contexts/UserContext";
@@ -139,11 +139,6 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
                   <ArrowRight className="w-5 h-5" />
                 </button>
 
-                <div className="w-full h-14 rounded-2xl border border-green-500/25 bg-green-500/10 shadow-[0_0_40px_rgba(34,197,94,0.15)] flex items-center justify-center gap-2 font-semibold">
-                  <Gift className="w-5 h-5 text-green-400" />
-                  <span className="text-green-400">로그인 시 500P 지급!</span>
-                </div>
-
                 <p className="text-center text-sm text-gray-400">
                   아직 계정이 없으신가요?{" "}
                   <Link
@@ -155,21 +150,9 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
                   </Link>
                 </p>
 
-                <div className="flex items-center gap-4 pt-1">
-                  <div className="h-px flex-1 bg-white/10" />
-                  <span className="text-xs text-gray-500">또는</span>
-                  <div className="h-px flex-1 bg-white/10" />
-                </div>
-
-                <div className="flex justify-center pt-1">
-                  <Link
-                    to={ROUTES.HOME}
-                    onClick={onClose}
-                    className="group w-full h-14 rounded-xl bg-gradient-to-r from-gray-800 to-gray-900 hover:from-gray-700 hover:to-gray-800 border border-white/20 hover:border-white/30 transition-all duration-300 flex items-center justify-center gap-3 font-bold text-base shadow-lg hover:shadow-xl"
-                  >
-                    <Home className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                    <span>이전 페이지로</span>
-                  </Link>
+                <div className="w-full h-14 rounded-2xl border border-green-500/25 bg-green-500/10 shadow-[0_0_40px_rgba(34,197,94,0.15)] flex items-center justify-center gap-2 font-semibold">
+                  <Gift className="w-5 h-5 text-green-400" />
+                  <span className="text-green-400">회원가입 시 500P 지급!</span>
                 </div>
               </form>
             </motion.div>
