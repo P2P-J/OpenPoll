@@ -38,6 +38,9 @@ const config = {
     partyVote: -5,
     balanceGame: 50,
   },
+
+  // 뉴스 refresh Interval 설정
+  news_intervalMs: 600_000, // 개발: 60초 (운영: 600_000 으로 변경- 10분)
 };
 
 const requiredEnvVars = ['DATABASE_URL', 'JWT_SECRET'];
