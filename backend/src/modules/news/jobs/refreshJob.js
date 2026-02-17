@@ -2,7 +2,7 @@ import { refreshArticles } from '../news.service.js';
 
 let timer = null;
 
-export function startNewsRefreshJob({ intervalMs = 60_000 } = {}) {
+export function startNewsRefreshJob({ intervalMs = 600_000 } = {}) {
   if (timer) return;
 
   timer = setInterval(() => {

@@ -40,7 +40,7 @@ const config = {
   },
 
   // 뉴스 refresh Interval 설정
-  news_intervalMs: 60_000, // 개발: 60초 (운영: 3_600_000 으로 변경 : 1시간)
+  news_intervalMs: 600_000, // 개발: 60초 (운영: 600_000 으로 변경- 10분)
 };
 
 const requiredEnvVars = ['DATABASE_URL', 'JWT_SECRET'];
