@@ -49,8 +49,8 @@ export const CACHE_TTL = {
 export const NEWS_REFRESH = {
   LOCK_KEY: 'lock:news:refresh',
   COOLDOWN_KEY: 'cooldown:news:refresh',
-  COOLDOWN_SEC: 55, // 개발 : 55-60초, 운영: 3600초로 변경 예정
-  LOCK_TTL_MS: 50_000, // 락(영구락 방지) : 운영 시 300_000(5분) 변경 예정
+  COOLDOWN_SEC: 590, // 개발 : 45초, 운영: 600초(10분)로 변경
+  LOCK_TTL_MS: 300_000, // 락(영구락 방지) : 300_000(5분)
 };
 
 export default redis;

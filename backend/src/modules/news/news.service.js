@@ -40,15 +40,27 @@ export const refreshArticles = async () => {
       jobs.push(job);
     }
 
-    try {
-      await Promise.all(jobs.map((job) => job.waitUntilFinished(queueEvents, NEWS.WAIT_MS)));
-    } catch (err) {
+    const results = await Promise.allSettled(
+      jobs.map((job) => job.waitUntilFinished(queueEvents, NEWS.WAIT_MS))
+    );
+
+    results.forEach((r, idx) => {
+      if (r.status !== 'rejected') return;
+
+      const item = items[idx];
+      const err = r.reason;
       const msg = err?.message || err?.failedReason || err?.cause?.message || String(err);
 
-      if (msg === 'INVALID_TITLE' || msg === 'INVALID_BODY') throw AppError.badRequest('기사 파싱 실패');
-      if (msg === 'AI_SUMMARY_FAILED') throw AppError.internal('AI 요약 생성 실패');
-      throw err;
-    }
+      let type = 'UNKNOWN';
+      if (msg === 'INVALID_TITLE' || msg === 'INVALID_BODY') type = 'PARSING';
+      else if (msg === 'AI_SUMMARY_FAILED') type = 'AI_SUMMARY';
+
+      console.warn('[NEWS_REFRESH_JobFailed]', {
+        naverUrl: item?.naverUrl,
+        type,
+        reason: msg,
+      });
+    });
 
     const keep = await prisma.article.findMany({
       select: { id: true },

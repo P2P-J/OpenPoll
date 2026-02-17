@@ -14,6 +14,10 @@ export function getQueue() {
     if (!queue) {
         queue = new Queue('article', { connection: bullRedis, prefix: '{bull}' });
         queueEvents = new QueueEvents('article', { connection: bullRedis, prefix: '{bull}' });
+
+        queueEvents.on('error', (err) => {
+            console.error('[NEWS_QUEUEEVENTS_Error]', err);
+        });
     }
     return { queue, queueEvents };
 }
@@ -86,6 +90,21 @@ function startWorkerOnce() {
             concurrency: 3,
         }
     );
+
+    worker.on('completed', (job) => {
+        console.log('[NEWS_WORKER_Completed]', {
+            jobId: job.id,
+            naverUrl: job?.data?.naverUrl,
+        });
+    });
+
+    worker.on('failed', (job, err) => {
+        console.warn('[NEWS_WORKER_Failed]', {
+            jobId: job.id,
+            naverUrl: job?.data?.naverUrl,
+            reason: err?.message || String(err),
+        });
+    });
 
     console.log('News Queue Worker started');
 }
