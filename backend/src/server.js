@@ -18,13 +18,11 @@ const startServer = async () => {
       console.log(`Server running on port ${config.port} in ${config.nodeEnv} mode`);
     });
 
-    // ✅ cron 시작 (개발: 1분 -> 나중에 1시간으로 늘릴 예정)
-    startNewsRefreshJob({ intervalMs: config.news_intervalMs }); 
+    startNewsRefreshJob({ intervalMs: config.newsIntervalMs });
 
     const gracefulShutdown = async (signal) => {
       console.log(`\n${signal} received. Shutting down gracefully...`);
 
-      // ✅ cron 정지
       stopNewsRefreshJob();
 
       server.close(async () => {
