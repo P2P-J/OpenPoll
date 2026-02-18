@@ -39,8 +39,23 @@ const config = {
     balanceGame: 50,
   },
 
-  // 뉴스 refresh Interval 설정
-  news_intervalMs: 600_000, // 개발: 60초 (운영: 600_000 으로 변경- 10분)
+  // 뉴스 설정
+  newsIntervalMs: process.env.NEWS_INTERVAL_MS,
+  cooldownSec: process.env.COOLDOWN_SEC,
+  
+  // OAuth 설정
+  oauth: {
+    google: {
+      clientId: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      redirectUri: process.env.GOOGLE_REDIRECT_URI,
+    },
+    naver : {
+      clientId: process.env.NAVER_CLIENT_ID,
+      clientSecret: process.env.NAVER_CLIENT_SECRET,
+      redirectUri: process.env.NAVER_REDIRECT_URI,
+    },
+  },
 };
 
 const requiredEnvVars = ['DATABASE_URL', 'JWT_SECRET'];
