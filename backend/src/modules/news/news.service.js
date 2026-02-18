@@ -7,7 +7,8 @@ import { tryNewsRefreshGuard, releaseNewsRefreshLock } from './jobs/redisGuard.j
 
 const NEWS = {
   URL_MAX: 10,
-  KEEP_LATEST: 50,
+  KEEP_LATEST: 150,
+  SHOW_LATEST: 50,
   WAIT_MS: 120_000,
 };
 
@@ -44,11 +45,11 @@ export const refreshArticles = async () => {
       jobs.map((job) => job.waitUntilFinished(queueEvents, NEWS.WAIT_MS))
     );
 
-    results.forEach((r, idx) => {
-      if (r.status !== 'rejected') return;
+    results.forEach((result, idx) => {
+      if (result.status !== 'rejected') return;
 
       const item = items[idx];
-      const err = r.reason;
+      const err = result.reason;
       const msg = err?.message || err?.failedReason || err?.cause?.message || String(err);
 
       let type = 'UNKNOWN';
@@ -89,5 +90,8 @@ export const refreshArticles = async () => {
 };
 
 export const getArticles = async () => {
-  return prisma.article.findMany({ orderBy: { id: 'desc' } });
+  return prisma.article.findMany({
+    orderBy: { id: 'desc' },
+    take: NEWS.SHOW_LATEST,
+  });
 };
