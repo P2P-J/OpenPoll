@@ -17,12 +17,3 @@ export const getArticleById = async (id: number): Promise<NewsArticle | null> =>
     const articles = await getArticles();
     return articles.find(article => article.id === id) || null;
 };
-
-/**
- * 뉴스 새로고침 (크롤링 트리거)
- * POST /news/refresh
- */
-export const refreshNews = async (): Promise<{ enqueued: number; urls: string[] }> => {
-    const response = await apiClient.post<ApiResponse<{ enqueued: number; urls: string[] }>>('/news/refresh');
-    return response.data.data;
-};
