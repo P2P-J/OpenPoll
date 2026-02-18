@@ -35,7 +35,6 @@ model Party {
   id        Int     @id @default(autoincrement())
   name      String  @unique
   color     String  // 정당 대표 색상
-  logoUrl   String? // 로고 이미지 URL
   order     Int     @default(0) // 정렬 순서
   voteCount Int     @default(0) // 누적 투표 수
 
