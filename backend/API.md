@@ -329,11 +329,11 @@ Base URL: `http://localhost:3000/api`
 {
   "success": true,
   "data": [
-    { "id": 1, "name": "더불어민주당", "color": "#004EA2", "logoUrl": null, "voteCount": 1523 },
-    { "id": 2, "name": "국민의힘", "color": "#E61E2B", "logoUrl": null, "voteCount": 1245 },
-    { "id": 3, "name": "정의당", "color": "#FFCC00", "logoUrl": null, "voteCount": 432 },
-    { "id": 4, "name": "기본소득당", "color": "#00D2C3", "logoUrl": null, "voteCount": 156 },
-    { "id": 5, "name": "기타/무당층", "color": "#808080", "logoUrl": null, "voteCount": 89 }
+    { "id": 1, "name": "더불어민주당", "color": "#004EA2", "voteCount": 1523 },
+    { "id": 2, "name": "국민의힘", "color": "#E61E2B", "voteCount": 1245 },
+    { "id": 3, "name": "조국혁신당", "color": "#0033A0", "voteCount": 432 },
+    { "id": 4, "name": "개혁신당", "color": "#FF7210", "voteCount": 156 },
+    { "id": 5, "name": "기타/무당층", "color": "#808080", "voteCount": 89 }
   ]
 }
 ```

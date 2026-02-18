@@ -112,7 +112,6 @@ export interface Party {
   id: number;
   name: string;
   color: string;
-  logoUrl: string | null;
   voteCount: number;
 }
 
