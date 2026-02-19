@@ -2,6 +2,12 @@ import * as authService from './auth.service.js';
 import { successResponse, createdResponse, noContentResponse } from '../../utils/response.js';
 import catchAsyncError from '../../utils/catchAsyncError.js';
 
+export const sendVerificationCode = catchAsyncError(async (req, res) => {
+  const { email } = req.body;
+  await authService.sendVerificationCode(email);
+  successResponse(res, { message: '인증 코드가 발송되었습니다.' });
+});
+
 export const signup = catchAsyncError(async (req, res) => {
   const result = await authService.signup(req.body);
   createdResponse(res, result);
