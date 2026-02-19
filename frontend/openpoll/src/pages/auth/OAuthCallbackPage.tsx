@@ -1,9 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import type { AxiosError } from "axios";
+import { Home } from "lucide-react";
 import { authApi } from "@/api";
 import { ROUTES } from "@/shared/constants";
 import { useUser } from "@/contexts/UserContext";
+import googleLogo from "@/img/google-logo.svg";
+import naverLogo from "@/img/naver-logo.svg";
 
 type OAuthProvider = "google" | "naver";
 
@@ -134,46 +137,57 @@ export function OAuthCallbackPage() {
 
   return (
     <div className="min-h-screen bg-black text-white flex items-center justify-center px-4">
-      <div className="w-full max-w-md rounded-2xl border border-white/10 bg-white/5 p-6 space-y-4">
+      <div
+        className="w-[min(520px,calc(100vw-32px))] origin-center rounded-2xl border border-white/10 bg-white/5 p-6 space-y-4"
+        style={{ transform: "scale(1.45)" }}
+      >
         <h1 className="text-xl font-bold">소셜 로그인 오류</h1>
         <p className="text-sm text-gray-300">{state.message}</p>
 
-        <div className="flex gap-2">
+        <div className="w-1/3 min-w-[170px] max-w-[220px] mx-auto space-y-2">
           <button
             type="button"
             onClick={() => startOAuth("google")}
-            className="flex-1 h-10 rounded-lg border border-white/15 bg-white/5 hover:bg-white/10 text-sm"
+            className="w-full h-10 rounded-lg border border-white/15 bg-white/5 hover:bg-white/10 text-sm flex items-center justify-center gap-2"
           >
+            <img src={googleLogo} alt="구글" className="w-4 h-4" />
             구글 다시 시도
           </button>
           <button
             type="button"
             onClick={() => startOAuth("naver")}
-            className="flex-1 h-10 rounded-lg border border-white/15 bg-white/5 hover:bg-white/10 text-sm"
+            className="w-full h-10 rounded-lg border border-white/15 bg-white/5 hover:bg-white/10 text-sm flex items-center justify-center gap-2"
           >
+            <img src={naverLogo} alt="네이버" className="w-4 h-4" />
             네이버 다시 시도
           </button>
-        </div>
 
-        {state.code === 409 && state.provider && (
+          <div className="flex items-center gap-4 pt-1">
+            <div className="h-px flex-1 bg-white/10" />
+            <span className="text-xs text-gray-500">또는</span>
+            <div className="h-px flex-1 bg-white/10" />
+          </div>
+
+          {state.code === 409 && state.provider && (
+            <button
+              type="button"
+              onClick={() => startOAuth(state.provider!, "rejoin")}
+              className="w-full h-10 rounded-lg border border-yellow-400/40 bg-yellow-500/10 hover:bg-yellow-500/15 text-sm"
+            >
+              재가입 모드로 진행
+            </button>
+          )}
+
           <button
             type="button"
-            onClick={() => startOAuth(state.provider!, "rejoin")}
-            className="w-full h-10 rounded-lg border border-yellow-400/40 bg-yellow-500/10 hover:bg-yellow-500/15 text-sm"
+            onClick={() => navigate(ROUTES.LOGIN)}
+            className="w-full h-10 rounded-lg border border-white/15 bg-white/5 hover:bg-white/10 text-sm flex items-center justify-center gap-2"
           >
-            재가입 모드로 진행
+            <Home className="w-4 h-4" />
+            로그인 화면으로 이동
           </button>
-        )}
-
-        <button
-          type="button"
-          onClick={() => navigate(ROUTES.LOGIN)}
-          className="w-full h-10 rounded-lg border border-white/15 bg-white/5 hover:bg-white/10 text-sm"
-        >
-          로그인 화면으로 이동
-        </button>
+        </div>
       </div>
     </div>
   );
 }
-
