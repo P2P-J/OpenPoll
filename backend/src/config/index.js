@@ -22,12 +22,22 @@ const config = {
   // JWT
   jwt: {
     secret: process.env.JWT_SECRET,
+    refreshSecret: process.env.JWT_REFRESH_SECRET,
     accessExpiresIn: process.env.JWT_ACCESS_EXPIRES_IN || '15m',
     refreshExpiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '7d',
   },
 
   // CORS
   corsOrigin: process.env.CORS_ORIGIN || 'http://localhost:5173',
+
+  // SMTP (Email 인증)
+  smtp: {
+    host: process.env.SMTP_HOST || 'smtp.gmail.com',
+    port: parseInt(process.env.SMTP_PORT, 10) || 587,
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS,
+    from: process.env.SMTP_FROM || process.env.SMTP_USER,
+  },
 
   // 포인트 설정
   points: {
@@ -58,7 +68,7 @@ const config = {
   },
 };
 
-const requiredEnvVars = ['DATABASE_URL', 'JWT_SECRET'];
+const requiredEnvVars = ['DATABASE_URL', 'JWT_SECRET', 'JWT_REFRESH_SECRET', 'SMTP_USER', 'SMTP_PASS'];
 
 export function validateConfig() {
   const missing = requiredEnvVars.filter((key) => !process.env[key]);
