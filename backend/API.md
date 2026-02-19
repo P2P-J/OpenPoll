@@ -6,11 +6,55 @@ Base URL: `http://localhost:3000/api`
 
 ## 인증 (Auth)
 
+### 이메일 인증 코드 발송
+`POST /auth/email/send-code`
+
+회원가입 전 이메일 인증 코드를 발송합니다. 코드는 5분간 유효하며, 60초 이내 재발송이 불가합니다.
+
+**Request Body:**
+```json
+{
+  "email": "user@example.com"
+}
+```
+
+| 필드 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| email | string | O | 인증할 이메일 주소 |
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "data": {
+    "message": "인증 코드가 발송되었습니다."
+  }
+}
+```
+
+**Error (400):**
+```json
+{
+  "success": false,
+  "message": "인증 코드가 이미 발송되었습니다. 60초 후에 다시 시도해주세요."
+}
+```
+
+**Error (409):**
+```json
+{
+  "success": false,
+  "message": "이미 사용 중인 이메일입니다."
+}
+```
+
+---
+
 ### 회원가입
 
 `POST /auth/signup`
 
-회원가입 시 500P 자동 지급
+이메일 인증 코드 검증 후 회원가입 처리. 500P 자동 지급
 
 **Request Body:**
 
@@ -21,18 +65,20 @@ Base URL: `http://localhost:3000/api`
   "nickname": "닉네임",
   "age": 25,
   "region": "서울",
-  "gender": "MALE"
+  "gender": "MALE",
+  "verificationCode": "123456"
 }
 ```
 
-| 필드     | 타입   | 필수 | 설명                           |
-| -------- | ------ | ---- | ------------------------------ |
-| email    | string | O    | 이메일 (아이디)                |
-| password | string | O    | 비밀번호 (8자 이상, 영문+숫자) |
-| nickname | string | O    | 닉네임 (2~20자, 중복 불가)     |
-| age      | number | O    | 나이 (18세 이상)               |
-| region   | string | O    | 지역 (서울, 부산, 대구 등)     |
-| gender   | string | O    | 성별 (MALE, FEMALE)            |
+| 필드 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| email | string | O | 이메일 (아이디) |
+| password | string | O | 비밀번호 (8자 이상, 영문+숫자) |
+| nickname | string | O | 닉네임 (2~20자, 중복 불가) |
+| age | number | O | 나이 (18세 이상) |
+| region | string | O | 지역 (서울, 부산, 대구 등) |
+| gender | string | O | 성별 (MALE, FEMALE) |
+| verificationCode | string | O | 이메일 인증 코드 (6자리 숫자) |
 
 **Response (201):**
 
@@ -56,6 +102,14 @@ Base URL: `http://localhost:3000/api`
     "accessToken": "eyJhbGciOiJIUzI1NiIs...",
     "refreshToken": "eyJhbGciOiJIUzI1NiIs..."
   }
+}
+```
+
+**Error (400):**
+```json
+{
+  "success": false,
+  "message": "인증 코드가 만료되었거나 발송되지 않았습니다. 인증 코드를 다시 요청해주세요."
 }
 ```
 

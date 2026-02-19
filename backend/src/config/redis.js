@@ -35,7 +35,8 @@ export const CACHE_KEYS = {
   STATS_BY_AGE: 'stats:by-age',
   STATS_BY_REGION: 'stats:by-region',
   DOS_STATS: 'dos:stats',
-  USER_REFRESH_TOKEN: 'user:refresh:', // + userId
+  USER_REFRESH_TOKEN: 'user:refresh:',
+  EMAIL_VERIFY: 'email:verify:',
 };
 
 export const CACHE_TTL = {
@@ -44,6 +45,7 @@ export const CACHE_TTL = {
   STATS_BY_REGION: 60,
   DOS_STATS: 300,
   REFRESH_TOKEN: 60 * 60 * 24 * 7, // 7일
+  EMAIL_VERIFY: 60 * 5, // 5분
 };
 
 export const NEWS_REFRESH = {
