@@ -3,6 +3,8 @@ import type {
   SignupRequest,
   LoginRequest,
   AuthResponse,
+  OAuthAuthResponse,
+  CompleteSocialProfileRequest,
   RefreshTokenRequest,
   RefreshTokenResponse,
   ApiResponse,
@@ -49,6 +51,39 @@ export const refreshToken = async (
 ): Promise<RefreshTokenResponse> => {
   const response = await apiClient.post<ApiResponse<RefreshTokenResponse>>(
     "/auth/refresh",
+    data,
+  );
+  return response.data.data;
+};
+
+/**
+ * OAuth 콜백 처리 결과 조회
+ * GET /auth/oauth/:provider/callback?code&state
+ */
+export const oauthCallback = async (
+  provider: "google" | "naver",
+  code: string,
+  state: string,
+): Promise<OAuthAuthResponse> => {
+  const response = await apiClient.get<ApiResponse<OAuthAuthResponse>>(
+    `/auth/oauth/${provider}/callback`,
+    {
+      params: { code, state },
+      withCredentials: true,
+    },
+  );
+  return response.data.data;
+};
+
+/**
+ * 소셜 가입 추가정보 완료
+ * POST /auth/profile/complete
+ */
+export const completeSocialProfile = async (
+  data: CompleteSocialProfileRequest,
+): Promise<OAuthAuthResponse> => {
+  const response = await apiClient.post<ApiResponse<OAuthAuthResponse>>(
+    "/auth/profile/complete",
     data,
   );
   return response.data.data;
