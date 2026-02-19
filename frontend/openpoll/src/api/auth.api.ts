@@ -81,10 +81,19 @@ export const oauthCallback = async (
  */
 export const completeSocialProfile = async (
   data: CompleteSocialProfileRequest,
-): Promise<OAuthAuthResponse> => {
-  const response = await apiClient.post<ApiResponse<OAuthAuthResponse>>(
+): Promise<OAuthAuthResponse | null> => {
+  const response = await apiClient.post<ApiResponse<OAuthAuthResponse> | null>(
     "/auth/profile/complete",
     data,
   );
-  return response.data.data;
+  // Some servers return 204 No Content for this endpoint.
+  if (
+    !response.data ||
+    typeof response.data !== "object" ||
+    !("data" in response.data) ||
+    !(response.data as ApiResponse<OAuthAuthResponse>).data
+  ) {
+    return null;
+  }
+  return (response.data as ApiResponse<OAuthAuthResponse>).data;
 };
