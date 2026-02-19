@@ -48,6 +48,24 @@ const config = {
     partyVote: -5,
     balanceGame: 50,
   },
+
+  // 뉴스 설정
+  newsIntervalMs: process.env.NEWS_INTERVAL_MS,
+  cooldownSec: process.env.COOLDOWN_SEC,
+  
+  // OAuth 설정
+  oauth: {
+    google: {
+      clientId: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      redirectUri: process.env.GOOGLE_REDIRECT_URI,
+    },
+    naver : {
+      clientId: process.env.NAVER_CLIENT_ID,
+      clientSecret: process.env.NAVER_CLIENT_SECRET,
+      redirectUri: process.env.NAVER_REDIRECT_URI,
+    },
+  },
 };
 
 const requiredEnvVars = ['DATABASE_URL', 'JWT_SECRET', 'JWT_REFRESH_SECRET', 'SMTP_USER', 'SMTP_PASS'];
