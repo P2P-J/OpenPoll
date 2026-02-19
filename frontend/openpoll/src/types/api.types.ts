@@ -54,6 +54,17 @@ export interface AuthResponse {
   refreshToken: string;
 }
 
+export interface OAuthAuthResponse extends AuthResponse {
+  profileComplete: boolean;
+}
+
+export interface CompleteSocialProfileRequest {
+  nickname: string;
+  age: number;
+  region: string;
+  gender: "MALE" | "FEMALE";
+}
+
 export interface RefreshTokenRequest {
   refreshToken: string;
 }
