@@ -34,6 +34,7 @@
     "ioredis": "^5.9.2",
     "jsonwebtoken": "^9.0.2",
     "morgan": "^1.10.0",
+    "nodemailer": "^8.0.1",
     "openai": "^6.17.0",
     "uuid": "^9.0.1"
   },
