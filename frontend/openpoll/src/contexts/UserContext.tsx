@@ -30,6 +30,7 @@ interface UserContextType {
     age: number;
     region: string;
     gender: "MALE" | "FEMALE";
+    verificationCode: string;
   }) => Promise<void>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
@@ -198,6 +199,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
       age: number;
       region: string;
       gender: "MALE" | "FEMALE";
+      verificationCode: string;
     }) => {
       setIsLoading(true);
       setError(null);

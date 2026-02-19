@@ -41,6 +41,7 @@ export interface SignupRequest {
   age: number;
   region: string;
   gender: "MALE" | "FEMALE";
+  verificationCode: string;
 }
 
 export interface LoginRequest {
@@ -52,6 +53,17 @@ export interface AuthResponse {
   user: User;
   accessToken: string;
   refreshToken: string;
+}
+
+export interface OAuthAuthResponse extends AuthResponse {
+  profileComplete: boolean;
+}
+
+export interface CompleteSocialProfileRequest {
+  nickname: string;
+  age: number;
+  region: string;
+  gender: "MALE" | "FEMALE";
 }
 
 export interface RefreshTokenRequest {
