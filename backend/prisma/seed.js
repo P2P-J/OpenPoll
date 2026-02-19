@@ -9,8 +9,8 @@ async function main() {
   const parties = [
     { name: '더불어민주당', color: '#004EA2', order: 1 },
     { name: '국민의힘', color: '#E61E2B', order: 2 },
-    { name: '정의당', color: '#FFCC00', order: 3 },
-    { name: '기본소득당', color: '#00D2C3', order: 4 },
+    { name: '조국혁신당', color: '#0033A0', order: 3 },
+    { name: '개혁신당', color: '#FF7210', order: 4 },
     { name: '기타/무당층', color: '#808080', order: 5 },
   ];
 
