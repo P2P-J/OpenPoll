@@ -57,17 +57,10 @@ export const getMyVotes = async (): Promise<UserVoteStats> => {
 
 /**
  * 회원탈퇴
- * DELETE /users/me
- *
- * TODO: 백엔드 구현 후 아래 주석을 해제하고 목업 코드를 삭제하세요.
+ * DELETE /auth/withdraw
  */
 export const deleteAccount = async (): Promise<void> => {
-  // --- 실제 API (백엔드 구현 후 주석 해제) ---
-  // await apiClient.delete("/users/me");
-
-  // --- 목업 (백엔드 구현 후 삭제) ---
-  await new Promise((resolve) => setTimeout(resolve, 1000));
-  console.log("[MOCK] 회원탈퇴 처리 완료");
+  await apiClient.delete("/auth/withdraw");
 };
 
 /**
