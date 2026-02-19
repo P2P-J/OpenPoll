@@ -36,7 +36,6 @@ export function Register() {
   const [isCodeSent, setIsCodeSent] = useState(false);
   const [isEmailVerified, setIsEmailVerified] = useState(false);
   const [isSendingCode, setIsSendingCode] = useState(false);
-  const [isVerifying, setIsVerifying] = useState(false);
   const [timer, setTimer] = useState(0);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -93,27 +92,20 @@ export function Register() {
     }
   }, [email]);
 
-  // 인증코드 확인 (목업: 123456)
+  // 인증코드 형식 확인 (실제 검증은 회원가입 시 백엔드에서 처리)
   const handleVerifyCode = useCallback(() => {
-    if (!verificationCode.trim()) {
+    const code = verificationCode.trim();
+    if (!code) {
       setErrors((prev) => ({ ...prev, verificationCode: '인증코드를 입력해 주세요.' }));
       return;
     }
-
-    setIsVerifying(true);
-
-    // TODO: 백엔드 구현 후 실제 API 호출로 교체
-    // 목업: 코드 123456 일치 확인
-    setTimeout(() => {
-      if (verificationCode.trim() === '123456') {
-        setIsEmailVerified(true);
-        setTimer(0);
-        setErrors((prev) => ({ ...prev, verificationCode: undefined }));
-      } else {
-        setErrors((prev) => ({ ...prev, verificationCode: '인증코드가 일치하지 않습니다.' }));
-      }
-      setIsVerifying(false);
-    }, 500);
+    if (code.length !== 6) {
+      setErrors((prev) => ({ ...prev, verificationCode: '인증코드는 6자리 숫자입니다.' }));
+      return;
+    }
+    setIsEmailVerified(true);
+    setTimer(0);
+    setErrors((prev) => ({ ...prev, verificationCode: undefined }));
   }, [verificationCode]);
 
   const [errors, setErrors] = useState<RegisterErrors>({});
@@ -334,10 +326,10 @@ export function Register() {
                       <button
                         type="button"
                         onClick={handleVerifyCode}
-                        disabled={isVerifying || !verificationCode.trim() || timer <= 0}
+                        disabled={!verificationCode.trim() || timer <= 0}
                         className="h-14 px-5 rounded-2xl bg-white text-black text-sm font-bold hover:bg-gray-200 transition-colors disabled:opacity-40 disabled:cursor-not-allowed whitespace-nowrap flex-shrink-0"
                       >
-                        {isVerifying ? '확인 중...' : '확인'}
+                        확인
                       </button>
                     </div>
                     {errors.verificationCode && (
