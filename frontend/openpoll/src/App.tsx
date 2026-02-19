@@ -41,6 +41,12 @@ const LoginPage = lazy(() =>
 const SignupPage = lazy(() =>
   import("@/pages/auth").then((m) => ({ default: m.SignupPage })),
 );
+const SocialSignupPage = lazy(() =>
+  import("@/pages/auth").then((m) => ({ default: m.SocialSignup })),
+);
+const OAuthCallbackPage = lazy(() =>
+  import("@/pages/auth").then((m) => ({ default: m.OAuthCallbackPage })),
+);
 const Profile = lazy(() =>
   import("@/pages/profile").then((m) => ({ default: m.Profile })),
 );
@@ -57,6 +63,8 @@ export default function App() {
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/signup" element={<SignupPage />} />
                 <Route path="/register" element={<SignupPage />} /> {/* Redirect for backward compatibility */}
+                <Route path="/auth/social-signup" element={<SocialSignupPage />} />
+                <Route path="/auth/oauth/callback" element={<OAuthCallbackPage />} />
                 <Route path="/dos/test" element={<DosTest />} />
                 <Route path="/dos/result/:type" element={<DosResult />} />
                 <Route path="/dos/share/:type" element={<DosShare />} />
