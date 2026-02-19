@@ -41,6 +41,7 @@ export interface SignupRequest {
   age: number;
   region: string;
   gender: "MALE" | "FEMALE";
+  verificationCode: string;
 }
 
 export interface LoginRequest {

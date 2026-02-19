@@ -12,6 +12,8 @@ export interface UseProfileReturn {
   isLoading: boolean;
   showPasswordModal: boolean;
   setShowPasswordModal: (show: boolean) => void;
+  showWithdrawModal: boolean;
+  setShowWithdrawModal: (show: boolean) => void;
   handleBack: () => void;
 }
 
@@ -23,6 +25,7 @@ export function useProfile(): UseProfileReturn {
   const [voteStats, setVoteStats] = useState<UserVoteStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [showWithdrawModal, setShowWithdrawModal] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -64,6 +67,8 @@ export function useProfile(): UseProfileReturn {
     isLoading: combinedLoading,
     showPasswordModal,
     setShowPasswordModal,
+    showWithdrawModal,
+    setShowWithdrawModal,
     handleBack,
   };
 }
