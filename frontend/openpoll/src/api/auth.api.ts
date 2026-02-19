@@ -44,24 +44,16 @@ export const logout = async (): Promise<void> => {
 
 /**
  * 이메일 인증코드 발송
- * POST /auth/send-verification-code
- *
- * TODO: 백엔드 구현 후 아래 주석을 해제하고 목업 코드를 삭제하세요.
+ * POST /auth/email/send-code
  */
 export const sendVerificationCode = async (
   email: string,
 ): Promise<{ message: string }> => {
-  // --- 실제 API (백엔드 구현 후 주석 해제) ---
-  // const response = await apiClient.post<ApiResponse<{ message: string }>>(
-  //   "/auth/send-verification-code",
-  //   { email },
-  // );
-  // return response.data.data;
-
-  // --- 목업 (백엔드 구현 후 삭제) ---
-  await new Promise((resolve) => setTimeout(resolve, 1000));
-  console.log(`[MOCK] 인증코드 발송: ${email} → 코드: 123456`);
-  return { message: "인증코드가 발송되었습니다." };
+  const response = await apiClient.post<ApiResponse<{ message: string }>>(
+    "/auth/email/send-code",
+    { email },
+  );
+  return response.data.data;
 };
 
 /**
