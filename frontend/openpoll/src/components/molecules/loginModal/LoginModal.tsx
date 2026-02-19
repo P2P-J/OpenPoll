@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { X, Mail, Lock, ArrowRight, Gift, Home } from "lucide-react";
+import { X, Mail, Lock, ArrowRight, Gift } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { ROUTES } from "@/shared/constants";
 import { useUser } from "@/contexts/UserContext";
+import naverLogo from "@/img/naver-logo.svg";
+import googleLogo from "@/img/google-logo.svg";
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -46,6 +48,23 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const oauthBaseUrl = import.meta.env.VITE_API_BASE_URL || "/api";
+
+  const startOAuth = (provider: "google" | "naver", mode?: "rejoin") => {
+    localStorage.setItem("oauthProvider", provider);
+    const modeQuery = mode ? `?mode=${mode}` : "";
+    onClose();
+    window.location.href = `${oauthBaseUrl}/auth/oauth/${provider}${modeQuery}`;
+  };
+
+  const handleNaverLogin = () => {
+    startOAuth("naver");
+  };
+
+  const handleGoogleLogin = () => {
+    startOAuth("google");
   };
 
   return (
@@ -139,11 +158,6 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
                   <ArrowRight className="w-5 h-5" />
                 </button>
 
-                <div className="w-full h-14 rounded-2xl border border-green-500/25 bg-green-500/10 shadow-[0_0_40px_rgba(34,197,94,0.15)] flex items-center justify-center gap-2 font-semibold">
-                  <Gift className="w-5 h-5 text-green-400" />
-                  <span className="text-green-400">로그인 시 500P 지급!</span>
-                </div>
-
                 <p className="text-center text-sm text-gray-400">
                   아직 계정이 없으신가요?{" "}
                   <Link
@@ -155,21 +169,28 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
                   </Link>
                 </p>
 
-                <div className="flex items-center gap-4 pt-1">
-                  <div className="h-px flex-1 bg-white/10" />
-                  <span className="text-xs text-gray-500">또는</span>
-                  <div className="h-px flex-1 bg-white/10" />
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={handleNaverLogin}
+                    className="flex-1 h-10 rounded-lg border border-white/15 bg-white/5 hover:bg-white/10 transition-colors flex items-center justify-center"
+                    aria-label="네이버 로그인"
+                  >
+                    <img src={naverLogo} alt="네이버" className="w-4 h-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleGoogleLogin}
+                    className="flex-1 h-10 rounded-lg border border-white/15 bg-white/5 hover:bg-white/10 transition-colors flex items-center justify-center"
+                    aria-label="구글 로그인"
+                  >
+                    <img src={googleLogo} alt="구글" className="w-4 h-4" />
+                  </button>
                 </div>
 
-                <div className="flex justify-center pt-1">
-                  <Link
-                    to={ROUTES.HOME}
-                    onClick={onClose}
-                    className="group w-full h-14 rounded-xl bg-gradient-to-r from-gray-800 to-gray-900 hover:from-gray-700 hover:to-gray-800 border border-white/20 hover:border-white/30 transition-all duration-300 flex items-center justify-center gap-3 font-bold text-base shadow-lg hover:shadow-xl"
-                  >
-                    <Home className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                    <span>이전 페이지로</span>
-                  </Link>
+                <div className="w-full h-14 rounded-2xl border border-green-500/25 bg-green-500/10 shadow-[0_0_40px_rgba(34,197,94,0.15)] flex items-center justify-center gap-2 font-semibold">
+                  <Gift className="w-5 h-5 text-green-400" />
+                  <span className="text-green-400">회원가입 시 500P 지급!</span>
                 </div>
               </form>
             </motion.div>
