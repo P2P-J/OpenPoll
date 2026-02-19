@@ -70,9 +70,9 @@ export function AuthSidePanel() {
           style={{ marginTop: -64, marginBottom: 40, columnGap: 20 }}
         >
           <div
-            className="flex items-center justify-center shadow-smooth"
+            className="flex items-center justify-center shadow-smooth overflow-hidden"
             style={{
-              background: "#ffffff",
+              background: "#0b0b0b",
               width: 48,
               height: 48,
               minWidth: 48,
@@ -80,9 +80,11 @@ export function AuthSidePanel() {
               borderRadius: 14,
             }}
           >
-            <span className="font-bold text-2xl" style={{ color: "#0b0b0b" }} aria-hidden="true">
-              O
-            </span>
+            <img
+              src="/OPENPOLL-LARGE.png"
+              alt="OpenPoll"
+              className="w-full h-full object-contain scale-[1.8]"
+            />
           </div>
           <span className="font-bold tracking-tight" style={{ fontSize: 25 }}>
             OpenPoll
