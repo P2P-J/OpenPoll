@@ -21,6 +21,12 @@ async function main() {
       create: party,
     });
   }
+
+  // 시드 목록에 없는 기존 정당 삭제 (이름 변경 시 구 데이터 정리)
+  const partyNames = parties.map((p) => p.name);
+  await prisma.party.deleteMany({
+    where: { name: { notIn: partyNames } },
+  });
   console.log('Parties seeded');
 
   // DOS 질문 시드
