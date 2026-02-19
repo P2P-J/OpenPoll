@@ -63,13 +63,18 @@ export function BalanceVoteSection({
             </div>
 
             <div
-              className={`absolute right-0 top-0 h-full bg-gray-800 flex items-center justify-end transition-all duration-500 overflow-hidden ${
+              className={`absolute right-0 top-0 h-full flex items-center justify-end transition-all duration-500 overflow-hidden ${
                 disagreePercentBar <= 0 ? "px-0" : "px-6 sm:px-8"
               }`}
-              style={{ width: `${disagreePercentBar}%` }}
+              style={{
+                width: `${disagreePercentBar}%`,
+                backgroundColor: "#1F2937",
+                backgroundImage:
+                  "repeating-linear-gradient(135deg, transparent, transparent 4px, rgba(255,255,255,0.12) 4px, rgba(255,255,255,0.12) 8px)",
+              }}
             >
               {disagreePercentBar > 0 && (
-                <div className="text-white text-right">
+                <div className="text-right" style={{ color: "#FFFFFF" }}>
                   <div className="flex items-center justify-end space-x-2 mb-1">
                     <span className="font-bold text-sm sm:text-lg">반대</span>
                     <ThumbsDown className="w-4 h-4 sm:w-5 sm:h-5" />
