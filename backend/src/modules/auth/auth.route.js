@@ -40,5 +40,11 @@ router.post('/login', authLimiter, loginValidation, validate, authController.log
 router.post('/logout', authenticate, authController.logout);
 router.post('/refresh', authLimiter, refreshTokenValidation, validate, authController.refresh);
 router.patch('/password', authenticate, authLimiter, changePasswordValidation, validate, authController.changePassword);
+router.post('/refresh', refreshTokenValidation, validate, authController.refresh);
+router.patch('/password', authenticate, changePasswordValidation, validate, authController.changePassword);
+router.get('/oauth/:provider', authController.oauthStart);
+router.get('/oauth/:provider/callback', authController.oauthCallback);
+router.post('/profile/complete', authenticate, signupValidation, authController.completeProfile);
+router.delete('/withdraw', authenticate, authController.withdraw);
 
 export default router;

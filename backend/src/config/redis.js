@@ -16,6 +16,20 @@ redis.on('error', (err) => {
   console.error('Redis connection error:', err.message);
 });
 
+export const bullRedis = new Redis(config.redisUrl, {
+  maxRetriesPerRequest: null,
+  lazyConnect: true,
+  tls: config.redisUrl?.startsWith('rediss://') ? {} : undefined,
+});
+
+bullRedis.on('connect', () => {
+  console.log('Bull Redis connected');
+});
+
+bullRedis.on('error', (err) => {
+  console.error('Bull Redis connection error:', err.message);
+});
+
 export const CACHE_KEYS = {
   STATS_OVERALL: 'stats:overall',
   STATS_BY_AGE: 'stats:by-age',
@@ -32,6 +46,13 @@ export const CACHE_TTL = {
   DOS_STATS: 300,
   REFRESH_TOKEN: 60 * 60 * 24 * 7, // 7일
   EMAIL_VERIFY: 60 * 5, // 5분
+};
+
+export const NEWS_REFRESH = {
+  LOCK_KEY: 'lock:news:refresh',
+  COOLDOWN_KEY: 'cooldown:news:refresh',
+  COOLDOWN_SEC: config.cooldownSec,
+  LOCK_TTL_MS: 300_000, // 락(영구락 방지 - 5분)
 };
 
 export default redis;
