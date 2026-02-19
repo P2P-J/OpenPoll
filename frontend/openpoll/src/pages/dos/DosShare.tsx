@@ -11,52 +11,72 @@ import {
     NoticeSection,
 } from "./components";
 
+function NotFoundView() {
+    return (
+        <div className="min-h-screen bg-black text-white flex items-center justify-center">
+            <div className="text-center">
+                <p className="text-lg text-gray-400 mb-4">
+                    존재하지 않는 결과 유형입니다.
+                </p>
+                <Link
+                    to="/"
+                    className="inline-block px-6 py-3 bg-white/10 border border-white/20 rounded-xl text-sm font-semibold hover:bg-white/20 transition-colors"
+                >
+                    홈으로 돌아가기
+                </Link>
+            </div>
+        </div>
+    );
+}
+
+function ShareActionButtons() {
+    return (
+        <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1 }}
+            className="flex flex-col sm:flex-row gap-3 sm:gap-4"
+        >
+            <Link
+                to="/dos"
+                className="flex-1 flex items-center justify-center space-x-2 px-6 py-3 sm:py-4 bg-white text-black rounded-xl font-semibold text-sm sm:text-base hover:bg-gray-100 transition-colors"
+            >
+                <Brain className="w-4 h-4 sm:w-5 sm:h-5" />
+                <span>나도 테스트 하러가기</span>
+            </Link>
+            <Link
+                to="/"
+                className="flex-1 flex items-center justify-center space-x-2 px-6 py-3 sm:py-4 bg-white/5 border border-white/10 rounded-xl font-semibold text-sm sm:text-base hover:bg-white/10 transition-colors"
+            >
+                <Home className="w-4 h-4 sm:w-5 sm:h-5" />
+                <span>홈으로 돌아가기</span>
+            </Link>
+        </motion.div>
+    );
+}
+
 export function DosShare() {
     const { type } = useParams<{ type: string }>();
 
-    const localResultData = useMemo(
+    const resultData = useMemo(
         () => dosResultTypes.find((rt) => rt.id === type),
         [type]
     );
 
     usePageMeta(
-        localResultData
-            ? `DOS 유형: ${type} - ${localResultData.name}`
+        resultData
+            ? `DOS 유형: ${type} - ${resultData.name}`
             : "DOS 결과 공유",
-        localResultData?.description || "DOS 테스트 결과를 확인하세요."
+        resultData?.description || "DOS 테스트 결과를 확인하세요."
     );
 
-    const { detail, features, tags } = useMemo(
-        () => ({
-            detail: localResultData?.detail || [],
-            features: localResultData?.features || [],
-            tags: localResultData?.tag || [],
-        }),
-        [localResultData]
-    );
+    if (!resultData) return <NotFoundView />;
 
-    if (!localResultData) {
-        return (
-            <div className="min-h-screen bg-black text-white flex items-center justify-center">
-                <div className="text-center">
-                    <p className="text-lg text-gray-400 mb-4">
-                        존재하지 않는 결과 유형입니다.
-                    </p>
-                    <Link
-                        to="/"
-                        className="inline-block px-6 py-3 bg-white/10 border border-white/20 rounded-xl text-sm font-semibold hover:bg-white/20 transition-colors"
-                    >
-                        홈으로 돌아가기
-                    </Link>
-                </div>
-            </div>
-        );
-    }
+    const { detail = [], features = [], tag: tags = [] } = resultData;
 
     return (
         <div className="min-h-screen bg-black text-white pt-8 sm:pt-12">
             <div className="max-w-4xl mx-auto px-4 py-8 sm:py-12">
-                {/* 공유 배지 */}
                 <motion.div
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -72,38 +92,15 @@ export function DosShare() {
 
                 <ResultHeader
                     type={type || ""}
-                    name={localResultData.name}
-                    description={localResultData.description}
+                    name={resultData.name}
+                    description={resultData.description}
                 />
-
-                {/* 정치 좌표 그래프 숨김 - 공유 페이지에서는 미표시 */}
 
                 <DescriptionSection detail={detail} />
                 <CharacteristicsSection features={features} tags={tags} />
                 <NoticeSection />
 
-                {/* 공유 전용 버튼 */}
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 1 }}
-                    className="flex flex-col sm:flex-row gap-3 sm:gap-4"
-                >
-                    <Link
-                        to="/dos"
-                        className="flex-1 flex items-center justify-center space-x-2 px-6 py-3 sm:py-4 bg-white text-black rounded-xl font-semibold text-sm sm:text-base hover:bg-gray-100 transition-colors"
-                    >
-                        <Brain className="w-4 h-4 sm:w-5 sm:h-5" />
-                        <span>나도 테스트 하러가기</span>
-                    </Link>
-                    <Link
-                        to="/"
-                        className="flex-1 flex items-center justify-center space-x-2 px-6 py-3 sm:py-4 bg-white/5 border border-white/10 rounded-xl font-semibold text-sm sm:text-base hover:bg-white/10 transition-colors"
-                    >
-                        <Home className="w-4 h-4 sm:w-5 sm:h-5" />
-                        <span>홈으로 돌아가기</span>
-                    </Link>
-                </motion.div>
+                <ShareActionButtons />
             </div>
         </div>
     );
