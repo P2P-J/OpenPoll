@@ -73,16 +73,18 @@ export function SocialSignup() {
       setIsSubmitting(true);
       const data = await authApi.completeSocialProfile(payload);
 
-      if (data.accessToken) localStorage.setItem("accessToken", data.accessToken);
-      if (data.refreshToken) localStorage.setItem("refreshToken", data.refreshToken);
+      if (data) {
+        if (data.accessToken) localStorage.setItem("accessToken", data.accessToken);
+        if (data.refreshToken) localStorage.setItem("refreshToken", data.refreshToken);
 
-      const session = {
-        nickname: data.user.nickname,
-        email: data.user.email,
-        points: data.user.points,
-      };
-      localStorage.setItem("openpoll_session_v1", JSON.stringify(session));
-      window.dispatchEvent(new Event("storage"));
+        const session = {
+          nickname: data.user.nickname,
+          email: data.user.email,
+          points: data.user.points,
+        };
+        localStorage.setItem("openpoll_session_v1", JSON.stringify(session));
+        window.dispatchEvent(new Event("storage"));
+      }
 
       await refreshUser();
       navigate(ROUTES.HOME);
