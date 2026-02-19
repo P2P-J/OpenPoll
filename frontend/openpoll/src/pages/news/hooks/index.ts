@@ -1,4 +1,4 @@
-export { useNewsList, useNewsArticles } from "./useNewsList";
+export { useNewsList, useNewsArticles, useTimeAgo } from "./useNewsList";
 export type { UseNewsListReturn, UseNewsArticlesReturn, ArticleWithCategory } from "./useNewsList";
 
 export { useArticleDetail } from "./useNewsDetail";
