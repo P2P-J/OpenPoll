@@ -76,7 +76,7 @@ export function Header() {
             <img
               src="/openpoll-black.png"
               alt="OpenPoll"
-              className="w-7 h-7 sm:w-8 sm:h-8 object-contain transition-transform duration-300 group-hover:scale-110 dark:invert"
+              className="w-7 h-7 sm:w-8 sm:h-8 object-contain transition-transform duration-300 group-hover:scale-110"
             />
             <span className="text-lg sm:text-xl font-bold tracking-tight transition-colors duration-300">
               OpenPoll

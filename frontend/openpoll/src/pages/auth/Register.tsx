@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { ROUTES } from '@/shared/constants';
 import { useUser } from '@/contexts/UserContext';
 import { sendVerificationCode } from '@/api/auth.api';
+import { getErrorMessage } from '@/api/client';
 
 type RegisterErrors = {
   nickname?: string;
@@ -85,8 +86,9 @@ export function Register() {
       setIsEmailVerified(false);
       setVerificationCode('');
       setTimer(300); // 5분
-    } catch {
-      setErrors((prev) => ({ ...prev, email: '인증코드 발송에 실패했습니다.' }));
+    } catch (err) {
+      const message = getErrorMessage(err);
+      setErrors((prev) => ({ ...prev, email: message }));
     } finally {
       setIsSendingCode(false);
     }
@@ -244,7 +246,7 @@ export function Register() {
               <div className="flex gap-2">
                 <div
                   className="flex items-center gap-3 h-14 rounded-2xl bg-white/5 px-4 border flex-1"
-                  style={{ borderColor: isEmailVerified ? '#22c55e' : borderColor('email') }}
+                  style={{ borderColor: isEmailVerified ? '#22c55e' : errors.email ? '#ef4444' : 'rgba(255,255,255,0.10)' }}
                 >
                   <Mail className="w-5 h-5 text-gray-400" />
                   <input
@@ -275,7 +277,7 @@ export function Register() {
                   </button>
                 )}
               </div>
-              {showError('email') && (
+              {errors.email && (
                 <p className="mt-2 text-xs" style={{ color: '#ef4444' }}>
                   {errors.email}
                 </p>
