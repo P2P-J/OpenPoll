@@ -5,6 +5,8 @@ import { motion } from 'motion/react';
 import { ROUTES } from '@/shared/constants';
 import { useUser } from '@/contexts/UserContext';
 import { AuthSidePanel } from '@/components/organisms';
+import naverLogo from '@/img/naver-logo.svg';
+import googleLogo from '@/img/google-logo.svg';
 
 type LoginErrors = {
   email?: string;
@@ -49,6 +51,22 @@ export function Login() {
   const showError = (key: keyof LoginErrors) => hasSubmitted && !!errors[key];
   const borderColor = (key: keyof LoginErrors) =>
     showError(key) ? '#ef4444' : 'rgba(255,255,255,0.10)';
+
+  const oauthBaseUrl = import.meta.env.VITE_API_BASE_URL || '/api';
+
+  const startOAuth = (provider: 'google' | 'naver', mode?: 'rejoin') => {
+    localStorage.setItem('oauthProvider', provider);
+    const modeQuery = mode ? `?mode=${mode}` : '';
+    window.location.href = `${oauthBaseUrl}/auth/oauth/${provider}${modeQuery}`;
+  };
+
+  const handleNaverLogin = () => {
+    startOAuth('naver');
+  };
+
+  const handleGoogleLogin = () => {
+    startOAuth('google');
+  };
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -146,6 +164,25 @@ export function Login() {
                 회원가입
               </Link>
             </p>
+
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={handleNaverLogin}
+                className="flex-1 h-10 rounded-lg border border-white/15 bg-white/5 hover:bg-white/10 transition-colors flex items-center justify-center"
+                aria-label="네이버 로그인"
+              >
+                <img src={naverLogo} alt="네이버" className="w-4 h-4" />
+              </button>
+              <button
+                type="button"
+                onClick={handleGoogleLogin}
+                className="flex-1 h-10 rounded-lg border border-white/15 bg-white/5 hover:bg-white/10 transition-colors flex items-center justify-center"
+                aria-label="구글 로그인"
+              >
+                <img src={googleLogo} alt="구글" className="w-4 h-4" />
+              </button>
+            </div>
 
             <div className="flex items-center gap-4 pt-2">
               <div className="h-px flex-1 bg-white/10" />

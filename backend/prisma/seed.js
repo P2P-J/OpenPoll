@@ -9,8 +9,8 @@ async function main() {
   const parties = [
     { name: '더불어민주당', color: '#004EA2', order: 1 },
     { name: '국민의힘', color: '#E61E2B', order: 2 },
-    { name: '정의당', color: '#FFCC00', order: 3 },
-    { name: '기본소득당', color: '#00D2C3', order: 4 },
+    { name: '조국혁신당', color: '#0033A0', order: 3 },
+    { name: '개혁신당', color: '#FF7210', order: 4 },
     { name: '기타/무당층', color: '#808080', order: 5 },
   ];
 
@@ -21,6 +21,12 @@ async function main() {
       create: party,
     });
   }
+
+  // 시드 목록에 없는 기존 정당 삭제 (이름 변경 시 구 데이터 정리)
+  const partyNames = parties.map((p) => p.name);
+  await prisma.party.deleteMany({
+    where: { name: { notIn: partyNames } },
+  });
   console.log('Parties seeded');
 
   // DOS 질문 시드

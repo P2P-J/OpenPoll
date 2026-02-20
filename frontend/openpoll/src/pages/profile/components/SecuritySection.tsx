@@ -1,11 +1,12 @@
 import { motion } from "motion/react";
-import { Lock, Shield, Info } from "lucide-react";
+import { Lock, Shield, Info, UserX } from "lucide-react";
 
 interface SecuritySectionProps {
   onOpenPasswordModal: () => void;
+  onOpenWithdrawModal: () => void;
 }
 
-export function SecuritySection({ onOpenPasswordModal }: SecuritySectionProps) {
+export function SecuritySection({ onOpenPasswordModal, onOpenWithdrawModal }: SecuritySectionProps) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -43,6 +44,30 @@ export function SecuritySection({ onOpenPasswordModal }: SecuritySectionProps) {
         <p className="text-xs text-gray-500 dark:text-gray-400">
           안전한 계정 보호를 위해 주기적으로 비밀번호를 변경해주세요
         </p>
+      </div>
+
+      <div className="mt-4 flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-xl">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-red-100 dark:bg-red-900/40 rounded-full flex items-center justify-center">
+            <UserX className="w-5 h-5 text-red-500 dark:text-red-400" />
+          </div>
+          <div>
+            <p className="font-semibold dark:text-white">회원탈퇴</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              탈퇴 시 모든 데이터가 삭제됩니다
+            </p>
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={onOpenWithdrawModal}
+          className="px-5 py-2.5 text-white text-sm font-bold rounded-xl transition-colors"
+          style={{ backgroundColor: "#ef4444" }}
+          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#dc2626")}
+          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#ef4444")}
+        >
+          탈퇴
+        </button>
       </div>
     </motion.div>
   );

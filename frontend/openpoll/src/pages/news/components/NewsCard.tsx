@@ -27,7 +27,7 @@ export function NewsCard({ news, index, category }: NewsCardProps) {
       <div className="mb-6 sm:mb-7">
         <div className="flex items-center justify-between pb-6 sm:pb-7 border-b border-gray-100 dark:border-gray-800">
           <div className="flex items-center space-x-4">
-            <div className="w-14 h-14 min-w-14 bg-gradient-to-br from-gray-900 to-gray-700 dark:from-gray-100 dark:to-gray-300 rounded-full flex items-center justify-center">
+            <div className="w-14 h-14 aspect-square shrink-0 bg-gradient-to-br from-gray-900 to-gray-700 dark:from-gray-100 dark:to-gray-300 rounded-full flex items-center justify-center">
               <Sparkles className="w-7 h-7 text-white dark:text-black" />
             </div>
             <div>

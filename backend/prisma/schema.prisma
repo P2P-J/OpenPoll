@@ -10,11 +10,11 @@ datasource db {
 model User {
   id           String   @id @default(uuid())
   email        String   @unique
-  password     String
-  nickname     String   @unique
-  age          Int
-  region       String
-  gender       String
+  password     String?
+  nickname     String?   @unique
+  age          Int?
+  region       String?
+  gender       String?
   role         String   @default("USER") // USER, ADMIN
   points       Int      @default(0)
   hasTakenDos  Boolean  @default(false) // DOS 검사 여부(포인트 지급용)
@@ -28,14 +28,44 @@ model User {
   balanceComments     BalanceComment[]
   balanceCommentLikes BalanceCommentLike[]
 
+  oauthAccounts OAuthAccount[]
+
   @@map("users")
+}
+
+model OAuthAccount {
+  id             Int      @id @default(autoincrement())
+  userId         String
+  provider       String
+  providerUserId String
+  email          String?
+  name           String?
+  oauthRefreshToken String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerUserId], name: "provider_providerUserId")
+  @@index([userId])
+  @@map("oauth_accounts")
+}
+
+model WithdrawnOauth {
+  id             Int      @id @default(autoincrement())
+  provider       String
+  providerUserId String
+  withdrawnAt    DateTime @default(now())
+
+  @@unique([provider, providerUserId])
+  @@map("withdrawn_oauth")
 }
 
 model Party {
   id        Int     @id @default(autoincrement())
   name      String  @unique
   color     String  // 정당 대표 색상
-  logoUrl   String? // 로고 이미지 URL
   order     Int     @default(0) // 정렬 순서
   voteCount Int     @default(0) // 누적 투표 수
 
