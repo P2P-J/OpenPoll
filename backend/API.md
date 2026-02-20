@@ -2,16 +2,62 @@
 
 Base URL: `http://localhost:3000/api`
 
----  
+---
 
 ## 인증 (Auth)
 
-### 회원가입
-`POST /auth/signup`
+### 이메일 인증 코드 발송
+`POST /auth/email/send-code`
 
-회원가입 시 500P 자동 지급
+회원가입 전 이메일 인증 코드를 발송합니다. 코드는 5분간 유효하며, 60초 이내 재발송이 불가합니다.
 
 **Request Body:**
+```json
+{
+  "email": "user@example.com"
+}
+```
+
+| 필드 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| email | string | O | 인증할 이메일 주소 |
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "data": {
+    "message": "인증 코드가 발송되었습니다."
+  }
+}
+```
+
+**Error (400):**
+```json
+{
+  "success": false,
+  "message": "인증 코드가 이미 발송되었습니다. 60초 후에 다시 시도해주세요."
+}
+```
+
+**Error (409):**
+```json
+{
+  "success": false,
+  "message": "이미 사용 중인 이메일입니다."
+}
+```
+
+---
+
+### 회원가입
+
+`POST /auth/signup`
+
+이메일 인증 코드 검증 후 회원가입 처리. 500P 자동 지급
+
+**Request Body:**
+
 ```json
 {
   "email": "user@example.com",
@@ -19,7 +65,8 @@ Base URL: `http://localhost:3000/api`
   "nickname": "닉네임",
   "age": 25,
   "region": "서울",
-  "gender": "MALE"
+  "gender": "MALE",
+  "verificationCode": "123456"
 }
 ```
 
@@ -31,8 +78,10 @@ Base URL: `http://localhost:3000/api`
 | age | number | O | 나이 (18세 이상) |
 | region | string | O | 지역 (서울, 부산, 대구 등) |
 | gender | string | O | 성별 (MALE, FEMALE) |
+| verificationCode | string | O | 이메일 인증 코드 (6자리 숫자) |
 
 **Response (201):**
+
 ```json
 {
   "success": true,
@@ -56,12 +105,22 @@ Base URL: `http://localhost:3000/api`
 }
 ```
 
+**Error (400):**
+```json
+{
+  "success": false,
+  "message": "인증 코드가 만료되었거나 발송되지 않았습니다. 인증 코드를 다시 요청해주세요."
+}
+```
+
 ---
 
 ### 로그인
+
 `POST /auth/login`
 
 **Request Body:**
+
 ```json
 {
   "email": "user@example.com",
@@ -70,6 +129,7 @@ Base URL: `http://localhost:3000/api`
 ```
 
 **Response (200):**
+
 ```json
 {
   "success": true,
@@ -96,6 +156,7 @@ Base URL: `http://localhost:3000/api`
 ---
 
 ### 로그아웃
+
 `POST /auth/logout`
 
 [인증 필요]
@@ -105,9 +166,11 @@ Base URL: `http://localhost:3000/api`
 ---
 
 ### 토큰 재발급
+
 `POST /auth/refresh`
 
 **Request Body:**
+
 ```json
 {
   "refreshToken": "eyJhbGciOiJIUzI1NiIs..."
@@ -115,6 +178,7 @@ Base URL: `http://localhost:3000/api`
 ```
 
 **Response (200):**
+
 ```json
 {
   "success": true,
@@ -128,6 +192,7 @@ Base URL: `http://localhost:3000/api`
 ---
 
 ### 비밀번호 변경
+
 `PATCH /auth/password`
 
 [인증 필요]
@@ -135,6 +200,7 @@ Base URL: `http://localhost:3000/api`
 비밀번호 변경 성공 시 보안을 위해 기존 Refresh Token이 삭제됩니다. (재로그인 필요)
 
 **Request Body:**
+
 ```json
 {
   "currentPassword": "현재비밀번호",
@@ -142,14 +208,15 @@ Base URL: `http://localhost:3000/api`
 }
 ```
 
-| 필드 | 타입 | 필수 | 설명 |
-|------|------|------|------|
-| currentPassword | string | O | 현재 비밀번호 |
-| newPassword | string | O | 새 비밀번호 (8자 이상, 영문+숫자) |
+| 필드            | 타입   | 필수 | 설명                              |
+| --------------- | ------ | ---- | --------------------------------- |
+| currentPassword | string | O    | 현재 비밀번호                     |
+| newPassword     | string | O    | 새 비밀번호 (8자 이상, 영문+숫자) |
 
 **Response (204):** No Content
 
 **Error (401):**
+
 ```json
 {
   "success": false,
@@ -159,14 +226,221 @@ Base URL: `http://localhost:3000/api`
 
 ---
 
+### OAuth 로그인 시작 (Redirect)
+
+`GET /auth/oauth/:provider`
+
+- provider = google | naver
+- OAuth 인증 페이지로 302 Redirect 됩니다.
+
+| 필드 | 타입   | 필수 | 설명                                       |
+| ---- | ------ | ---- | ------------------------------------------ |
+| mode | string | X    | `rejoin`이면 재가입(탈퇴 이력 복구) 플로우 |
+
+**Response (302):** Redirect (Body 없음)
+
+**Error (400):**
+
+```json
+{
+  "success": false,
+  "message": "지원하지 않는 provider입니다."
+}
+```
+
+---
+
+### OAuth 콜백 (코드 교환 + 로그인/회원가입 처리)
+
+`GET /auth/oauth/:provider/callback`
+
+- provider 인증 후 돌아오는 콜백
+- state는 서버에 저장해둔 값을 1회성으로 consume
+
+| 필드  | 타입   | 필수 | 설명                                   |
+| ----- | ------ | ---- | -------------------------------------- |
+| code  | string | O    | OAuth authorization code               |
+| state | string | O    | CSRF 방지용 state (서버 저장값과 매칭) |
+
+**Response (200):**
+
+```json
+{
+  "success": true,
+  "data": {
+    "user": {
+      "id": "uuid",
+      "email": "user@example.com",
+      "nickname": null,
+      "age": null,
+      "region": null,
+      "gender": null,
+      "role": "USER",
+      "points": 500,
+      "hasTakenDos": false,
+      "createdAt": "2024-01-01T00:00:00.000Z",
+      "updatedAt": "2024-01-01T00:00:00.000Z"
+    },
+    "profileComplete": false,
+    "accessToken": "eyJhbGciOiJIUzI1NiIs...",
+    "refreshToken": "eyJhbGciOiJIUzI1NiIs..."
+  }
+}
+```
+
+**Error (401):**
+
+```json
+{
+  "success": false,
+  "message": "유효하지 않은 OAuth state입니다."
+}
+```
+
+**Error (409) - 탈퇴 이력 계정**
+
+```json
+{
+  "success": false,
+  "message": "REJOIN_REQUIRED"
+}
+```
+
+**Error (400) - 이메일 형식이 없는 경우**
+
+```json
+{
+  "success": false,
+  "message": "이 OAuth 계정에서 이메일을 가져올 수 없습니다."
+}
+```
+
+**Error (409) - 이메일 중복**
+
+```json
+{
+  "success": false,
+  "message": "이미 가입된 이메일입니다. 일반 로그인 후 소셜 연동을 진행하세요."
+}
+```
+
+---
+
+### OAuth 프로필 입력 완료
+
+`POST /auth/profile/complete`
+
+[인증 필요]
+
+- 소셜 신규 가입자는 nickname/age/region/gender가 비어있을 수 있어 추가 정보 입력이 필요합니다.
+- 추가 정보 입력이 완료되면 회원 정보 업데이트를 위해 이후에 발생하는 API 요청은 발급된 accessToken으로 인증한다
+- 성공 시 profileComplete: true를 반환합니다.
+
+**Request Body:**
+
+```json
+{
+  "nickname": "닉네임",
+  "age": 25,
+  "region": "서울",
+  "gender": "MALE"
+}
+```
+
+| 필드     | 타입   | 필수 | 설명                    |
+| -------- | ------ | ---- | ----------------------- |
+| nickname | string | O    | 닉네임                  |
+| age      | number | O    | 나이                    |
+| region   | string | O    | 지역                    |
+| gender   | string | O    | 성별 (`MALE`, `FEMALE`) |
+
+**Response (204):**
+
+```json
+{
+  "success": true,
+  "data": {
+    "user": {
+      "id": "uuid",
+      "email": "user@example.com",
+      "nickname": "닉네임",
+      "age": 25,
+      "region": "서울",
+      "gender": "MALE",
+      "role": "USER",
+      "points": 500,
+      "hasTakenDos": false,
+      "createdAt": "2024-01-01T00:00:00.000Z",
+      "updatedAt": "2024-01-01T00:00:00.000Z"
+    },
+    "profileComplete": true,
+    "accessToken": "eyJhbGciOiJIUzI1NiIs...",
+    "refreshToken": "eyJhbGciOiJIUzI1NiIs..."
+  }
+}
+```
+
+---
+
+### 회원 탈퇴
+
+`DELETE /auth/withdraw`
+
+[인증 필요]
+
+- 소셜 로그인 유저(google|naver)의 경우 가능한 경우 provider revoke를 시도한 뒤 탈퇴 이력을 기록하고 유저를 삭제합니다.
+- 일반 로그인 유저(현재 provider 없음)의 경우 유저만 삭제합니다.
+
+**Response (204):** No Content
+
+**Error (404):**
+
+```json
+{
+  "success": false,
+  "message": "유저를 찾을 수 없습니다."
+}
+```
+
+**Error (400) - provider 이상**
+
+```json
+{
+  "success": false,
+  "message": "지원하지 않는 provider입니다."
+}
+```
+
+**Error (400) - 현재 provider 계정 없음**
+
+```json
+{
+  "success": false,
+  "message": "현재 로그인 provider 계정을 찾을 수 없습니다."
+}
+```
+
+**Error (500) - revoke 실패**
+
+```json
+{
+  "success": false,
+  "message": "서버 에러가 발생했습니다."
+}
+```
+
+---
+
 ## 사용자 (User)
 
 ### 내 정보 조회
+
 `GET /users/me`
 
 [인증 필요]
 
 **Response (200):**
+
 ```json
 {
   "success": true,
@@ -185,19 +459,21 @@ Base URL: `http://localhost:3000/api`
 }
 ```
 
-| 필드 | 설명 |
-|------|------|
-| points | 현재 보유 포인트 |
+| 필드              | 설명                              |
+| ----------------- | --------------------------------- |
+| points            | 현재 보유 포인트                  |
 | totalEarnedPoints | 총 획득 포인트 (양수 포인트 합계) |
 
 ---
 
 ### 내 정보 수정
+
 `PATCH /users/me`
 
 [인증 필요]
 
 **Request Body:** (변경할 필드만)
+
 ```json
 {
   "nickname": "새닉네임",
@@ -208,6 +484,7 @@ Base URL: `http://localhost:3000/api`
 ```
 
 **Response (200):**
+
 ```json
 {
   "success": true,
@@ -229,6 +506,7 @@ Base URL: `http://localhost:3000/api`
 ---
 
 ### 포인트 내역 조회
+
 `GET /users/me/points`
 
 [인증 필요]
@@ -240,6 +518,7 @@ Base URL: `http://localhost:3000/api`
 | limit | number | 20 | 페이지당 개수 |
 
 **Response (200):**
+
 ```json
 {
   "success": true,
@@ -270,18 +549,25 @@ Base URL: `http://localhost:3000/api`
 ---
 
 ### 내 투표 집계 조회
+
 `GET /users/me/votes`
 
 [인증 필요]
 
 **Response (200):**
+
 ```json
 {
   "success": true,
   "data": {
     "totalVotes": 23,
     "stats": [
-      { "partyId": 1, "partyName": "더불어민주당", "color": "#004EA2", "count": 15 },
+      {
+        "partyId": 1,
+        "partyName": "더불어민주당",
+        "color": "#004EA2",
+        "count": 15
+      },
       { "partyId": 2, "partyName": "국민의힘", "color": "#E61E2B", "count": 8 },
       { "partyId": 3, "partyName": "정의당", "color": "#FFCC00", "count": 0 }
     ]
@@ -294,6 +580,7 @@ Base URL: `http://localhost:3000/api`
 ## 포인트 (Point)
 
 ### 출석 체크
+
 `POST /points/attendance`
 
 [인증 필요]
@@ -301,6 +588,7 @@ Base URL: `http://localhost:3000/api`
 일일 출석 +30P, 7일 연속 출석 시 +20P 추가
 
 **Response (200):**
+
 ```json
 {
   "success": true,
@@ -322,18 +610,20 @@ Base URL: `http://localhost:3000/api`
 ## 정당 (Party)
 
 ### 정당 목록 조회
+
 `GET /parties`
 
 **Response (200):**
+
 ```json
 {
   "success": true,
   "data": [
-    { "id": 1, "name": "더불어민주당", "color": "#004EA2", "logoUrl": null, "voteCount": 1523 },
-    { "id": 2, "name": "국민의힘", "color": "#E61E2B", "logoUrl": null, "voteCount": 1245 },
-    { "id": 3, "name": "정의당", "color": "#FFCC00", "logoUrl": null, "voteCount": 432 },
-    { "id": 4, "name": "기본소득당", "color": "#00D2C3", "logoUrl": null, "voteCount": 156 },
-    { "id": 5, "name": "기타/무당층", "color": "#808080", "logoUrl": null, "voteCount": 89 }
+    { "id": 1, "name": "더불어민주당", "color": "#004EA2", "voteCount": 1523 },
+    { "id": 2, "name": "국민의힘", "color": "#E61E2B", "voteCount": 1245 },
+    { "id": 3, "name": "조국혁신당", "color": "#0033A0", "voteCount": 432 },
+    { "id": 4, "name": "개혁신당", "color": "#FF7210", "voteCount": 156 },
+    { "id": 5, "name": "기타/무당층", "color": "#808080", "voteCount": 89 }
   ]
 }
 ```
@@ -343,6 +633,7 @@ Base URL: `http://localhost:3000/api`
 ## 투표 (Vote)
 
 ### 정당 지지 투표
+
 `POST /votes`
 
 [인증 필요]
@@ -350,6 +641,7 @@ Base URL: `http://localhost:3000/api`
 -5P 차감
 
 **Request Body:**
+
 ```json
 {
   "partyId": 1
@@ -357,6 +649,7 @@ Base URL: `http://localhost:3000/api`
 ```
 
 **Response (201):**
+
 ```json
 {
   "success": true,
@@ -375,6 +668,7 @@ Base URL: `http://localhost:3000/api`
 ```
 
 **Error (400):**
+
 ```json
 {
   "success": false,
@@ -387,11 +681,13 @@ Base URL: `http://localhost:3000/api`
 ## 대시보드 (Dashboard)
 
 ### 실시간 지지율 스트림 (SSE)
+
 `GET /dashboard/stream`
 
 Server-Sent Events 연결
 
 **Response:** (스트림)
+
 ```
 data: {"type":"init","stats":{"totalVotes":100,"stats":[...]}}
 
@@ -401,17 +697,31 @@ data: {"type":"vote_update","stats":{"totalVotes":101,"stats":[...]}}
 ---
 
 ### 전체 지지율 통계
+
 `GET /dashboard/stats`
 
 **Response (200):**
+
 ```json
 {
   "success": true,
   "data": {
     "totalVotes": 1000,
     "stats": [
-      { "partyId": 1, "partyName": "더불어민주당", "color": "#004EA2", "count": 350, "percentage": 35.00 },
-      { "partyId": 2, "partyName": "국민의힘", "color": "#E61E2B", "count": 320, "percentage": 32.00 }
+      {
+        "partyId": 1,
+        "partyName": "더불어민주당",
+        "color": "#004EA2",
+        "count": 350,
+        "percentage": 35.0
+      },
+      {
+        "partyId": 2,
+        "partyName": "국민의힘",
+        "color": "#E61E2B",
+        "count": 320,
+        "percentage": 32.0
+      }
     ],
     "updatedAt": "2024-01-01T00:00:00.000Z"
   }
@@ -421,9 +731,11 @@ data: {"type":"vote_update","stats":{"totalVotes":101,"stats":[...]}}
 ---
 
 ### 나이별 지지율 통계
+
 `GET /dashboard/stats/by-age`
 
 **Response (200):**
+
 ```json
 {
   "success": true,
@@ -432,7 +744,12 @@ data: {"type":"vote_update","stats":{"totalVotes":101,"stats":[...]}}
       "ageGroup": "20대",
       "total": 200,
       "stats": [
-        { "partyId": 1, "partyName": "더불어민주당", "count": 80, "percentage": 40.00 }
+        {
+          "partyId": 1,
+          "partyName": "더불어민주당",
+          "count": 80,
+          "percentage": 40.0
+        }
       ]
     }
   ]
@@ -442,9 +759,11 @@ data: {"type":"vote_update","stats":{"totalVotes":101,"stats":[...]}}
 ---
 
 ### 지역별 지지율 통계
+
 `GET /dashboard/stats/by-region`
 
 **Response (200):**
+
 ```json
 {
   "success": true,
@@ -463,21 +782,32 @@ data: {"type":"vote_update","stats":{"totalVotes":101,"stats":[...]}}
 ## DOS (DNA Of Society) 검사
 
 4개의 축으로 정치 성향을 분석합니다 (순서: 변화 → 분배 → 권리 → 발전):
+
 - **변화축**: Change(변화) vs Stability(안정) → C/S
 - **분배축**: Merit(경쟁) vs Equality(평등) → M/E
 - **권리축**: Freedom(자유) vs Order(규율) → F/O
 - **발전축**: Development(개발) vs Nature(환경) → D/N
 
 ### 질문 목록 조회
+
 `GET /dos/questions`
 
 **Response (200):**
+
 ```json
 {
   "success": true,
   "data": [
-    { "id": 1, "question": "개인의 노력과 성취에 따른 보상 차이는...", "axis": "distribution" },
-    { "id": 2, "question": "오랫동안 유지되어 온 방식에는...", "axis": "change" }
+    {
+      "id": 1,
+      "question": "개인의 노력과 성취에 따른 보상 차이는...",
+      "axis": "distribution"
+    },
+    {
+      "id": 2,
+      "question": "오랫동안 유지되어 온 방식에는...",
+      "axis": "change"
+    }
   ]
 }
 ```
@@ -485,11 +815,13 @@ data: {"type":"vote_update","stats":{"totalVotes":101,"stats":[...]}}
 ---
 
 ### 결과 계산
+
 `POST /dos/calculate`
 
 [인증 선택] (로그인 시 최초 1회 +300P)
 
 **Request Body:**
+
 ```json
 {
   "answers": [
@@ -499,12 +831,13 @@ data: {"type":"vote_update","stats":{"totalVotes":101,"stats":[...]}}
 }
 ```
 
-| 필드 | 설명 |
-|------|------|
-| questionId | 질문 ID (1~32) |
-| score | 응답 점수 (1~7, 4가 중립) |
+| 필드       | 설명                      |
+| ---------- | ------------------------- |
+| questionId | 질문 ID (1~32)            |
+| score      | 응답 점수 (1~7, 4가 중립) |
 
 **Response (201):**
+
 ```json
 {
   "success": true,
@@ -532,9 +865,11 @@ data: {"type":"vote_update","stats":{"totalVotes":101,"stats":[...]}}
 ---
 
 ### 유형 설명 조회
+
 `GET /dos/result/:resultType`
 
 **Response (200):**
+
 ```json
 {
   "success": true,
@@ -552,9 +887,11 @@ data: {"type":"vote_update","stats":{"totalVotes":101,"stats":[...]}}
 ---
 
 ### DOS 통계
+
 `GET /dos/statistics`
 
 **Response (200):**
+
 ```json
 {
   "success": true,
@@ -573,11 +910,13 @@ data: {"type":"vote_update","stats":{"totalVotes":101,"stats":[...]}}
 ## 밸런스 게임 (Balance Game)
 
 ### 밸런스 게임 목록 조회
+
 `GET /balance`
 
 [인증 선택] (로그인 시 myVote 포함)
 
 **Response (200):**
+
 ```json
 {
   "success": true,
@@ -599,11 +938,13 @@ data: {"type":"vote_update","stats":{"totalVotes":101,"stats":[...]}}
 ---
 
 ### 밸런스 게임 상세 조회
+
 `GET /balance/:id`
 
 [인증 선택] (로그인 시 myVote 포함)
 
 **Response (200):**
+
 ```json
 {
   "success": true,
@@ -624,6 +965,7 @@ data: {"type":"vote_update","stats":{"totalVotes":101,"stats":[...]}}
 ---
 
 ### 밸런스 게임 투표
+
 `POST /balance/:id/vote`
 
 [인증 필요]
@@ -631,6 +973,7 @@ data: {"type":"vote_update","stats":{"totalVotes":101,"stats":[...]}}
 +50P 지급 (사안당 1회)
 
 **Request Body:**
+
 ```json
 {
   "isAgree": true
@@ -638,6 +981,7 @@ data: {"type":"vote_update","stats":{"totalVotes":101,"stats":[...]}}
 ```
 
 **Response (201):**
+
 ```json
 {
   "success": true,
@@ -659,11 +1003,13 @@ data: {"type":"vote_update","stats":{"totalVotes":101,"stats":[...]}}
 ---
 
 ### 밸런스 게임 생성 (관리자)
+
 `POST /balance`
 
 [관리자 전용]
 
 **Request Body:**
+
 ```json
 {
   "title": "주 4일제 도입",
@@ -672,20 +1018,22 @@ data: {"type":"vote_update","stats":{"totalVotes":101,"stats":[...]}}
 }
 ```
 
-| 필드 | 설명 |
-|------|------|
-| title | 제목 (100자 이하) |
-| subtitle | 소제목 (200자 이하) |
-| description | 상세 내용 |
+| 필드        | 설명                |
+| ----------- | ------------------- |
+| title       | 제목 (100자 이하)   |
+| subtitle    | 소제목 (200자 이하) |
+| description | 상세 내용           |
 
 ---
 
 ### 밸런스 게임 수정 (관리자)
+
 `PATCH /balance/:id`
 
 [관리자 전용]
 
 **Request Body:** (변경할 필드만)
+
 ```json
 {
   "title": "수정된 제목",
@@ -697,6 +1045,7 @@ data: {"type":"vote_update","stats":{"totalVotes":101,"stats":[...]}}
 ---
 
 ### 밸런스 게임 삭제 (관리자)
+
 `DELETE /balance/:id`
 
 [관리자 전용]
@@ -706,11 +1055,13 @@ data: {"type":"vote_update","stats":{"totalVotes":101,"stats":[...]}}
 ---
 
 ### 댓글 목록 조회
+
 `GET /balance/:id/comments`
 
 [인증 선택] (로그인 시 isLiked 포함)
 
 **Response (200):**
+
 ```json
 {
   "success": true,
@@ -737,23 +1088,25 @@ data: {"type":"vote_update","stats":{"totalVotes":101,"stats":[...]}}
 }
 ```
 
-| user 필드 | 설명 |
-|------------|------|
-| isAgree | 작성자의 투표 결과 (`true`: 찬성, `false`: 반대) |
+| user 필드 | 설명                                             |
+| --------- | ------------------------------------------------ |
+| isAgree   | 작성자의 투표 결과 (`true`: 찬성, `false`: 반대) |
 
-| 댓글 필드 | 설명 |
-|------------|------|
-| likeCount | 좋아요 수 |
-| isLiked | 내 좋아요 여부 (비로그인 시 `null`) |
+| 댓글 필드 | 설명                                |
+| --------- | ----------------------------------- |
+| likeCount | 좋아요 수                           |
+| isLiked   | 내 좋아요 여부 (비로그인 시 `null`) |
 
 ---
 
 ### 댓글 작성
+
 `POST /balance/:id/comments`
 
 [인증 필요] (투표한 유저만)
 
 **Request Body:**
+
 ```json
 {
   "content": "댓글 내용",
@@ -761,19 +1114,21 @@ data: {"type":"vote_update","stats":{"totalVotes":101,"stats":[...]}}
 }
 ```
 
-| 필드 | 설명 |
-|------|------|
-| content | 댓글 내용 (500자 이하) |
+| 필드     | 설명                              |
+| -------- | --------------------------------- |
+| content  | 댓글 내용 (500자 이하)            |
 | parentId | 대댓글인 경우 부모 댓글 ID (선택) |
 
 ---
 
 ### 댓글 수정
+
 `PATCH /balance/:id/comments/:commentId`
 
 [인증 필요] (본인 또는 관리자)
 
 **Request Body:**
+
 ```json
 {
   "content": "수정된 댓글 내용"
@@ -781,6 +1136,7 @@ data: {"type":"vote_update","stats":{"totalVotes":101,"stats":[...]}}
 ```
 
 **Response (200):**
+
 ```json
 {
   "success": true,
@@ -796,6 +1152,7 @@ data: {"type":"vote_update","stats":{"totalVotes":101,"stats":[...]}}
 ---
 
 ### 댓글 삭제
+
 `DELETE /balance/:id/comments/:commentId`
 
 [인증 필요] (본인 또는 관리자)
@@ -805,6 +1162,7 @@ data: {"type":"vote_update","stats":{"totalVotes":101,"stats":[...]}}
 ---
 
 ### 댓글 좋아요 토글
+
 `POST /balance/:id/comments/:commentId/like`
 
 [인증 필요]
@@ -812,6 +1170,7 @@ data: {"type":"vote_update","stats":{"totalVotes":101,"stats":[...]}}
 좋아요가 없으면 추가, 있으면 취소 (토글 방식)
 
 **Response (200):**
+
 ```json
 {
   "success": true,
@@ -827,31 +1186,14 @@ data: {"type":"vote_update","stats":{"totalVotes":101,"stats":[...]}}
 
 ## 실시간 뉴스 (News)
 
-### 실시간 뉴스 새로고침
-`POST /news/refresh`
-
-Rate Limit: 1분에 1회
-
-**Response (200):**
-```json
-{
-  "success": true,
-  "data": {
-    "enqueued": 10,
-    "urls": [
-      "https://n.news.naver.com/mnews/article/nnn/nnnnnnnnnn",
-      "..."
-    ]
-  }
-}
-```
-
----
-
 ### 실시간 뉴스 조회
+
 `GET /news/articles`
 
+- 최신순 50개의 뉴스 데이터 조회
+
 **Response (200):**
+
 ```json
 {
   "success": true,
@@ -866,7 +1208,8 @@ Rate Limit: 1분에 1회
       "relatedTags": ["이슈 태그 1", "이슈 태그 2", "이슈 태그 3"],
       "press": "언론사",
       "createdAt": "2024-01-01T00:00:00.000Z"
-    }
+    },
+    ...
   ]
 }
 ```
@@ -883,21 +1226,21 @@ Rate Limit: 1분에 1회
 }
 ```
 
-| 상태 코드 | 설명 |
-|-----------|------|
-| 400 | 잘못된 요청 (유효성 검사 실패) |
-| 401 | 인증 필요 / 토큰 만료 |
-| 403 | 권한 없음 |
-| 404 | 리소스 없음 |
-| 409 | 중복 (이메일, 닉네임 등) |
-| 500 | 서버 오류 |
+| 상태 코드 | 설명                           |
+| --------- | ------------------------------ |
+| 400       | 잘못된 요청 (유효성 검사 실패) |
+| 401       | 인증 필요 / 토큰 만료          |
+| 403       | 권한 없음                      |
+| 404       | 리소스 없음                    |
+| 409       | 중복 (이메일, 닉네임 등)       |
+| 500       | 서버 오류                      |
 
 ---
 
 ## 지역 코드
 
 ```
-서울, 부산, 대구, 인천, 광주, 대전, 울산, 세종, 
+서울, 부산, 대구, 인천, 광주, 대전, 울산, 세종,
 경기, 강원, 충북, 충남, 전북, 전남, 경북, 경남, 제주
 ```
 
@@ -915,11 +1258,11 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIs...
 
 ## 포인트 정책
 
-| 활동 | 포인트 |
-|------|--------|
-| 회원가입 | +500P |
-| DOS 검사 (최초 1회) | +300P |
-| 밸런스 게임 투표 | +50P |
-| 일일 출석 | +30P |
-| 7일 연속 출석 보너스 | +20P |
-| 정당 지지 투표 | -5P |
+| 활동                 | 포인트 |
+| -------------------- | ------ |
+| 회원가입             | +500P  |
+| DOS 검사 (최초 1회)  | +300P  |
+| 밸런스 게임 투표     | +50P   |
+| 일일 출석            | +30P   |
+| 7일 연속 출석 보너스 | +20P   |
+| 정당 지지 투표       | -5P    |

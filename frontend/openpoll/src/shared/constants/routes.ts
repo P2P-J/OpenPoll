@@ -17,6 +17,8 @@ export const ROUTES = {
   // Auth
   LOGIN: '/login',
   REGISTER: '/register',
+  SOCIAL_SIGNUP: '/auth/social-signup',
+  OAUTH_CALLBACK: '/auth/oauth/callback',
   PROFILE: '/profile',
 } as const;
 

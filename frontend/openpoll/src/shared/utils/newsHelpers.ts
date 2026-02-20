@@ -1,6 +1,5 @@
 export const CATEGORIES = ["전체", "경제", "외교", "국회", "선거", "사회"] as const;
 export const ITEMS_PER_PAGE = 5;
-export const POLLING_INTERVAL_MS = 40 * 1000;
 
 export const CATEGORY_TAG_MAP: Record<string, string> = {
   경제: "경제",

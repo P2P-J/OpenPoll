@@ -7,7 +7,6 @@ export const getAllParties = async () => {
       id: true,
       name: true,
       color: true,
-      logoUrl: true,
       voteCount: true,
     },
   });
