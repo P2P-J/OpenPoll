@@ -16,6 +16,14 @@ import { LoginModal } from "@/components/molecules/loginModal";
 import { useVoting } from "@/contexts/VotingContext";
 import { useUser } from "@/contexts/UserContext";
 
+const PARTY_LOGOS: Record<string, string> = {
+  "더불어민주당": "/parties/더불어민주당_가로_파란색.png",
+  "국민의힘": "/parties/국민의힘_빨간배경.png",
+  "조국혁신당": "/parties/조국혁신당.png",
+  "개혁신당": "/parties/개혁신당2.svg",
+  "기타/무당층": "/openpoll-black.png",
+};
+
 const FEATURES = [
   {
     icon: Brain,
@@ -129,7 +137,7 @@ export function Home() {
       id: party.id.toString(),
       name: party.name,
       color: party.color,
-      logo: "🏛️", // Default logo, can be customized per party
+      logo: PARTY_LOGOS[party.name] ?? "/parties/etc.png",
       totalVotes: partyStat?.count ?? party.voteCount, // SSE에서 받은 count 우선 사용
       percentage: partyStat?.percentage ?? 0,
     };
