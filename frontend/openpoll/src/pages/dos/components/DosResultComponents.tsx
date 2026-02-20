@@ -288,9 +288,10 @@ export function NoticeSection() {
 
 interface ActionButtonsProps {
   onShare?: () => void;
+  onImageSave?: () => void;
 }
 
-export function ActionButtons({ onShare }: ActionButtonsProps) {
+export function ActionButtons({ onShare, onImageSave }: ActionButtonsProps) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -305,7 +306,10 @@ export function ActionButtons({ onShare }: ActionButtonsProps) {
         <Share2 className="w-4 h-4 sm:w-5 sm:h-5" />
         <span>결과 공유하기</span>
       </button>
-      <button className="flex items-center justify-center space-x-2 px-6 py-3 sm:py-4 bg-white/10 border border-white/20 rounded-xl font-semibold text-sm sm:text-base hover:bg-white/20 transition-colors">
+      <button
+        onClick={onImageSave}
+        className="flex items-center justify-center space-x-2 px-6 py-3 sm:py-4 bg-white/10 border border-white/20 rounded-xl font-semibold text-sm sm:text-base hover:bg-white/20 transition-colors"
+      >
         <Download className="w-4 h-4 sm:w-5 sm:h-5" />
         <span>이미지 저장</span>
       </button>
