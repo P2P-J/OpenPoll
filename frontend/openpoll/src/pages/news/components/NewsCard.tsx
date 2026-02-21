@@ -56,8 +56,8 @@ export function NewsCard({ news, index, category }: NewsCardProps) {
 
           <div className="space-y-3 mb-6 sm:mb-7">
             {summaryLines.map((line, i) => (
-              <div key={i} className="flex items-start text-base text-gray-700 dark:text-gray-300">
-                <span className="text-gray-400 dark:text-gray-600 font-bold text-lg mr-4">
+              <div key={i} className="flex items-start gap-3 text-base text-gray-700 dark:text-gray-300">
+                <span className="text-gray-400 dark:text-gray-600 font-bold text-lg flex-shrink-0" style={{ lineHeight: '1.625' }}>
                   ·
                 </span>
                 <span className="leading-relaxed">{line}</span>
