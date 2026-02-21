@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { usePageMeta } from "@/hooks/usePageMeta";
 import type { DosResult as DosResultData } from "@/types/api.types";
@@ -15,12 +15,20 @@ import {
   ActionButtons,
   NavigationLinks,
 } from "./components";
+import { ShareModal } from "./components/ShareModal";
+import { Toast } from "@/components/molecules/toast/Toast";
 
 export function DosResult() {
   usePageMeta("DOS 테스트 결과", "나의 정치 성향 분석 결과를 확인하세요.");
   const { type } = useParams<{ type: string }>();
   const location = useLocation();
   const navigate = useNavigate();
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [showToast, setShowToast] = useState(false);
+
+  const handleImageSave = useCallback(() => {
+    setShowToast(true);
+  }, []);
 
   const { resultTypeInfo, isLoading } = useResultData(type, navigate);
 
@@ -60,9 +68,23 @@ export function DosResult() {
         <DescriptionSection detail={detail} />
         <CharacteristicsSection features={features} tags={tags} />
         <NoticeSection />
-        <ActionButtons />
+        <ActionButtons onShare={() => setShowShareModal(true)} onImageSave={handleImageSave} />
         <NavigationLinks />
       </div>
+
+      <ShareModal
+        isOpen={showShareModal}
+        onClose={() => setShowShareModal(false)}
+        type={type || ""}
+      />
+
+      <Toast
+        message="추후 구현될 기능입니다!"
+        type="info"
+        isVisible={showToast}
+        onClose={() => setShowToast(false)}
+        contentStyle={{ backgroundColor: '#ffffff', color: '#1a1a1a' }}
+      />
     </div>
   );
 }

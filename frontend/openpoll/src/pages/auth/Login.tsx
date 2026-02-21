@@ -4,6 +4,9 @@ import { ArrowRight, Mail, Lock, Gift, Home } from 'lucide-react';
 import { motion } from 'motion/react';
 import { ROUTES } from '@/shared/constants';
 import { useUser } from '@/contexts/UserContext';
+import { AuthSidePanel } from '@/components/organisms';
+import naverLogo from '@/img/naver-logo.svg';
+import googleLogo from '@/img/google-logo.svg';
 
 type LoginErrors = {
   email?: string;
@@ -49,24 +52,47 @@ export function Login() {
   const borderColor = (key: keyof LoginErrors) =>
     showError(key) ? '#ef4444' : 'rgba(255,255,255,0.10)';
 
+  const oauthBaseUrl = import.meta.env.VITE_API_BASE_URL || '/api';
+
+  const startOAuth = (provider: 'google' | 'naver', mode?: 'rejoin') => {
+    localStorage.setItem('oauthProvider', provider);
+    const modeQuery = mode ? `?mode=${mode}` : '';
+    window.location.href = `${oauthBaseUrl}/auth/oauth/${provider}${modeQuery}`;
+  };
+
+  const handleNaverLogin = () => {
+    startOAuth('naver');
+  };
+
+  const handleGoogleLogin = () => {
+    startOAuth('google');
+  };
+
   return (
-    <div
-      style={{
-        minHeight: '100dvh',
-        background: '#000',
-        color: '#fff',
-        overflowY: 'scroll',
-        overscrollBehaviorY: 'contain',
-      }}
-    >
-      <div style={{ paddingTop: 220, paddingBottom: 120, paddingLeft: 16, paddingRight: 16 }}>
+    <div className="min-h-screen bg-black text-white">
+      <div
+        className="relative grid min-h-screen"
+        style={{ gridTemplateColumns: '50% 50%' }}
+      >
+        <div
+          className="pointer-events-none absolute top-0 bottom-0 w-px"
+          style={{
+            left: "50%",
+            transform: "translateX(-0.5px)",
+            background:
+              "linear-gradient(to bottom, rgba(255,255,255,0.12), rgba(255,255,255,0.05), rgba(255,255,255,0.12))",
+          }}
+        />
+        <AuthSidePanel />
+
+    <section className="flex items-center justify-center px-8 py-10 sm:px-10">
         <motion.div
-          style={{ width: 450, maxWidth: '100%', margin: '0 auto' }}
+          style={{ width: 450, maxWidth: '100%' }}
           initial={{ opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.25 }}
         >
-          <h1 className="text-4xl font-extrabold text-center mb-2">로그인</h1>
+           <h1 className="text-4xl font-extrabold text-center mb-2">로그인</h1>
           <p className="text-center text-gray-400 mb-10">오픈폴에 오신 것을 환영합니다</p>
 
           <form onSubmit={onSubmit} className="space-y-6">
@@ -139,6 +165,25 @@ export function Login() {
               </Link>
             </p>
 
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={handleNaverLogin}
+                className="flex-1 h-10 rounded-lg border border-white/15 bg-white/5 hover:bg-white/10 transition-colors flex items-center justify-center"
+                aria-label="네이버 로그인"
+              >
+                <img src={naverLogo} alt="네이버" className="w-4 h-4" />
+              </button>
+              <button
+                type="button"
+                onClick={handleGoogleLogin}
+                className="flex-1 h-10 rounded-lg border border-white/15 bg-white/5 hover:bg-white/10 transition-colors flex items-center justify-center"
+                aria-label="구글 로그인"
+              >
+                <img src={googleLogo} alt="구글" className="w-4 h-4" />
+              </button>
+            </div>
+
             <div className="flex items-center gap-4 pt-2">
               <div className="h-px flex-1 bg-white/10" />
               <span className="text-xs text-gray-500">또는</span>
@@ -156,7 +201,8 @@ export function Login() {
             </div>
           </form>
         </motion.div>
-      </div>
+      </section>
     </div>
-  );
+  </div>
+);
 }

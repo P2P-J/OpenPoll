@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
-import { newsApi } from "@/api";
 import type { NewsArticle } from "@/types/api.types";
+import { useNewsContext } from "@/contexts/NewsContext";
 import {
   ITEMS_PER_PAGE,
   getCategoryFromTags,
@@ -10,41 +10,25 @@ export interface ArticleWithCategory extends NewsArticle {
   category: string;
 }
 
-export interface UseNewsArticlesReturn {
-  articles: NewsArticle[];
-  isLoading: boolean;
-  error: string | null;
-}
-
-export function useNewsArticles(): UseNewsArticlesReturn {
-  const [articles, setArticles] = useState<NewsArticle[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const fetchArticles = useCallback(async () => {
-    try {
-      const data = await newsApi.getArticles();
-      setArticles(data);
-      setError(null);
-    } catch {
-      setError("뉴스를 불러오는데 실패했습니다.");
-    }
-  }, []);
+/** fetchedAt으로부터 상대 시간 문자열을 계산하고 30초마다 갱신 */
+export function useTimeAgo(date: Date | null): string {
+  const [now, setNow] = useState(() => Date.now());
 
   useEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);
+    if (!date) return;
+    const id = setInterval(() => setNow(Date.now()), 30_000);
+    return () => clearInterval(id);
+  }, [date]);
 
-  useEffect(() => {
-    const initialFetch = async () => {
-      setIsLoading(true);
-      await fetchArticles();
-      setIsLoading(false);
-    };
-    initialFetch();
-  }, [fetchArticles]);
-
-  return { articles, isLoading, error };
+  return useMemo(() => {
+    if (!date) return "";
+    const diffSec = Math.floor((now - date.getTime()) / 1000);
+    if (diffSec < 60) return "방금 업데이트";
+    const diffMin = Math.floor(diffSec / 60);
+    if (diffMin < 60) return `${diffMin}분 전 업데이트`;
+    const diffHr = Math.floor(diffMin / 60);
+    return `${diffHr}시간 전 업데이트`;
+  }, [date, now]);
 }
 
 export interface UseNewsListReturn {
@@ -54,6 +38,7 @@ export interface UseNewsListReturn {
   totalPages: number;
   isLoading: boolean;
   error: string | null;
+  fetchedAt: Date | null;
   handleCategoryChange: (category: string) => void;
   handlePageChange: (page: number) => void;
 }
@@ -61,7 +46,11 @@ export interface UseNewsListReturn {
 export function useNewsList(): UseNewsListReturn {
   const [selectedCategory, setSelectedCategory] = useState("전체");
   const [currentPage, setCurrentPage] = useState(1);
-  const { articles, isLoading, error } = useNewsArticles();
+  const { articles, isLoading, error, fetchedAt } = useNewsContext();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   const articlesWithCategory = useMemo<ArticleWithCategory[]>(
     () =>
@@ -106,6 +95,7 @@ export function useNewsList(): UseNewsListReturn {
     totalPages,
     isLoading,
     error,
+    fetchedAt,
     handleCategoryChange,
     handlePageChange,
   };

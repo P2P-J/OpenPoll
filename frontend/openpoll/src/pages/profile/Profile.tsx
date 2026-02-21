@@ -1,6 +1,10 @@
+import { useNavigate } from "react-router-dom";
 import { PasswordChangeModal } from "@/components/molecules/passwordChangeModal";
+import { WithdrawModal } from "@/components/molecules/withdrawModal";
 import { useProfile } from "./hooks";
 import { usePageMeta } from "@/hooks/usePageMeta";
+import { useUser } from "@/contexts/UserContext";
+import { ROUTES } from "@/shared/constants";
 import {
   ProfileHeader,
   LoadingState,
@@ -13,6 +17,8 @@ import {
 
 export function Profile() {
   usePageMeta("내 프로필");
+  const navigate = useNavigate();
+  const { logout } = useUser();
   const {
     user,
     pointHistory,
@@ -20,6 +26,8 @@ export function Profile() {
     isLoading,
     showPasswordModal,
     setShowPasswordModal,
+    showWithdrawModal,
+    setShowWithdrawModal,
     handleBack,
   } = useProfile();
 
@@ -35,12 +43,24 @@ export function Profile() {
         <PartyVotesSection voteStats={voteStats} />
         <PointGuideSection />
         <PointHistorySection pointHistory={pointHistory} />
-        <SecuritySection onOpenPasswordModal={() => setShowPasswordModal(true)} />
+        <SecuritySection
+          onOpenPasswordModal={() => setShowPasswordModal(true)}
+          onOpenWithdrawModal={() => setShowWithdrawModal(true)}
+        />
       </div>
 
       <PasswordChangeModal
         isOpen={showPasswordModal}
         onClose={() => setShowPasswordModal(false)}
+      />
+
+      <WithdrawModal
+        isOpen={showWithdrawModal}
+        onClose={() => setShowWithdrawModal(false)}
+        onComplete={async () => {
+          await logout();
+          navigate(ROUTES.HOME);
+        }}
       />
     </div>
   );

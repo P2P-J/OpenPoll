@@ -73,14 +73,11 @@ export function Header() {
             className="flex items-center space-x-2 group"
             aria-label="OpenPoll 홈으로 이동"
           >
-            <div className="w-7 h-7 sm:w-8 sm:h-8 bg-gradient-primary rounded-lg flex items-center justify-center transition-transform duration-300 group-hover:scale-110 shadow-smooth">
-              <span
-                className="text-white font-bold text-base sm:text-lg"
-                aria-hidden="true"
-              >
-                O
-              </span>
-            </div>
+            <img
+              src="/openpoll-black.png"
+              alt="OpenPoll"
+              className="w-7 h-7 sm:w-8 sm:h-8 object-contain transition-transform duration-300 group-hover:scale-110"
+            />
             <span className="text-lg sm:text-xl font-bold tracking-tight transition-colors duration-300">
               OpenPoll
             </span>
@@ -163,7 +160,7 @@ export function Header() {
                           <div className="h-10 w-px bg-gray-200 dark:bg-gray-700" />
 
                           {/* 메뉴 아이템 - 가로 배치 */}
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-2 flex-shrink-0">
                             <Link
                               to="/profile"
                               onClick={() => setIsDropdownOpen(false)}

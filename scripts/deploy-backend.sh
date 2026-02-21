@@ -79,7 +79,14 @@ log "Seed 데이터 추가..."
 sudo -u ec2-user -H bash -lc "cd $APP_DIR/backend && npx prisma db seed"
 
 log "PM2로 백엔드 재시작..."
-sudo -u ec2-user -H bash -lc "pm2 restart backend 2>/dev/null || pm2 start npm --name backend -- start"
+sudo -u ec2-user -H bash -lc "cd $APP_DIR/backend && pm2 restart backend 2>/dev/null || pm2 start npm --name backend -- start"
+
+log "PM2 프로세스 목록 저장..."
+sudo -u ec2-user -H bash -lc "pm2 save"
+
+log "PM2 자동 시작 설정..."
+sudo -u ec2-user -H bash -lc "pm2 startup" 2>/dev/null || true
+sudo env PATH=$PATH:/home/ec2-user/.nvm/versions/node/$(sudo -u ec2-user -H bash -lc "node -v")/bin pm2 startup systemd -u ec2-user --hp /home/ec2-user 2>/dev/null || true
 
 log "========== Backend 배포 완료 =========="
 log "Status: $(sudo -u ec2-user -H bash -lc 'pm2 show backend 2>/dev/null | grep status' || echo 'running')"
