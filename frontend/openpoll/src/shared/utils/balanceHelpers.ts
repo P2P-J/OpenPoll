@@ -68,9 +68,11 @@ export function isAdminByIdentity(input: { email?: string }): boolean {
   return !!email && ADMIN_EMAILS.has(email);
 }
 
-export function fromMyVote(v: boolean | null | undefined): VoteState {
-  if (v === true) return "agree";
-  if (v === false) return "disagree";
+export function fromMyVote(
+  v: boolean | VoteOption | "AGREE" | "DISAGREE" | null | undefined
+): VoteState {
+  if (v === true || v === "agree" || v === "AGREE") return "agree";
+  if (v === false || v === "disagree" || v === "DISAGREE") return "disagree";
   return null;
 }
 

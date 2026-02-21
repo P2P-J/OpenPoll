@@ -41,6 +41,7 @@ export interface SignupRequest {
   age: number;
   region: string;
   gender: "MALE" | "FEMALE";
+  verificationCode: string;
 }
 
 export interface LoginRequest {
@@ -52,6 +53,17 @@ export interface AuthResponse {
   user: User;
   accessToken: string;
   refreshToken: string;
+}
+
+export interface OAuthAuthResponse extends AuthResponse {
+  profileComplete: boolean;
+}
+
+export interface CompleteSocialProfileRequest {
+  nickname: string;
+  age: number;
+  region: string;
+  gender: "MALE" | "FEMALE";
 }
 
 export interface RefreshTokenRequest {
@@ -95,24 +107,12 @@ export interface PointRecord {
   createdAt: string;
 }
 
-export interface AttendanceResponse {
-  attendance: {
-    id: number;
-    date: string;
-    consecutiveDays: number;
-  };
-  pointsEarned: number;
-  consecutiveDays: number;
-  isStreakBonus: boolean;
-}
-
 // ============ Party Types ============
 
 export interface Party {
   id: number;
   name: string;
   color: string;
-  logoUrl: string | null;
   voteCount: number;
 }
 
@@ -156,28 +156,6 @@ export interface DashboardStats {
     percentage: number;
   }>;
   updatedAt: string;
-}
-
-export interface AgeGroupStats {
-  ageGroup: string;
-  total: number;
-  stats: Array<{
-    partyId: number;
-    partyName: string;
-    count: number;
-    percentage: number;
-  }>;
-}
-
-export interface RegionStats {
-  region: string;
-  total: number;
-  stats: Array<{
-    partyId: number;
-    partyName: string;
-    count: number;
-    percentage: number;
-  }>;
 }
 
 // ============ DOS Types ============

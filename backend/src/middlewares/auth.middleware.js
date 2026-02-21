@@ -39,6 +39,11 @@ export const authenticate = catchAsyncError(async (req, res, next) => {
       points: true,
       hasTakenDos: true,
       createdAt: true,
+      oauthAccounts: {
+        select: {
+          provider: true,
+        },
+      },
     },
   });
 
@@ -47,6 +52,7 @@ export const authenticate = catchAsyncError(async (req, res, next) => {
   }
 
   req.user = user;
+  req.user.provider = user.oauthAccounts?.[0]?.provider ?? null;
   next();
 });
 

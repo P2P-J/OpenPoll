@@ -1,6 +1,13 @@
 import { body } from 'express-validator';
 import { REGIONS } from '../../constants/regions.js';
 
+export const sendVerificationCodeValidation = [
+  body('email')
+    .isEmail()
+    .withMessage('유효한 이메일 주소를 입력해주세요.')
+    .normalizeEmail(),
+];
+
 export const signupValidation = [
   body('email')
     .isEmail()
@@ -24,6 +31,12 @@ export const signupValidation = [
   body('gender')
     .isIn(['MALE', 'FEMALE'])
     .withMessage('유효한 성별을 선택해주세요.'),
+  body('verificationCode')
+    .trim()
+    .isLength({ min: 6, max: 6 })
+    .withMessage('인증 코드는 6자리여야 합니다.')
+    .isNumeric()
+    .withMessage('인증 코드는 숫자만 포함해야 합니다.'),
 ];
 
 export const loginValidation = [

@@ -119,9 +119,7 @@ export function useBalanceDetail(id?: string): UseBalanceDetailResult {
 
         setIssue(merged);
         setSelectedOption(
-          isLoggedInNow()
-            ? fromMyVote((merged as { myVote?: boolean | null }).myVote)
-            : null
+          isLoggedInNow() ? fromMyVote(merged.myVote) : null
         );
       } catch (e) {
         if (!mounted) return;

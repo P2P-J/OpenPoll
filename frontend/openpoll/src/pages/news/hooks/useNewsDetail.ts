@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { newsApi } from "@/api";
+import { useMemo } from "react";
+import { useNewsContext } from "@/contexts/NewsContext";
 import type { NewsArticle } from "@/types/api.types";
 
 export interface UseArticleDetailReturn {
@@ -9,36 +9,19 @@ export interface UseArticleDetailReturn {
 }
 
 export function useArticleDetail(id: string | undefined): UseArticleDetailReturn {
-  const [article, setArticle] = useState<NewsArticle | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { articles, isLoading, error } = useNewsContext();
 
-  useEffect(() => {
-    const fetchArticle = async () => {
-      if (!id) {
-        setError("잘못된 접근입니다.");
-        setIsLoading(false);
-        return;
-      }
+  const article = useMemo(() => {
+    if (!id || articles.length === 0) return null;
+    return articles.find((a) => a.id === parseInt(id)) || null;
+  }, [id, articles]);
 
-      try {
-        setIsLoading(true);
-        const data = await newsApi.getArticleById(parseInt(id));
-        if (data) {
-          setArticle(data);
-          setError(null);
-        } else {
-          setError("뉴스를 찾을 수 없습니다.");
-        }
-      } catch {
-        setError("뉴스를 불러오는데 실패했습니다.");
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  const detailError = useMemo(() => {
+    if (error) return error;
+    if (!id) return "잘못된 접근입니다.";
+    if (!isLoading && articles.length > 0 && !article) return "뉴스를 찾을 수 없습니다.";
+    return null;
+  }, [id, error, isLoading, articles, article]);
 
-    fetchArticle();
-  }, [id]);
-
-  return { article, isLoading, error };
+  return { article, isLoading, error: detailError };
 }

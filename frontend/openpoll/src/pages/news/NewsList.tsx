@@ -2,7 +2,7 @@ import { motion } from "motion/react";
 import { Sparkles } from "lucide-react";
 import { usePageMeta } from "@/hooks/usePageMeta";
 import { CATEGORIES } from "@/shared/utils/newsHelpers";
-import { useNewsList } from "./hooks";
+import { useNewsList, useTimeAgo } from "./hooks";
 import {
   NewsCard,
   Pagination,
@@ -20,15 +20,18 @@ export function NewsList() {
     totalPages,
     isLoading,
     error,
+    fetchedAt,
     handleCategoryChange,
     handlePageChange,
   } = useNewsList();
+
+  const updatedAgo = useTimeAgo(fetchedAt);
 
   if (isLoading) return <NewsListLoadingState />;
   if (error) return <NewsListErrorState message={error} />;
 
   return (
-    <div className="pt-16 min-h-screen bg-gray-50 dark:bg-gray-950">
+    <div className="pt-16 pb-24 sm:pb-0 min-h-screen bg-gray-50 dark:bg-gray-950">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -58,16 +61,21 @@ export function NewsList() {
             <button
               key={category}
               onClick={() => handleCategoryChange(category)}
-              className={`flex-shrink-0 px-6 py-3 rounded-full font-bold text-base transition-all ${
-                selectedCategory === category
-                  ? "bg-black text-white dark:bg-white dark:text-black shadow-lg"
-                  : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:border-gray-400 dark:hover:border-gray-500"
-              }`}
+              className={`flex-shrink-0 px-6 py-3 rounded-full font-bold text-base transition-all ${selectedCategory === category
+                ? "bg-black text-white dark:bg-white dark:text-black shadow-lg"
+                : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:border-gray-400 dark:hover:border-gray-500"
+                }`}
             >
               {category}
             </button>
           ))}
         </motion.nav>
+
+        {updatedAgo && (
+          <p className="text-sm text-gray-400 dark:text-gray-500 mb-6 -mt-4">
+            {updatedAgo}
+          </p>
+        )}
 
         {currentNews.length > 0 ? (
           <>
