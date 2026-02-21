@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { User, Calendar, Users, MapPin } from "lucide-react";
 import { motion } from "motion/react";
@@ -12,6 +12,7 @@ type SocialSignupErrors = {
   gender?: string;
   region?: string;
 };
+const SOCIAL_PROFILE_PENDING_KEY = "social_profile_pending";
 
 export function SocialSignup() {
   const navigate = useNavigate();
@@ -26,6 +27,34 @@ export function SocialSignup() {
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const cancelPendingSignup = () => {
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("refreshToken");
+    localStorage.removeItem("openpoll_session_v1");
+    localStorage.removeItem(SOCIAL_PROFILE_PENDING_KEY);
+    localStorage.removeItem("oauthProvider");
+    window.dispatchEvent(new Event("storage"));
+    window.location.replace(ROUTES.HOME);
+  };
+
+  useEffect(() => {
+    const isPending = localStorage.getItem(SOCIAL_PROFILE_PENDING_KEY) === "1";
+    if (!isPending) {
+      navigate(ROUTES.HOME, { replace: true });
+    }
+  }, [navigate]);
+
+  useEffect(() => {
+    window.history.pushState({ socialSignupTrap: true }, "", window.location.href);
+    const onPopState = () => {
+      cancelPendingSignup();
+    };
+    window.addEventListener("popstate", onPopState);
+    return () => {
+      window.removeEventListener("popstate", onPopState);
+    };
+  }, []);
 
   const validate = () => {
     const next: SocialSignupErrors = {};
@@ -86,6 +115,7 @@ export function SocialSignup() {
         window.dispatchEvent(new Event("storage"));
       }
 
+      localStorage.removeItem(SOCIAL_PROFILE_PENDING_KEY);
       await refreshUser();
       navigate(ROUTES.HOME);
     } catch (err) {
