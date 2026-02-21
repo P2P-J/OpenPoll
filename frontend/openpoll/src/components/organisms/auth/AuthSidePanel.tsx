@@ -52,6 +52,7 @@ export function AuthSidePanel() {
           balanceTotal,
         });
       } catch {
+        // 통계 로드 실패 시 기본값 유지
       }
     };
 

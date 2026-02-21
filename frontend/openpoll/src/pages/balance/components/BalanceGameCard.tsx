@@ -72,10 +72,16 @@ export function BalanceGameCard({
 
   useEffect(() => {
     if (!hideAdminActions) return;
-    if (flipTimerRef.current) window.clearTimeout(flipTimerRef.current);
-    flipTimerRef.current = null;
-    setIsFlipAnimating(false);
-    setIsFlipped(false);
+    if (flipTimerRef.current) {
+      window.clearTimeout(flipTimerRef.current);
+      flipTimerRef.current = null;
+    }
+    // cleanup 시 state 초기화를 위해 requestAnimationFrame 사용
+    const rafId = requestAnimationFrame(() => {
+      setIsFlipAnimating(false);
+      setIsFlipped(false);
+    });
+    return () => cancelAnimationFrame(rafId);
   }, [hideAdminActions]);
 
   const isBackFace = isFlipped && !isFlipAnimating;

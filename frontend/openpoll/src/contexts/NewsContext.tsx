@@ -34,14 +34,11 @@ export function NewsProvider({ children }: { children: ReactNode }) {
     const fetchArticles = useCallback(async (showLoading = false) => {
         try {
             if (showLoading) setIsLoading(true);
-            console.log("[NewsContext] 뉴스 데이터 fetch 시작", new Date().toLocaleTimeString());
             const data = await newsApi.getArticles();
-            console.log("[NewsContext] 뉴스 데이터 fetch 완료, 기사 수:", data.length, "| 첫 기사:", data[0]?.refinedTitle?.slice(0, 30));
             setArticles(data);
             setFetchedAt(new Date());
             setError(null);
         } catch {
-            console.error("[NewsContext] 뉴스 데이터 fetch 실패");
             setError("뉴스를 불러오는데 실패했습니다.");
         } finally {
             setIsLoading(false);

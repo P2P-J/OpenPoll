@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { motion } from "motion/react";
 import { ThumbsUp, ThumbsDown, Heart } from "lucide-react";
 import { getAuthorLabel, keyOf } from "@/shared/utils/balanceHelpers";
-import type { BalanceComment, VoteSide } from "@/types/balance.types";
+import type { BalanceComment, VoteState } from "@/types/balance.types";
 
 interface CommentItemProps {
   comment: BalanceComment;
@@ -11,7 +11,7 @@ interface CommentItemProps {
   isLoggedInNow: () => boolean;
   isMyComment: (c: BalanceComment) => boolean;
   isAdmin: boolean;
-  selectedOption: VoteSide;
+  selectedOption: VoteState;
   expandedComments: Set<string>;
   editingCommentId: string | null;
   editingContent: string;

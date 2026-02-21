@@ -41,11 +41,9 @@ export function Register() {
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // 타이머 카운트다운
+  const isTimerActive = timer > 0;
   useEffect(() => {
-    if (timer <= 0) {
-      if (timerRef.current) clearInterval(timerRef.current);
-      return;
-    }
+    if (!isTimerActive) return;
     timerRef.current = setInterval(() => {
       setTimer((prev) => {
         if (prev <= 1) {
@@ -58,7 +56,7 @@ export function Register() {
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, [timer > 0]); // timer가 0보다 클 때만 interval 시작
+  }, [isTimerActive]);
 
   const formatTimer = (seconds: number) => {
     const m = Math.floor(seconds / 60);
@@ -199,10 +197,10 @@ export function Register() {
   return (
     <div
       style={{
-        minHeight: '100dvh',
+        height: '100dvh',
         background: '#000',
         color: '#fff',
-        overflowY: 'scroll',
+        overflowY: 'auto',
         overscrollBehaviorY: 'contain',
       }}
     >
