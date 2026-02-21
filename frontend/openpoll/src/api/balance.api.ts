@@ -4,7 +4,7 @@ import type {
   BalanceComment,
   BalanceDetail,
   BalanceListItem,
-  BalanceVoteOption,
+  VoteOption,
 } from "@/types/balance.types";
 
 // --- Helper functions ---
@@ -14,7 +14,7 @@ function calcAgreePercent(agreeCount: number, totalVotes: number) {
   return Math.round((agreeCount / totalVotes) * 100);
 }
 
-function mapMyVoteToOption(myVote?: boolean): BalanceVoteOption | null {
+function mapMyVoteToOption(myVote?: boolean): VoteOption | null {
   if (myVote === true) return "agree";
   if (myVote === false) return "disagree";
   return null;
@@ -191,7 +191,7 @@ export async function getBalanceComments(balanceId: number): Promise<BalanceComm
   return mapCommentsToTree(res.data.data ?? []);
 }
 
-export async function voteBalance(balanceId: number, option: BalanceVoteOption | null) {
+export async function voteBalance(balanceId: number, option: VoteOption | null) {
   if (option === null) return { skipped: true } as unknown;
 
   const res = await apiClient.post<ApiResponse<BalanceVoteRes>>(

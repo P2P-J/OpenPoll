@@ -1,8 +1,6 @@
 import { apiClient, API_BASE_URL } from "./client";
 import type {
   DashboardStats,
-  AgeGroupStats,
-  RegionStats,
   ApiResponse,
 } from "@/types/api.types";
 
@@ -13,28 +11,6 @@ import type {
 export const getStats = async (): Promise<DashboardStats> => {
   const response =
     await apiClient.get<ApiResponse<DashboardStats>>("/dashboard/stats");
-  return response.data.data;
-};
-
-/**
- * 나이별 지지율 통계
- * GET /dashboard/stats/by-age
- */
-export const getStatsByAge = async (): Promise<AgeGroupStats[]> => {
-  const response = await apiClient.get<ApiResponse<AgeGroupStats[]>>(
-    "/dashboard/stats/by-age",
-  );
-  return response.data.data;
-};
-
-/**
- * 지역별 지지율 통계
- * GET /dashboard/stats/by-region
- */
-export const getStatsByRegion = async (): Promise<RegionStats[]> => {
-  const response = await apiClient.get<ApiResponse<RegionStats[]>>(
-    "/dashboard/stats/by-region",
-  );
   return response.data.data;
 };
 

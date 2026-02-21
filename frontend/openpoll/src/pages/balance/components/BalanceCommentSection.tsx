@@ -3,12 +3,12 @@ import { motion } from "motion/react";
 import { ThumbsUp, ThumbsDown, Send } from "lucide-react";
 import { keyOf, countAllComments } from "@/shared/utils/balanceHelpers";
 import { CommentItem } from "./CommentItem";
-import type { BalanceComment, VoteSide } from "@/types/balance.types";
+import type { BalanceComment, VoteState } from "@/types/balance.types";
 
 interface BalanceCommentSectionProps {
   isLoggedIn: boolean;
   isLoggedInNow: () => boolean;
-  selectedOption: VoteSide;
+  selectedOption: VoteState;
   comment: string;
   setComment: (v: string) => void;
   comments: BalanceComment[];

@@ -14,11 +14,3 @@ export const getArticles = async (): Promise<NewsArticle[]> => {
     });
     return response.data.data;
 };
-
-/**
- * 뉴스 상세 조회 (ID로 필터링)
- */
-export const getArticleById = async (id: number): Promise<NewsArticle | null> => {
-    const articles = await getArticles();
-    return articles.find(article => article.id === id) || null;
-};

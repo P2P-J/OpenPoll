@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import type { AxiosError } from "axios";
 import { authApi } from "@/api";
@@ -39,11 +39,11 @@ export function OAuthCallbackPage() {
     | OAuthProvider
     | null;
 
-  const startOAuth = (targetProvider: OAuthProvider, mode?: "rejoin") => {
+  const startOAuth = useCallback((targetProvider: OAuthProvider, mode?: "rejoin") => {
     localStorage.setItem("oauthProvider", targetProvider);
     const modeQuery = mode ? `?mode=${mode}` : "";
     window.location.href = `${oauthBaseUrl}/auth/oauth/${targetProvider}${modeQuery}`;
-  };
+  }, [oauthBaseUrl]);
 
   useEffect(() => {
     const run = async () => {
@@ -139,23 +139,27 @@ export function OAuthCallbackPage() {
     };
 
     run();
-  }, [code, oauthState, provider, navigate, refreshUser]);
+  }, [code, oauthState, provider, navigate, refreshUser, startOAuth]);
+
+  const showLoadingUiDerived = useMemo(() => {
+    return state.phase === "loading" && showLoadingUi;
+  }, [state.phase, showLoadingUi]);
 
   useEffect(() => {
-    if (state.phase !== "loading") {
-      setShowLoadingUi(false);
-      return;
-    }
+    if (state.phase !== "loading") return;
 
     const timer = window.setTimeout(() => {
       setShowLoadingUi(true);
     }, 450);
 
-    return () => window.clearTimeout(timer);
+    return () => {
+      setShowLoadingUi(false);
+      window.clearTimeout(timer);
+    };
   }, [state.phase]);
 
   if (state.phase === "loading") {
-    if (!showLoadingUi) return null;
+    if (!showLoadingUiDerived) return null;
 
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center px-4">
