@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import type { AxiosError } from "axios";
-import { Home } from "lucide-react";
 import { authApi } from "@/api";
 import { ROUTES } from "@/shared/constants";
 import { useUser } from "@/contexts/UserContext";
@@ -26,6 +25,7 @@ export function OAuthCallbackPage() {
     phase: "loading",
     message: "소셜 로그인 처리 중입니다...",
   });
+  const [showLoadingUi, setShowLoadingUi] = useState(false);
 
   const oauthBaseUrl = import.meta.env.VITE_API_BASE_URL || "/api";
 
@@ -56,6 +56,12 @@ export function OAuthCallbackPage() {
         return;
       }
 
+      const callbackOnceKey = `oauth_callback_once:${provider}:${code}:${oauthState}`;
+      if (sessionStorage.getItem(callbackOnceKey) === "1") {
+        return;
+      }
+      sessionStorage.setItem(callbackOnceKey, "1");
+
       try {
         const data = await authApi.oauthCallback(provider, code, oauthState);
 
@@ -84,6 +90,21 @@ export function OAuthCallbackPage() {
         const message =
           axiosErr?.response?.data?.message ||
           (err instanceof Error ? err.message : "로그인 처리 중 오류가 발생했습니다.");
+        const rejoinOnceKey = `oauth_rejoin_once:${provider}:${code}:${oauthState}`;
+
+        if (
+          provider &&
+          (
+            (status === 409 && message === "REJOIN_REQUIRED") ||
+            (!status && axiosErr.message === "Network Error")
+          )
+        ) {
+          if (sessionStorage.getItem(rejoinOnceKey) !== "1") {
+            sessionStorage.setItem(rejoinOnceKey, "1");
+            startOAuth(provider, "rejoin");
+            return;
+          }
+        }
 
         if (status === 401) {
           setState({
@@ -91,16 +112,6 @@ export function OAuthCallbackPage() {
             code: 401,
             provider,
             message: "OAuth state가 유효하지 않습니다. 다시 로그인 해주세요.",
-          });
-          return;
-        }
-
-        if (status === 409 && message === "REJOIN_REQUIRED") {
-          setState({
-            phase: "error",
-            code: 409,
-            provider,
-            message: "탈퇴 이력 계정입니다. 재가입 모드로 진행해 주세요.",
           });
           return;
         }
@@ -127,10 +138,25 @@ export function OAuthCallbackPage() {
     run();
   }, [code, oauthState, provider, navigate, refreshUser]);
 
+  useEffect(() => {
+    if (state.phase !== "loading") {
+      setShowLoadingUi(false);
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      setShowLoadingUi(true);
+    }, 450);
+
+    return () => window.clearTimeout(timer);
+  }, [state.phase]);
+
   if (state.phase === "loading") {
+    if (!showLoadingUi) return null;
+
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center px-4">
-        <p className="text-gray-300 text-sm">{state.message}</p>
+        <p className="text-gray-400 text-xs">{state.message}</p>
       </div>
     );
   }
@@ -161,29 +187,11 @@ export function OAuthCallbackPage() {
             <img src={naverLogo} alt="네이버" className="w-4 h-4" />
             네이버 다시 시도
           </button>
-
-          <div className="flex items-center gap-4 pt-1">
-            <div className="h-px flex-1 bg-white/10" />
-            <span className="text-xs text-gray-500">또는</span>
-            <div className="h-px flex-1 bg-white/10" />
-          </div>
-
-          {state.code === 409 && state.provider && (
-            <button
-              type="button"
-              onClick={() => startOAuth(state.provider!, "rejoin")}
-              className="w-full h-10 rounded-lg border border-yellow-400/40 bg-yellow-500/10 hover:bg-yellow-500/15 text-sm"
-            >
-              재가입 모드로 진행
-            </button>
-          )}
-
           <button
             type="button"
             onClick={() => navigate(ROUTES.LOGIN)}
-            className="w-full h-10 rounded-lg border border-white/15 bg-white/5 hover:bg-white/10 text-sm flex items-center justify-center gap-2"
+            className="w-full h-10 rounded-lg border border-white/15 bg-white/5 hover:bg-white/10 text-sm"
           >
-            <Home className="w-4 h-4" />
             로그인 화면으로 이동
           </button>
         </div>
