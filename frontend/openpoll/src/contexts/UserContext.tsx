@@ -16,6 +16,7 @@ import {
 } from "@/api/client";
 import type { AxiosError } from "axios";
 import type { User, AuthResponse } from "@/types/api.types";
+const SOCIAL_PROFILE_PENDING_KEY = "social_profile_pending";
 
 interface UserContextType {
   user: User | null;
@@ -52,6 +53,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
       // 토큰이 없으면 로그인 필요
       if (!accessToken && !refreshToken) {
+        localStorage.removeItem(SOCIAL_PROFILE_PENDING_KEY);
         setIsLoading(false);
         return;
       }
@@ -167,6 +169,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
       // Save tokens
       localStorage.setItem("accessToken", response.accessToken);
       localStorage.setItem("refreshToken", response.refreshToken);
+      localStorage.removeItem(SOCIAL_PROFILE_PENDING_KEY);
 
       // Set user
       setUser(response.user);
@@ -210,6 +213,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
         // Save tokens
         localStorage.setItem("accessToken", response.accessToken);
         localStorage.setItem("refreshToken", response.refreshToken);
+        localStorage.removeItem(SOCIAL_PROFILE_PENDING_KEY);
 
         // Set user
         setUser(response.user);
@@ -251,6 +255,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
       // Clear localAuth session
       localStorage.removeItem("openpoll_session_v1");
+      localStorage.removeItem(SOCIAL_PROFILE_PENDING_KEY);
       window.dispatchEvent(new Event("storage"));
     }
   }, []);

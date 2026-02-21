@@ -107,17 +107,6 @@ export interface PointRecord {
   createdAt: string;
 }
 
-export interface AttendanceResponse {
-  attendance: {
-    id: number;
-    date: string;
-    consecutiveDays: number;
-  };
-  pointsEarned: number;
-  consecutiveDays: number;
-  isStreakBonus: boolean;
-}
-
 // ============ Party Types ============
 
 export interface Party {
@@ -167,28 +156,6 @@ export interface DashboardStats {
     percentage: number;
   }>;
   updatedAt: string;
-}
-
-export interface AgeGroupStats {
-  ageGroup: string;
-  total: number;
-  stats: Array<{
-    partyId: number;
-    partyName: string;
-    count: number;
-    percentage: number;
-  }>;
-}
-
-export interface RegionStats {
-  region: string;
-  total: number;
-  stats: Array<{
-    partyId: number;
-    partyName: string;
-    count: number;
-    percentage: number;
-  }>;
 }
 
 // ============ DOS Types ============

@@ -1,5 +1,4 @@
 import { useState, useCallback, useEffect, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
 import { Brain, Scale, Newspaper } from "lucide-react";
 import { dosApi } from "@/api";
 import { usePageMeta } from "@/hooks/usePageMeta";
@@ -15,6 +14,14 @@ import { Toast } from "@/components/molecules/toast/Toast";
 import { LoginModal } from "@/components/molecules/loginModal";
 import { useVoting } from "@/contexts/VotingContext";
 import { useUser } from "@/contexts/UserContext";
+
+const PARTY_LOGOS: Record<string, string> = {
+  더불어민주당: "/parties/더불어민주당_원형(200).png",
+  국민의힘: "/parties/국민의힘(고화질)2.png",
+  조국혁신당: "/parties/조국혁신당.png",
+  개혁신당: "/parties/개혁신당(고화질).png",
+  "기타/무당층": "/openpoll-black.png",
+};
 
 const FEATURES = [
   {
@@ -42,8 +49,10 @@ const FEATURES = [
 ] as const;
 
 export function Home() {
-  usePageMeta("홈", "정치 성향 테스트, 밸런스 게임, 중립 뉴스를 한 곳에서. OpenPoll과 함께 정치 참여의 첫 걸음을 내딛어보세요.");
-  const navigate = useNavigate();
+  usePageMeta(
+    "홈",
+    "정치 성향 테스트, 밸런스 게임, 중립 뉴스를 한 곳에서. OpenPoll과 함께 정치 참여의 첫 걸음을 내딛어보세요.",
+  );
   const { parties, stats, castVote, sseStatus } = useVoting();
   const { user, isAuthenticated } = useUser();
   const [selectedParty, setSelectedParty] = useState<number | null>(null);
@@ -63,8 +72,8 @@ export function Home() {
         // DOS 통계
         const dosStats = await dosApi.getStatistics();
         setDosCompletedCount(dosStats.total);
-      } catch (error) {
-        console.error("Failed to fetch DOS statistics:", error);
+      } catch {
+        // DOS 통계 로드 실패 시 기본값 유지
       }
 
       try {
@@ -73,22 +82,28 @@ export function Home() {
         const balanceList = await getBalanceList();
         const totalBalanceParticipants = balanceList.reduce(
           (sum, game) => sum + (game.totalVotes || 0),
-          0
+          0,
         );
         setBalanceParticipants(totalBalanceParticipants);
-      } catch (error) {
-        console.error("Failed to fetch balance statistics:", error);
+      } catch {
+        // 밸런스 통계 로드 실패 시 기본값 유지
       }
     };
     fetchStats();
   }, []);
 
   // Build dynamic stats array
-  const homeStats = useMemo(() => [
-    { label: "DOS 테스트 완료", value: dosCompletedCount.toLocaleString() },
-    { label: "투표 참여", value: (stats?.totalVotes || 0).toLocaleString() },
-    { label: "밸런스 게임 참여", value: balanceParticipants.toLocaleString() },
-  ], [dosCompletedCount, stats?.totalVotes, balanceParticipants]);
+  const homeStats = useMemo(
+    () => [
+      { label: "DOS 테스트 완료", value: dosCompletedCount.toLocaleString() },
+      { label: "투표 참여", value: (stats?.totalVotes || 0).toLocaleString() },
+      {
+        label: "밸런스 게임 참여",
+        value: balanceParticipants.toLocaleString(),
+      },
+    ],
+    [dosCompletedCount, stats?.totalVotes, balanceParticipants],
+  );
 
   const handleVote = useCallback(
     async (partyId: number) => {
@@ -129,7 +144,7 @@ export function Home() {
       id: party.id.toString(),
       name: party.name,
       color: party.color,
-      logo: "🏛️", // Default logo, can be customized per party
+      logo: PARTY_LOGOS[party.name] ?? "/parties/etc.png",
       totalVotes: partyStat?.count ?? party.voteCount, // SSE에서 받은 count 우선 사용
       percentage: partyStat?.percentage ?? 0,
     };
@@ -188,4 +203,3 @@ export function Home() {
     </>
   );
 }
-
