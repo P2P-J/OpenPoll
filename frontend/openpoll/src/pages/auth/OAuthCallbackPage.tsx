@@ -8,6 +8,7 @@ import googleLogo from "@/img/google-logo.svg";
 import naverLogo from "@/img/naver-logo.svg";
 
 type OAuthProvider = "google" | "naver";
+const SOCIAL_PROFILE_PENDING_KEY = "social_profile_pending";
 
 type CallbackState =
   | { phase: "loading"; message: string }
@@ -80,9 +81,11 @@ export function OAuthCallbackPage() {
         await refreshUser();
 
         if (!data.profileComplete) {
+          localStorage.setItem(SOCIAL_PROFILE_PENDING_KEY, "1");
           navigate(ROUTES.SOCIAL_SIGNUP, { replace: true });
           return;
         }
+        localStorage.removeItem(SOCIAL_PROFILE_PENDING_KEY);
         navigate(ROUTES.HOME, { replace: true });
       } catch (err) {
         const axiosErr = err as AxiosError<{ message?: string }>;
