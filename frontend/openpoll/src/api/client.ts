@@ -257,6 +257,14 @@ apiClient.interceptors.response.use(
     const originalRequest = error.config as AxiosRequestConfig & {
       _retry?: boolean;
     };
+    const requestUrl = originalRequest?.url ?? "";
+    const isOAuthCallbackRequest =
+      requestUrl.includes("/auth/oauth/") && requestUrl.includes("/callback");
+
+    // OAuth callback 401 should be handled by callback page UI, not global auth redirect.
+    if (error.response?.status === 401 && isOAuthCallbackRequest) {
+      return Promise.reject(error);
+    }
 
     // If error is 401 and we haven't retried yet
     if (error.response?.status === 401 && !originalRequest._retry) {
