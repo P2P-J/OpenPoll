@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback, type ReactNode } from "react";
+import { useState, useRef, useCallback, type ReactNode } from "react";
 import { X, Link2, Check, Copy, QrCode } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { QRCodeSVG } from "qrcode.react";
@@ -44,9 +44,7 @@ const EmailIcon = () => (
 );
 
 const SHARE_TEXT = "나의 DOS 정치 성향 결과를 확인해보세요!";
-const SHARE_SUBJECT = "나의 DOS 정치 성향 결과";
 const COPY_RESET_MS = 2500;
-const EMAIL_COOLDOWN_MS = 5000;
 const POPUP_OPTIONS = "width=550,height=420";
 
 const ICON_BASE_CLASS =
@@ -63,12 +61,11 @@ export function ShareModal({ isOpen, onClose, type }: ShareModalProps) {
     const shareUrl = `${window.location.origin}/dos/share/${type}`;
 
     // Reset states when modal closes
-    useEffect(() => {
-        if (!isOpen) {
-            setCopied(false);
-            setEmailCopied(false);
-        }
-    }, [isOpen]);
+    const handleClose = useCallback(() => {
+        setCopied(false);
+        setEmailCopied(false);
+        onClose();
+    }, [onClose]);
 
     const handleCopy = useCallback(async () => {
         try {
@@ -149,7 +146,7 @@ export function ShareModal({ isOpen, onClose, type }: ShareModalProps) {
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.2 }}
                     className="fixed inset-0 z-50 flex items-center justify-center px-8"
-                    onClick={onClose}
+                    onClick={handleClose}
                 >
                     {/* Backdrop */}
                     <div className="absolute inset-0 bg-black/50" style={{ backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)' }} />
@@ -175,7 +172,7 @@ export function ShareModal({ isOpen, onClose, type }: ShareModalProps) {
                                 </div>
                             </div>
                             <button
-                                onClick={onClose}
+                                onClick={handleClose}
                                 className="p-2 rounded-lg hover:bg-white/10 transition-colors"
                             >
                                 <X className="w-5 h-5 text-white" />
@@ -291,7 +288,7 @@ export function ShareModal({ isOpen, onClose, type }: ShareModalProps) {
 
                         <div className="p-5 border-t border-white/10 flex justify-end">
                             <button
-                                onClick={onClose}
+                                onClick={handleClose}
                                 className="px-4 py-2 rounded-lg border border-white/10 text-gray-300 hover:text-white hover:border-white/20 transition-colors"
                             >
                                 닫기

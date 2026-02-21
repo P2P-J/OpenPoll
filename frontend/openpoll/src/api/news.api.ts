@@ -6,14 +6,11 @@ import type { NewsArticle, ApiResponse } from '@/types/api.types';
  * GET /news/articles
  */
 export const getArticles = async (): Promise<NewsArticle[]> => {
-    const response = await apiClient.get<ApiResponse<NewsArticle[]>>('/news/articles');
+    const response = await apiClient.get<ApiResponse<NewsArticle[]>>('/news/articles', {
+        headers: {
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+        },
+    });
     return response.data.data;
-};
-
-/**
- * 뉴스 상세 조회 (ID로 필터링)
- */
-export const getArticleById = async (id: number): Promise<NewsArticle | null> => {
-    const articles = await getArticles();
-    return articles.find(article => article.id === id) || null;
 };

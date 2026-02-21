@@ -140,24 +140,24 @@ export function WithdrawModal({ isOpen, onClose, onComplete }: WithdrawModalProp
 
             {/* Footer */}
             <div className="p-8 sm:p-10 pt-0 sm:pt-0">
-              <div className="flex gap-4">
+              <div className="flex gap-3">
                 {step === 1 ? (
                   <>
                     <button
                       type="button"
                       onClick={handleFirstConfirm}
-                      className="flex-1 py-5 text-white rounded-2xl font-bold text-lg flex items-center justify-center gap-2 transition-colors"
+                      className="flex-1 py-3 text-white rounded-xl font-semibold text-base flex items-center justify-center gap-2 transition-colors"
                       style={{ backgroundColor: "#ef4444" }}
                       onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#dc2626")}
                       onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#ef4444")}
                     >
-                      <UserX className="w-5 h-5" />
+                      <UserX className="w-4 h-4" />
                       탈퇴하기
                     </button>
                     <button
                       type="button"
                       onClick={handleClose}
-                      className="flex-1 py-5 bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-2xl font-bold text-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                      className="flex-1 py-3 bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-xl font-semibold text-base hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
                     >
                       취소
                     </button>
@@ -168,19 +168,19 @@ export function WithdrawModal({ isOpen, onClose, onComplete }: WithdrawModalProp
                       type="button"
                       onClick={handleWithdraw}
                       disabled={isProcessing}
-                      className="flex-1 py-5 text-white rounded-2xl font-bold text-lg flex items-center justify-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="flex-1 py-3 text-white rounded-xl font-semibold text-base flex items-center justify-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                       style={{ backgroundColor: "#ef4444" }}
                       onMouseEnter={(e) => { if (!isProcessing) e.currentTarget.style.backgroundColor = "#dc2626"; }}
                       onMouseLeave={(e) => { if (!isProcessing) e.currentTarget.style.backgroundColor = "#ef4444"; }}
                     >
                       {isProcessing ? (
                         <>
-                          <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                           처리 중...
                         </>
                       ) : (
                         <>
-                          <AlertCircle className="w-5 h-5" />
+                          <AlertCircle className="w-4 h-4" />
                           탈퇴 확인
                         </>
                       )}
@@ -189,7 +189,7 @@ export function WithdrawModal({ isOpen, onClose, onComplete }: WithdrawModalProp
                       type="button"
                       onClick={handleClose}
                       disabled={isProcessing}
-                      className="flex-1 py-5 bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-2xl font-bold text-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
+                      className="flex-1 py-3 bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-xl font-semibold text-base hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
                     >
                       취소
                     </button>
