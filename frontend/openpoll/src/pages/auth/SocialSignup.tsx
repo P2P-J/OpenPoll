@@ -34,6 +34,7 @@ export function SocialSignup() {
     localStorage.removeItem("openpoll_session_v1");
     localStorage.removeItem(SOCIAL_PROFILE_PENDING_KEY);
     localStorage.removeItem("oauthProvider");
+    localStorage.removeItem("isOAuthUser");
     window.dispatchEvent(new Event("storage"));
     window.location.replace(ROUTES.HOME);
   };
