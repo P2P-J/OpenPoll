@@ -49,8 +49,8 @@ export const CACHE_TTL = {
 };
 
 export const NEWS_REFRESH = {
-  LOCK_KEY: 'lock:news:refresh',
-  COOLDOWN_KEY: 'cooldown:news:refresh',
+  LOCK_KEY: 'lock:{news:refresh}',
+  COOLDOWN_KEY: 'cooldown:{news:refresh}',
   COOLDOWN_SEC: config.cooldownSec,
   LOCK_TTL_MS: 300_000, // 락(영구락 방지 - 5분)
 };
