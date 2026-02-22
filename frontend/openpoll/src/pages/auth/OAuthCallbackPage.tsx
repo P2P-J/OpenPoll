@@ -69,6 +69,7 @@ export function OAuthCallbackPage() {
         localStorage.setItem("accessToken", data.accessToken);
         localStorage.setItem("refreshToken", data.refreshToken);
         localStorage.removeItem("oauthProvider");
+        localStorage.setItem("isOAuthUser", "true");
 
         const session = {
           nickname: data.user.nickname,
