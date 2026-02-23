@@ -170,6 +170,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
       localStorage.setItem("accessToken", response.accessToken);
       localStorage.setItem("refreshToken", response.refreshToken);
       localStorage.removeItem(SOCIAL_PROFILE_PENDING_KEY);
+      localStorage.removeItem("isOAuthUser");
 
       // Set user
       setUser(response.user);
@@ -256,6 +257,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
       // Clear localAuth session
       localStorage.removeItem("openpoll_session_v1");
       localStorage.removeItem(SOCIAL_PROFILE_PENDING_KEY);
+      localStorage.removeItem("isOAuthUser");
       window.dispatchEvent(new Event("storage"));
     }
   }, []);
