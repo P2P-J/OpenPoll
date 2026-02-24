@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import rateLimit from 'express-rate-limit';
 import * as authController from './auth.controller.js';
-import { signupValidation, loginValidation, refreshTokenValidation, changePasswordValidation, sendVerificationCodeValidation } from './auth.validation.js';
+import { signupValidation, loginValidation, refreshTokenValidation, changePasswordValidation, sendVerificationCodeValidation, verifyCodeValidation, checkNicknameValidation } from './auth.validation.js';
 import validate from '../../middlewares/validate.middleware.js';
 import { authenticate } from '../../middlewares/auth.middleware.js';
 
@@ -11,6 +11,7 @@ const router = Router();
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 10,
+  keyGenerator: (req) => req.body.email || req.ip,
   message: { success: false, message: '너무 많은 요청입니다. 15분 후 다시 시도해주세요.' },
   standardHeaders: true,
   legacyHeaders: false,
@@ -20,6 +21,7 @@ const authLimiter = rateLimit({
 const signupLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
   max: 5,
+  keyGenerator: (req) => req.body.email || req.ip,
   message: { success: false, message: '너무 많은 회원가입 시도입니다. 1시간 후 다시 시도해주세요.' },
   standardHeaders: true,
   legacyHeaders: false,
@@ -29,12 +31,15 @@ const signupLimiter = rateLimit({
 const emailCodeLimiter = rateLimit({
   windowMs: 60 * 1000,
   max: 3,
+  keyGenerator: (req) => req.body.email || req.ip,
   message: { success: false, message: '너무 많은 인증 코드 요청입니다. 1분 후 다시 시도해주세요.' },
   standardHeaders: true,
   legacyHeaders: false,
 });
 
+router.get('/check-nickname', checkNicknameValidation, validate, authController.checkNickname);
 router.post('/email/send-code', emailCodeLimiter, sendVerificationCodeValidation, validate, authController.sendVerificationCode);
+router.post('/email/verify-code', emailCodeLimiter, verifyCodeValidation, validate, authController.verifyCode);
 router.post('/signup', signupLimiter, signupValidation, validate, authController.signup);
 router.post('/login', authLimiter, loginValidation, validate, authController.login);
 router.post('/logout', authenticate, authController.logout);

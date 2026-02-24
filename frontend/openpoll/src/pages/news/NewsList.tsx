@@ -10,9 +10,11 @@ import {
   NewsListErrorState,
   EmptyState,
 } from "./components";
+import { useTheme } from "@/contexts/ThemeContext";
 
 export function NewsList() {
   usePageMeta("중립 뉴스", "AI가 순화한 중립적이고 객관적인 정치 뉴스를 읽어보세요.");
+  const { isDark } = useTheme();
   const {
     selectedCategory,
     currentPage,
@@ -31,7 +33,7 @@ export function NewsList() {
   if (error) return <NewsListErrorState message={error} />;
 
   return (
-    <div className="pt-16 pb-24 sm:pb-0 min-h-screen bg-gray-50 dark:bg-gray-950">
+    <div className={`pt-16 pb-24 sm:pb-0 min-h-screen ${isDark ? 'bg-black' : 'bg-gray-50'}`}>
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -39,12 +41,12 @@ export function NewsList() {
           className="text-center mb-8 sm:mb-10"
         >
           <div className="inline-flex items-center justify-center space-x-2 mb-3">
-            <Sparkles className="w-7 h-7 sm:w-8 sm:h-8 dark:text-white" />
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold dark:text-white">
+            <Sparkles className={`w-7 h-7 sm:w-8 sm:h-8 ${isDark ? 'text-white' : 'text-black'}`} />
+            <h1 className={`text-3xl sm:text-4xl lg:text-5xl font-bold ${isDark ? 'text-white' : 'text-black'}`}>
               중립 뉴스
             </h1>
           </div>
-          <p className="text-gray-600 dark:text-gray-400 text-base sm:text-lg">
+          <p className={`text-base sm:text-lg ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
             AI가 순화한 중립적이고 객관적인 정치 뉴스
           </p>
         </motion.div>
@@ -62,8 +64,12 @@ export function NewsList() {
               key={category}
               onClick={() => handleCategoryChange(category)}
               className={`flex-shrink-0 px-6 py-3 rounded-full font-bold text-base transition-all ${selectedCategory === category
-                ? "bg-black text-white dark:bg-white dark:text-black shadow-lg"
-                : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:border-gray-400 dark:hover:border-gray-500"
+                ? isDark
+                  ? "bg-white text-black shadow-lg"
+                  : "bg-black text-white shadow-lg"
+                : isDark
+                  ? "bg-gray-800 text-gray-300 border border-gray-700 hover:border-gray-500"
+                  : "bg-white text-gray-700 border border-gray-200 hover:border-gray-400"
                 }`}
             >
               {category}
@@ -72,7 +78,7 @@ export function NewsList() {
         </motion.nav>
 
         {updatedAgo && (
-          <p className="text-sm text-gray-400 dark:text-gray-500 mb-6 -mt-4">
+          <p className={`text-sm mb-6 -mt-4 ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>
             {updatedAgo}
           </p>
         )}

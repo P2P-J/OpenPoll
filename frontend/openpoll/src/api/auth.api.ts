@@ -57,6 +57,35 @@ export const sendVerificationCode = async (
 };
 
 /**
+ * 이메일 인증코드 검증
+ * POST /auth/email/verify-code
+ */
+export const verifyCode = async (
+  email: string,
+  code: string,
+): Promise<{ message: string }> => {
+  const response = await apiClient.post<ApiResponse<{ message: string }>>(
+    "/auth/email/verify-code",
+    { email, code },
+  );
+  return response.data.data;
+};
+
+/**
+ * 닉네임 중복 확인
+ * GET /auth/check-nickname?nickname=
+ */
+export const checkNickname = async (
+  nickname: string,
+): Promise<{ available: boolean }> => {
+  const response = await apiClient.get<ApiResponse<{ available: boolean }>>(
+    "/auth/check-nickname",
+    { params: { nickname } },
+  );
+  return response.data.data;
+};
+
+/**
  * 토큰 재발급
  * POST /auth/refresh
  */
