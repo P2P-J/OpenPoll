@@ -12,6 +12,18 @@ export const sendVerificationCode = catchAsyncError(async (req, res) => {
   successResponse(res, { message: "인증 코드가 발송되었습니다." });
 });
 
+export const verifyCode = catchAsyncError(async (req, res) => {
+  const { email, code } = req.body;
+  await authService.verifyEmailCode(email, code);
+  successResponse(res, { message: "인증 코드가 확인되었습니다." });
+});
+
+export const checkNickname = catchAsyncError(async (req, res) => {
+  const { nickname } = req.query;
+  const result = await authService.checkNickname(nickname);
+  successResponse(res, result);
+});
+
 export const signup = catchAsyncError(async (req, res) => {
   const result = await authService.signup(req.body);
   createdResponse(res, result);

@@ -4,7 +4,7 @@ import { Gift, Mail, Lock, User, Calendar, Users, MapPin, Home, ShieldCheck, Tim
 import { motion, AnimatePresence } from 'motion/react';
 import { ROUTES } from '@/shared/constants';
 import { useUser } from '@/contexts/UserContext';
-import { sendVerificationCode } from '@/api/auth.api';
+import { sendVerificationCode, verifyCode, checkNickname } from '@/api/auth.api';
 import { getErrorMessage } from '@/api/client';
 
 type RegisterErrors = {
@@ -19,6 +19,18 @@ type RegisterErrors = {
   agree?: string;
 };
 
+const CHOSUNG_REGEX = /[ㄱ-ㅎ]/;
+const NICKNAME_REGEX = /^[a-zA-Z0-9가-힣]+$/;
+
+function validateNicknameFormat(value: string): string | undefined {
+  if (!value) return undefined;
+  if (value.length < 2 || value.length > 20) return '닉네임은 2~20자로 입력해 주세요.';
+  if (/\s/.test(value)) return '닉네임에 띄어쓰기는 사용할 수 없습니다.';
+  if (!NICKNAME_REGEX.test(value)) return '닉네임은 한글, 영문, 숫자만 사용 가능합니다.';
+  if (CHOSUNG_REGEX.test(value)) return '초성(ㄱ, ㄴ, ㄷ 등)은 사용할 수 없습니다.';
+  return undefined;
+}
+
 export function Register() {
   const navigate = useNavigate();
   const { signup } = useUser();
@@ -32,11 +44,42 @@ export function Register() {
   const [region, setRegion] = useState('');
   const [agree, setAgree] = useState(false);
 
+  // 닉네임 중복확인 관련 state
+  const [isNicknameChecked, setIsNicknameChecked] = useState(false);
+  const [isCheckingNickname, setIsCheckingNickname] = useState(false);
+
+  // 닉네임 중복확인 핸들러
+  const handleCheckNickname = useCallback(async () => {
+    const trimmed = nickname.trim();
+    const formatError = validateNicknameFormat(trimmed);
+    if (formatError) {
+      setErrors((prev) => ({ ...prev, nickname: formatError }));
+      return;
+    }
+
+    try {
+      setIsCheckingNickname(true);
+      setErrors((prev) => ({ ...prev, nickname: undefined }));
+      const result = await checkNickname(trimmed);
+      if (result.available) {
+        setIsNicknameChecked(true);
+      } else {
+        setErrors((prev) => ({ ...prev, nickname: '이미 사용 중인 닉네임입니다.' }));
+      }
+    } catch (err) {
+      const message = getErrorMessage(err);
+      setErrors((prev) => ({ ...prev, nickname: message }));
+    } finally {
+      setIsCheckingNickname(false);
+    }
+  }, [nickname]);
+
   // 이메일 인증 관련 state
   const [verificationCode, setVerificationCode] = useState('');
   const [isCodeSent, setIsCodeSent] = useState(false);
   const [isEmailVerified, setIsEmailVerified] = useState(false);
   const [isSendingCode, setIsSendingCode] = useState(false);
+  const [isVerifyingCode, setIsVerifyingCode] = useState(false);
   const [timer, setTimer] = useState(0);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -92,8 +135,8 @@ export function Register() {
     }
   }, [email]);
 
-  // 인증코드 형식 확인 (실제 검증은 회원가입 시 백엔드에서 처리)
-  const handleVerifyCode = useCallback(() => {
+  // 인증코드 백엔드 검증
+  const handleVerifyCode = useCallback(async () => {
     const code = verificationCode.trim();
     if (!code) {
       setErrors((prev) => ({ ...prev, verificationCode: '인증코드를 입력해 주세요.' }));
@@ -103,10 +146,20 @@ export function Register() {
       setErrors((prev) => ({ ...prev, verificationCode: '인증코드는 6자리 숫자입니다.' }));
       return;
     }
-    setIsEmailVerified(true);
-    setTimer(0);
-    setErrors((prev) => ({ ...prev, verificationCode: undefined }));
-  }, [verificationCode]);
+
+    try {
+      setIsVerifyingCode(true);
+      setErrors((prev) => ({ ...prev, verificationCode: undefined }));
+      await verifyCode(email.trim(), code);
+      setIsEmailVerified(true);
+      setTimer(0);
+    } catch (err) {
+      const message = getErrorMessage(err);
+      setErrors((prev) => ({ ...prev, verificationCode: message }));
+    } finally {
+      setIsVerifyingCode(false);
+    }
+  }, [verificationCode, email]);
 
   const [errors, setErrors] = useState<RegisterErrors>({});
   const [hasSubmitted, setHasSubmitted] = useState(false);
@@ -117,7 +170,16 @@ export function Register() {
     const trimmedEmail = email.trim();
     const trimmedAge = age.trim();
 
-    if (!trimmedNickname) next.nickname = '닉네임을 입력해 주세요.';
+    if (!trimmedNickname) {
+      next.nickname = '닉네임을 입력해 주세요.';
+    } else {
+      const formatError = validateNicknameFormat(trimmedNickname);
+      if (formatError) {
+        next.nickname = formatError;
+      } else if (!isNicknameChecked) {
+        next.nickname = '닉네임 중복확인을 해주세요.';
+      }
+    }
     if (!trimmedEmail) next.email = '이메일을 입력해 주세요.';
     if (trimmedEmail && !isEmailVerified) next.email = '이메일 인증을 완료해 주세요.';
     if (!password) next.password = '비밀번호를 입력해 주세요.';
@@ -126,15 +188,6 @@ export function Register() {
     if (!gender) next.gender = '성별을 선택해 주세요.';
     if (!region) next.region = '지역을 선택해 주세요.';
     if (!agree) next.agree = '약관에 동의해 주세요.';
-
-    if (trimmedNickname) {
-      if (trimmedNickname.length < 2 || trimmedNickname.length > 20) {
-        next.nickname = '닉네임은 2~20자로 입력해 주세요.';
-      } else {
-        const nicknameOk = /^[a-zA-Z0-9가-힣_]+$/.test(trimmedNickname);
-        if (!nicknameOk) next.nickname = '닉네임은 한글/영문/숫자/_ 만 사용 가능합니다.';
-      }
-    }
 
     if (password && password.length < 8) {
       next.password = '비밀번호는 8자 이상이어야 합니다.';
@@ -217,24 +270,58 @@ export function Register() {
           <form onSubmit={onSubmit} className="space-y-6">
             <div>
               <label className="block text-sm font-semibold mb-2">닉네임 *</label>
-              <div
-                className="flex items-center gap-3 h-14 rounded-2xl bg-white/5 px-4 border"
-                style={{ borderColor: borderColor('nickname') }}
-              >
-                <User className="w-5 h-5 text-gray-400" />
-                <input
-                  className="w-full bg-transparent outline-none text-sm placeholder:text-gray-500"
-                  placeholder="닉네임을 입력하세요"
-                  value={nickname}
-                  onChange={(e) => {
-                    setNickname(e.target.value);
-                    setErrors((prev) => ({ ...prev, nickname: undefined }));
-                  }}
-                />
+              <div className="flex gap-2">
+                <div
+                  className="flex items-center gap-3 h-14 rounded-2xl bg-white/5 px-4 border flex-1"
+                  style={{ borderColor: isNicknameChecked ? '#22c55e' : errors.nickname ? '#ef4444' : 'rgba(255,255,255,0.10)' }}
+                >
+                  <User className="w-5 h-5 text-gray-400" />
+                  <input
+                    className="w-full bg-transparent outline-none text-sm placeholder:text-gray-500"
+                    placeholder="한글, 영문, 숫자 (2~20자)"
+                    value={nickname}
+                    maxLength={20}
+                    disabled={isNicknameChecked}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/\s/g, '');
+                      setNickname(value);
+                      setIsNicknameChecked(false);
+                      const formatError = validateNicknameFormat(value);
+                      setErrors((prev) => ({ ...prev, nickname: formatError }));
+                    }}
+                  />
+                  {isNicknameChecked && <ShieldCheck className="w-5 h-5 text-green-400 flex-shrink-0" />}
+                </div>
+                {!isNicknameChecked ? (
+                  <button
+                    type="button"
+                    onClick={handleCheckNickname}
+                    disabled={isCheckingNickname || !nickname.trim() || !!validateNicknameFormat(nickname.trim())}
+                    className="h-14 px-4 rounded-2xl bg-white text-black text-sm font-bold hover:bg-gray-200 transition-colors disabled:opacity-40 disabled:cursor-not-allowed whitespace-nowrap flex-shrink-0"
+                  >
+                    {isCheckingNickname ? '확인 중...' : '중복확인'}
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsNicknameChecked(false);
+                      setErrors((prev) => ({ ...prev, nickname: undefined }));
+                    }}
+                    className="h-14 px-4 rounded-2xl bg-gray-700 text-white text-sm font-bold hover:bg-gray-600 transition-colors whitespace-nowrap flex-shrink-0"
+                  >
+                    변경
+                  </button>
+                )}
               </div>
-              {showError('nickname') && (
+              {errors.nickname && (
                 <p className="mt-2 text-xs" style={{ color: '#ef4444' }}>
                   {errors.nickname}
+                </p>
+              )}
+              {isNicknameChecked && (
+                <p className="mt-2 text-xs" style={{ color: '#22c55e' }}>
+                  사용 가능한 닉네임입니다.
                 </p>
               )}
             </div>
@@ -326,10 +413,10 @@ export function Register() {
                       <button
                         type="button"
                         onClick={handleVerifyCode}
-                        disabled={!verificationCode.trim() || timer <= 0}
+                        disabled={!verificationCode.trim() || timer <= 0 || isVerifyingCode}
                         className="h-14 px-5 rounded-2xl bg-white text-black text-sm font-bold hover:bg-gray-200 transition-colors disabled:opacity-40 disabled:cursor-not-allowed whitespace-nowrap flex-shrink-0"
                       >
-                        확인
+                        {isVerifyingCode ? '확인 중...' : '확인'}
                       </button>
                     </div>
                     {errors.verificationCode && (
