@@ -20,7 +20,7 @@ export const CTAButtons = memo(function CTAButtons() {
       </Link>
       <Link
         to="/balance"
-        className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 bg-transparent border-2 border-white text-white rounded-full font-semibold text-base sm:text-lg hover:bg-white hover:text-black transition-colors"
+        className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 bg-transparent border-2 border-white text-white rounded-full font-semibold text-base sm:text-lg hover:bg-white hover:text-black transition-colors flex items-center justify-center text-center"
       >
         밸런스 게임 참여하기
       </Link>
