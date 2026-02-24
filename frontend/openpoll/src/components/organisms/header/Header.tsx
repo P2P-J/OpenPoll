@@ -111,11 +111,11 @@ export function Header() {
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                   >
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 min-w-0">
                       <div className="w-8 h-8 bg-gradient-to-br from-gray-900 to-gray-700 dark:from-gray-100 dark:to-gray-300 rounded-full flex items-center justify-center shadow-sm">
                         <User className="w-4 h-4 text-white dark:text-black" />
                       </div>
-                      <span>{userNickname}님</span>
+                      <span className="inline-block max-w-[100px] truncate align-bottom">{userNickname}님</span>
                     </div>
                     <ChevronDown
                       className={`w-4 h-4 transition-transform duration-300 ${isDropdownOpen ? "rotate-180" : ""}`}
@@ -142,12 +142,12 @@ export function Header() {
                         {/* 사용자 정보 헤더와 메뉴를 가로로 배치 */}
                         <div className="flex items-center gap-4 px-4 py-3">
                           {/* 사용자 정보 */}
-                          <div className="flex items-center gap-3 flex-shrink-0">
+                          <div className="flex items-center gap-3 min-w-0 flex-1">
                             <div className="w-10 h-10 bg-gradient-to-br from-gray-900 to-gray-700 dark:from-gray-100 dark:to-gray-300 rounded-full flex items-center justify-center shadow-sm">
                               <User className="w-5 h-5 text-white dark:text-black" />
                             </div>
-                            <div>
-                              <p className="font-bold text-sm dark:text-white whitespace-nowrap">
+                            <div className="min-w-0">
+                              <p className="font-bold text-sm dark:text-white truncate max-w-[110px]">
                                 {userNickname}
                               </p>
                               <p className="text-xs text-gray-500 dark:text-gray-400">
