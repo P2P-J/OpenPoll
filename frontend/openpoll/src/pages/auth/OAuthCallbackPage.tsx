@@ -26,7 +26,7 @@ export function OAuthCallbackPage() {
     phase: "loading",
     message: "소셜 로그인 처리 중입니다...",
   });
-  const [showLoadingUi, setShowLoadingUi] = useState(false);
+  const [showErrorUi, setShowErrorUi] = useState(false);
 
   const oauthBaseUrl = import.meta.env.VITE_API_BASE_URL || "/api";
 
@@ -142,31 +142,25 @@ export function OAuthCallbackPage() {
     run();
   }, [code, oauthState, provider, navigate, refreshUser, startOAuth]);
 
-  const showLoadingUiDerived = useMemo(() => {
-    return state.phase === "loading" && showLoadingUi;
-  }, [state.phase, showLoadingUi]);
-
   useEffect(() => {
-    if (state.phase !== "loading") return;
+    if (state.phase !== "error") {
+      const frame = requestAnimationFrame(() => setShowErrorUi(false));
+      return () => cancelAnimationFrame(frame);
+    }
 
     const timer = window.setTimeout(() => {
-      setShowLoadingUi(true);
-    }, 450);
+      setShowErrorUi(true);
+    }, 350);
 
-    return () => {
-      setShowLoadingUi(false);
-      window.clearTimeout(timer);
-    };
+    return () => window.clearTimeout(timer);
   }, [state.phase]);
 
   if (state.phase === "loading") {
-    if (!showLoadingUiDerived) return null;
+    return null;
+  }
 
-    return (
-      <div className="min-h-screen bg-black text-white flex items-center justify-center px-4">
-        <p className="text-gray-400 text-xs">{state.message}</p>
-      </div>
-    );
+  if (state.phase === "error" && !showErrorUi) {
+    return null;
   }
 
   return (
