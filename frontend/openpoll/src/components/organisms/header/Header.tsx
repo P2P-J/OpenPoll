@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { Coins, ChevronDown, User, LogOut } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ThemeToggle } from "@/components/atoms/themeToggle/ThemeToggle";
@@ -7,7 +7,6 @@ import { ROUTES } from "@/shared/constants";
 import { useUser } from "@/contexts/UserContext";
 
 export function Header() {
-  const navigate = useNavigate();
   const { user, isAuthenticated, logout } = useUser();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -56,11 +55,22 @@ export function Header() {
 
   const handleLogout = async () => {
     setIsDropdownOpen(false);
+    const overlay = document.createElement("div");
+    overlay.setAttribute("aria-hidden", "true");
+    overlay.style.position = "fixed";
+    overlay.style.inset = "0";
+    overlay.style.background = "#fff";
+    overlay.style.zIndex = "99999";
+    document.body.appendChild(overlay);
+
     try {
+      // 흰 화면 오버레이를 먼저 페인트한 뒤 로그아웃 처리
+      await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
       await logout();
-      navigate(ROUTES.HOME);
     } catch {
       // 로그아웃 실패는 무시
+    } finally {
+      window.location.replace(ROUTES.HOME);
     }
   };
 
@@ -111,11 +121,11 @@ export function Header() {
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                   >
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 min-w-0">
                       <div className="w-8 h-8 bg-gradient-to-br from-gray-900 to-gray-700 dark:from-gray-100 dark:to-gray-300 rounded-full flex items-center justify-center shadow-sm">
                         <User className="w-4 h-4 text-white dark:text-black" />
                       </div>
-                      <span>{userNickname}님</span>
+                      <span className="inline-block max-w-[100px] truncate align-bottom">{userNickname}님</span>
                     </div>
                     <ChevronDown
                       className={`w-4 h-4 transition-transform duration-300 ${isDropdownOpen ? "rotate-180" : ""}`}
@@ -142,12 +152,12 @@ export function Header() {
                         {/* 사용자 정보 헤더와 메뉴를 가로로 배치 */}
                         <div className="flex items-center gap-4 px-4 py-3">
                           {/* 사용자 정보 */}
-                          <div className="flex items-center gap-3 flex-shrink-0">
+                          <div className="flex items-center gap-3 min-w-0 flex-1">
                             <div className="w-10 h-10 bg-gradient-to-br from-gray-900 to-gray-700 dark:from-gray-100 dark:to-gray-300 rounded-full flex items-center justify-center shadow-sm">
                               <User className="w-5 h-5 text-white dark:text-black" />
                             </div>
-                            <div>
-                              <p className="font-bold text-sm dark:text-white whitespace-nowrap">
+                            <div className="min-w-0">
+                              <p className="font-bold text-sm dark:text-white truncate max-w-[110px]">
                                 {userNickname}
                               </p>
                               <p className="text-xs text-gray-500 dark:text-gray-400">
