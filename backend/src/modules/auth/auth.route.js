@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import rateLimit from 'express-rate-limit';
 import * as authController from './auth.controller.js';
-import { signupValidation, loginValidation, refreshTokenValidation, changePasswordValidation, sendVerificationCodeValidation } from './auth.validation.js';
+import { signupValidation, loginValidation, refreshTokenValidation, changePasswordValidation, sendVerificationCodeValidation, verifyCodeValidation, checkNicknameValidation } from './auth.validation.js';
 import validate from '../../middlewares/validate.middleware.js';
 import { authenticate } from '../../middlewares/auth.middleware.js';
 
@@ -34,7 +34,9 @@ const emailCodeLimiter = rateLimit({
   legacyHeaders: false,
 });
 
+router.get('/check-nickname', checkNicknameValidation, validate, authController.checkNickname);
 router.post('/email/send-code', emailCodeLimiter, sendVerificationCodeValidation, validate, authController.sendVerificationCode);
+router.post('/email/verify-code', emailCodeLimiter, verifyCodeValidation, validate, authController.verifyCode);
 router.post('/signup', signupLimiter, signupValidation, validate, authController.signup);
 router.post('/login', authLimiter, loginValidation, validate, authController.login);
 router.post('/logout', authenticate, authController.logout);

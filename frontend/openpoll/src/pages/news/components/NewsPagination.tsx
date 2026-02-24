@@ -1,5 +1,6 @@
 import { useMemo, useCallback } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useTheme } from "@/contexts/ThemeContext";
 
 interface PaginationProps {
   currentPage: number;
@@ -12,6 +13,8 @@ export function Pagination({
   totalPages,
   onPageChange,
 }: PaginationProps) {
+  const { isDark } = useTheme();
+
   const pageNumbers = useMemo(() => {
     const pages: (number | "ellipsis")[] = [];
     const showEllipsis = totalPages > 7;
@@ -49,8 +52,12 @@ export function Pagination({
         disabled={currentPage === 1}
         className={`p-2.5 rounded-xl border transition-all ${
           currentPage === 1
-            ? "border-gray-200 dark:border-gray-700 text-gray-300 dark:text-gray-600 cursor-not-allowed"
-            : "border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+            ? isDark
+              ? "border-gray-700 text-gray-600 cursor-not-allowed"
+              : "border-gray-200 text-gray-300 cursor-not-allowed"
+            : isDark
+              ? "border-gray-600 text-gray-300 hover:bg-gray-800"
+              : "border-gray-300 text-gray-700 hover:bg-gray-100"
         }`}
       >
         <ChevronLeft className="w-5 h-5" />
@@ -58,7 +65,7 @@ export function Pagination({
 
       {pageNumbers.map((page, index) =>
         page === "ellipsis" ? (
-          <span key={`ellipsis-${index}`} className="px-2 text-gray-400 dark:text-gray-500">
+          <span key={`ellipsis-${index}`} className={`px-2 ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>
             ...
           </span>
         ) : (
@@ -67,8 +74,12 @@ export function Pagination({
             onClick={() => onPageChange(page)}
             className={`min-w-[44px] h-11 px-3 rounded-xl font-semibold transition-all ${
               currentPage === page
-                ? "bg-black dark:bg-white text-white dark:text-black shadow-lg"
-                : "bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:border-gray-400 dark:hover:border-gray-500"
+                ? isDark
+                  ? "bg-white text-black shadow-lg"
+                  : "bg-black text-white shadow-lg"
+                : isDark
+                  ? "bg-gray-800 border border-gray-700 text-gray-300 hover:border-gray-500"
+                  : "bg-white border border-gray-200 text-gray-700 hover:border-gray-400"
             }`}
           >
             {page}
@@ -81,8 +92,12 @@ export function Pagination({
         disabled={currentPage === totalPages}
         className={`p-2.5 rounded-xl border transition-all ${
           currentPage === totalPages
-            ? "border-gray-200 dark:border-gray-700 text-gray-300 dark:text-gray-600 cursor-not-allowed"
-            : "border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+            ? isDark
+              ? "border-gray-700 text-gray-600 cursor-not-allowed"
+              : "border-gray-200 text-gray-300 cursor-not-allowed"
+            : isDark
+              ? "border-gray-600 text-gray-300 hover:bg-gray-800"
+              : "border-gray-300 text-gray-700 hover:bg-gray-100"
         }`}
       >
         <ChevronRight className="w-5 h-5" />
