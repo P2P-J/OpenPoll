@@ -15,7 +15,6 @@ import { ThemeProvider } from "@/contexts/ThemeContext";
 import { UserProvider } from "@/contexts/UserContext";
 import { VotingProvider } from "@/contexts/VotingContext";
 import { NewsProvider } from "@/contexts/NewsContext";
-import { OAuthCallbackPage } from "@/pages/auth";
 import { ROUTES } from "@/shared/constants";
 
 // Lazy load all page components
@@ -54,6 +53,9 @@ const SignupPage = lazy(() =>
 );
 const SocialSignupPage = lazy(() =>
   import("@/pages/auth").then((m) => ({ default: m.SocialSignup })),
+);
+const OAuthCallbackPage = lazy(() =>
+  import("@/pages/auth").then((m) => ({ default: m.OAuthCallbackPage })),
 );
 const Profile = lazy(() =>
   import("@/pages/profile").then((m) => ({ default: m.Profile })),

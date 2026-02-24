@@ -144,8 +144,8 @@ export function OAuthCallbackPage() {
 
   useEffect(() => {
     if (state.phase !== "error") {
-      setShowErrorUi(false);
-      return;
+      const frame = requestAnimationFrame(() => setShowErrorUi(false));
+      return () => cancelAnimationFrame(frame);
     }
 
     const timer = window.setTimeout(() => {
