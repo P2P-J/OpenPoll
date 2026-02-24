@@ -2,6 +2,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Lock, X, AlertCircle, CheckCircle2, Shield } from "lucide-react";
 import { changePassword } from "@/api/user.api";
+import { useTheme } from "@/contexts/ThemeContext";
 
 interface PasswordChangeModalProps {
   isOpen: boolean;
@@ -12,6 +13,7 @@ export function PasswordChangeModal({
   isOpen,
   onClose,
 }: PasswordChangeModalProps) {
+  const { isDark } = useTheme();
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -76,6 +78,12 @@ export function PasswordChangeModal({
     }
   };
 
+  const inputClass = `w-full px-4 sm:px-5 py-3 sm:py-4 border rounded-xl text-base sm:text-lg transition-all outline-none ${
+    isDark
+      ? 'bg-gray-800 border-gray-700 text-white placeholder-gray-500 focus:ring-2 focus:ring-white focus:border-transparent'
+      : 'bg-gray-50 border-gray-200 text-black placeholder-gray-400 focus:ring-2 focus:ring-black focus:border-transparent'
+  }`;
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -96,20 +104,24 @@ export function PasswordChangeModal({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
-            className="relative bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl shadow-2xl w-full max-w-3xl overflow-hidden"
+            className={`relative rounded-3xl shadow-2xl w-full max-w-3xl overflow-hidden border ${
+              isDark ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-200'
+            }`}
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
-            <div className="flex items-center justify-between p-8 sm:p-10 pb-0 sm:pb-0">
-              <div className="flex items-center gap-4">
-                <div className="w-14 h-14 min-w-14 bg-black dark:bg-white rounded-2xl flex items-center justify-center">
-                  <Shield className="w-7 h-7 text-white dark:text-black" />
+            <div className="flex items-center justify-between p-6 sm:p-8 md:p-10 pb-0 sm:pb-0">
+              <div className="flex items-center gap-3 sm:gap-4">
+                <div className={`w-12 h-12 sm:w-14 sm:h-14 min-w-12 sm:min-w-14 rounded-2xl flex items-center justify-center ${
+                  isDark ? 'bg-white' : 'bg-black'
+                }`}>
+                  <Shield className={`w-6 h-6 sm:w-7 sm:h-7 ${isDark ? 'text-black' : 'text-white'}`} />
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold dark:text-white">
+                  <h3 className={`text-xl font-bold ${isDark ? 'text-white' : 'text-black'}`}>
                     비밀번호 변경
                   </h3>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                  <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
                     안전한 비밀번호로 변경해주세요
                   </p>
                 </div>
@@ -117,7 +129,11 @@ export function PasswordChangeModal({
               <button
                 type="button"
                 onClick={handleClose}
-                className="p-2 text-gray-400 hover:text-black dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-colors"
+                className={`p-2 rounded-xl transition-colors ${
+                  isDark
+                    ? 'text-gray-400 hover:text-white hover:bg-gray-800'
+                    : 'text-gray-400 hover:text-black hover:bg-gray-100'
+                }`}
                 aria-label="닫기"
                 disabled={isChangingPassword}
               >
@@ -125,20 +141,20 @@ export function PasswordChangeModal({
               </button>
             </div>
 
-            <hr className="border-t border-gray-100 dark:border-gray-800 mx-8 sm:mx-10 mt-6 sm:mt-7" />
+            <hr className={`border-t mx-6 sm:mx-8 md:mx-10 mt-5 sm:mt-6 md:mt-7 ${isDark ? 'border-gray-800' : 'border-gray-100'}`} />
 
             {/* Form */}
-            <form onSubmit={handlePasswordChange} className="p-8 sm:p-10 pt-6 sm:pt-7 space-y-5">
+            <form onSubmit={handlePasswordChange} className="p-6 sm:p-8 md:p-10 pt-5 sm:pt-6 md:pt-7 space-y-4 sm:space-y-5">
               {/* Current Password */}
               <div>
-                <label className="block text-base font-bold text-gray-900 dark:text-gray-100 mb-2">
+                <label className={`block text-sm sm:text-base font-bold mb-2 ${isDark ? 'text-gray-100' : 'text-gray-900'}`}>
                   현재 비밀번호
                 </label>
                 <input
                   type="password"
                   value={currentPassword}
                   onChange={(e) => setCurrentPassword(e.target.value)}
-                  className="w-full px-5 py-4 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-lg dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-black dark:focus:ring-white focus:border-transparent transition-all outline-none"
+                  className={inputClass}
                   placeholder="현재 비밀번호를 입력하세요"
                   disabled={isChangingPassword}
                 />
@@ -146,32 +162,32 @@ export function PasswordChangeModal({
 
               {/* New Password */}
               <div>
-                <label className="block text-base font-bold text-gray-900 dark:text-gray-100 mb-2">
+                <label className={`block text-sm sm:text-base font-bold mb-2 ${isDark ? 'text-gray-100' : 'text-gray-900'}`}>
                   새 비밀번호
                 </label>
                 <input
                   type="password"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
-                  className="w-full px-5 py-4 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-lg dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-black dark:focus:ring-white focus:border-transparent transition-all outline-none"
+                  className={inputClass}
                   placeholder="영문 + 숫자 포함, 8자 이상"
                   disabled={isChangingPassword}
                 />
-                <p className="mt-1.5 text-xs text-gray-400 dark:text-gray-500">
+                <p className={`mt-1.5 text-xs ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>
                   영문자와 숫자를 포함하여 8자 이상
                 </p>
               </div>
 
               {/* Confirm Password */}
               <div>
-                <label className="block text-base font-bold text-gray-900 dark:text-gray-100 mb-2">
+                <label className={`block text-sm sm:text-base font-bold mb-2 ${isDark ? 'text-gray-100' : 'text-gray-900'}`}>
                   새 비밀번호 확인
                 </label>
                 <input
                   type="password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="w-full px-5 py-4 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-lg dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-black dark:focus:ring-white focus:border-transparent transition-all outline-none"
+                  className={inputClass}
                   placeholder="새 비밀번호를 다시 입력하세요"
                   disabled={isChangingPassword}
                 />
@@ -184,10 +200,12 @@ export function PasswordChangeModal({
                     initial={{ opacity: 0, y: -8 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -8 }}
-                    className="flex items-start gap-2.5 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl"
+                    className={`flex items-start gap-2.5 p-3 border rounded-xl ${
+                      isDark ? 'bg-red-900/20 border-red-800' : 'bg-red-50 border-red-200'
+                    }`}
                   >
-                    <AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
-                    <p className="text-sm text-red-700 dark:text-red-400 font-medium">
+                    <AlertCircle className={`w-4 h-4 flex-shrink-0 mt-0.5 ${isDark ? 'text-red-400' : 'text-red-600'}`} />
+                    <p className={`text-sm font-medium ${isDark ? 'text-red-400' : 'text-red-700'}`}>
                       {passwordError}
                     </p>
                   </motion.div>
@@ -201,10 +219,12 @@ export function PasswordChangeModal({
                     initial={{ opacity: 0, y: -8 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -8 }}
-                    className="flex items-start gap-2.5 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl"
+                    className={`flex items-start gap-2.5 p-3 border rounded-xl ${
+                      isDark ? 'bg-green-900/20 border-green-800' : 'bg-green-50 border-green-200'
+                    }`}
                   >
-                    <CheckCircle2 className="w-4 h-4 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
-                    <p className="text-sm text-green-700 dark:text-green-400 font-medium">
+                    <CheckCircle2 className={`w-4 h-4 flex-shrink-0 mt-0.5 ${isDark ? 'text-green-400' : 'text-green-600'}`} />
+                    <p className={`text-sm font-medium ${isDark ? 'text-green-400' : 'text-green-700'}`}>
                       비밀번호가 성공적으로 변경되었습니다!
                     </p>
                   </motion.div>
@@ -215,12 +235,18 @@ export function PasswordChangeModal({
               <div className="flex gap-3 pt-3">
                 <button
                   type="submit"
-                  className="flex-1 py-3 bg-black dark:bg-white text-white dark:text-black rounded-xl font-semibold text-base hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+                  className={`flex-1 py-3 rounded-xl font-semibold text-sm sm:text-base flex items-center justify-center gap-2 disabled:opacity-50 transition-colors ${
+                    isDark
+                      ? 'bg-white text-black hover:bg-gray-200'
+                      : 'bg-black text-white hover:bg-gray-800'
+                  }`}
                   disabled={isChangingPassword || passwordSuccess}
                 >
                   {isChangingPassword ? (
                     <>
-                      <div className="w-4 h-4 border-2 border-white dark:border-black border-t-transparent dark:border-t-transparent rounded-full animate-spin" />
+                      <div className={`w-4 h-4 border-2 border-t-transparent rounded-full animate-spin ${
+                        isDark ? 'border-black' : 'border-white'
+                      }`} />
                       변경 중...
                     </>
                   ) : (
@@ -233,7 +259,11 @@ export function PasswordChangeModal({
                 <button
                   type="button"
                   onClick={handleClose}
-                  className="flex-1 py-3 bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-xl font-semibold text-base hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
+                  className={`flex-1 py-3 rounded-xl font-semibold text-sm sm:text-base transition-colors disabled:opacity-50 ${
+                    isDark
+                      ? 'bg-gray-800 text-gray-100 hover:bg-gray-700'
+                      : 'bg-gray-100 text-gray-900 hover:bg-gray-200'
+                  }`}
                   disabled={isChangingPassword}
                 >
                   취소

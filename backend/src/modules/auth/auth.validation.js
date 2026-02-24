@@ -1,11 +1,33 @@
-import { body } from 'express-validator';
+import { body, query } from 'express-validator';
 import { REGIONS } from '../../constants/regions.js';
+
+export const checkNicknameValidation = [
+  query('nickname')
+    .trim()
+    .notEmpty()
+    .withMessage('닉네임을 입력해주세요.')
+    .isLength({ min: 2, max: 20 })
+    .withMessage('닉네임은 2~20자 사이여야 합니다.'),
+];
 
 export const sendVerificationCodeValidation = [
   body('email')
     .isEmail()
     .withMessage('유효한 이메일 주소를 입력해주세요.')
     .normalizeEmail(),
+];
+
+export const verifyCodeValidation = [
+  body('email')
+    .isEmail()
+    .withMessage('유효한 이메일 주소를 입력해주세요.')
+    .normalizeEmail(),
+  body('code')
+    .trim()
+    .isLength({ min: 6, max: 6 })
+    .withMessage('인증 코드는 6자리여야 합니다.')
+    .isNumeric()
+    .withMessage('인증 코드는 숫자만 포함해야 합니다.'),
 ];
 
 export const signupValidation = [

@@ -2,6 +2,7 @@ import { memo } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { ArrowRight, type LucideIcon } from 'lucide-react';
+import { useTheme } from '@/contexts/ThemeContext';
 
 interface Feature {
   icon: LucideIcon;
@@ -16,6 +17,8 @@ interface FeaturesGridProps {
 }
 
 export const FeaturesGrid = memo(function FeaturesGrid({ features }: FeaturesGridProps) {
+  const { isDark } = useTheme();
+
   return (
     <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-24">
       <motion.div
@@ -24,8 +27,8 @@ export const FeaturesGrid = memo(function FeaturesGrid({ features }: FeaturesGri
         transition={{ delay: 0.3 }}
         className="text-center mb-8 sm:mb-12 lg:mb-16"
       >
-        <h2 className="text-3xl sm:text-4xl font-bold mb-3 sm:mb-4 dark:text-white">주요 기능</h2>
-        <p className="text-lg sm:text-xl text-gray-600 dark:text-gray-400">
+        <h2 className={`text-3xl sm:text-4xl font-bold mb-3 sm:mb-4 ${isDark ? 'text-white' : 'text-black'}`}>주요 기능</h2>
+        <p className={`text-lg sm:text-xl ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
           오픈폴과 함께 정치에 참여하는 새로운 방법
         </p>
       </motion.div>
