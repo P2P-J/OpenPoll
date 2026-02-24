@@ -164,7 +164,7 @@ export function Home() {
         onClose={() => setShowLoginModal(false)}
       />
 
-      <div className="pt-16">
+      <div className="pt-16 select-none" onDragStart={(e) => e.preventDefault()}>
         {/* Hero Section with Support Rate */}
         <section className="relative overflow-hidden bg-black text-white">
           <div className="absolute inset-0 opacity-5">
