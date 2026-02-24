@@ -2,15 +2,17 @@ import { Outlet, useLocation } from 'react-router-dom';
 import { Header } from '@/components/organisms/header';
 import { Navigation } from '@/components/organisms/navigation';
 import { useScrollToTop } from '@/hooks';
+import { useTheme } from '@/contexts/ThemeContext';
 
 export function MainLayout() {
   const location = useLocation();
+  const { isDark } = useTheme();
   useScrollToTop();
   const isAuthPage =
     location.pathname === '/login' || location.pathname === '/register';
 
   return (
-    <div className={`min-h-screen ${isAuthPage ? 'bg-black' : 'bg-white'}`}>
+    <div className={`min-h-screen ${isAuthPage ? 'bg-black' : isDark ? 'bg-black' : 'bg-white'}`}>
       {!isAuthPage && (
         <a
           href="#main-content"
