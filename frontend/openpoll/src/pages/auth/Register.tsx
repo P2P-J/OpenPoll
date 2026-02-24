@@ -19,6 +19,18 @@ type RegisterErrors = {
   agree?: string;
 };
 
+const CHOSUNG_REGEX = /[ㄱ-ㅎ]/;
+const NICKNAME_REGEX = /^[a-zA-Z0-9가-힣]+$/;
+
+function validateNicknameFormat(value: string): string | undefined {
+  if (!value) return undefined;
+  if (value.length < 2 || value.length > 20) return '닉네임은 2~20자로 입력해 주세요.';
+  if (/\s/.test(value)) return '닉네임에 띄어쓰기는 사용할 수 없습니다.';
+  if (!NICKNAME_REGEX.test(value)) return '닉네임은 한글, 영문, 숫자만 사용 가능합니다.';
+  if (CHOSUNG_REGEX.test(value)) return '초성(ㄱ, ㄴ, ㄷ 등)은 사용할 수 없습니다.';
+  return undefined;
+}
+
 export function Register() {
   const navigate = useNavigate();
   const { signup } = useUser();
@@ -35,19 +47,6 @@ export function Register() {
   // 닉네임 중복확인 관련 state
   const [isNicknameChecked, setIsNicknameChecked] = useState(false);
   const [isCheckingNickname, setIsCheckingNickname] = useState(false);
-
-  // 닉네임 실시간 유효성 검사
-  const CHOSUNG_REGEX = /[ㄱ-ㅎ]/;
-  const NICKNAME_REGEX = /^[a-zA-Z0-9가-힣]+$/;
-
-  const validateNicknameFormat = (value: string): string | undefined => {
-    if (!value) return undefined;
-    if (value.length < 2 || value.length > 20) return '닉네임은 2~20자로 입력해 주세요.';
-    if (/\s/.test(value)) return '닉네임에 띄어쓰기는 사용할 수 없습니다.';
-    if (!NICKNAME_REGEX.test(value)) return '닉네임은 한글, 영문, 숫자만 사용 가능합니다.';
-    if (CHOSUNG_REGEX.test(value)) return '초성(ㄱ, ㄴ, ㄷ 등)은 사용할 수 없습니다.';
-    return undefined;
-  };
 
   // 닉네임 중복확인 핸들러
   const handleCheckNickname = useCallback(async () => {
