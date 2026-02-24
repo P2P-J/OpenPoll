@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { Coins, ChevronDown, User, LogOut } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ThemeToggle } from "@/components/atoms/themeToggle/ThemeToggle";
@@ -7,7 +7,6 @@ import { ROUTES } from "@/shared/constants";
 import { useUser } from "@/contexts/UserContext";
 
 export function Header() {
-  const navigate = useNavigate();
   const { user, isAuthenticated, logout } = useUser();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -56,11 +55,22 @@ export function Header() {
 
   const handleLogout = async () => {
     setIsDropdownOpen(false);
+    const overlay = document.createElement("div");
+    overlay.setAttribute("aria-hidden", "true");
+    overlay.style.position = "fixed";
+    overlay.style.inset = "0";
+    overlay.style.background = "#fff";
+    overlay.style.zIndex = "99999";
+    document.body.appendChild(overlay);
+
     try {
+      // 흰 화면 오버레이를 먼저 페인트한 뒤 로그아웃 처리
+      await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
       await logout();
-      navigate(ROUTES.HOME);
     } catch {
       // 로그아웃 실패는 무시
+    } finally {
+      window.location.replace(ROUTES.HOME);
     }
   };
 
