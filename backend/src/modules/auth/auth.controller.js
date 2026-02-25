@@ -53,7 +53,7 @@ export const oauthCallback = catchAsyncError(async (req, res) => {
     if (provider === 'google' && error?.statusCode === 409 && error?.message === 'REJOIN_REQUIRED') {
       return res.redirect('/api/auth/oauth/google?mode=rejoin');
     }
-    throw err;
+    throw error;
   }
 });
 
