@@ -385,7 +385,8 @@ export const withdrawUser = async (userId, currentProvider) => {
     },
   });
 
-  if (!user) throw AppError.notFound('유저를 찾을 수 없습니다.');
+  if (!user) return;
+  // throw AppError.notFound('유저를 찾을 수 없습니다.');
 
   if (!currentProvider) {
     await prisma.$transaction(async (tx) => {
@@ -431,7 +432,7 @@ export const withdrawUser = async (userId, currentProvider) => {
     console.error('OAUTH_REVOKE_FAILED:',
       currentProvider, error?.response?.data || error?.message
     );
-    throw AppError.internal('서버 에러가 발생했습니다.');
+    // throw AppError.internal('서버 에러가 발생했습니다.');
   }
 
   await prisma.$transaction(async (tx) => {
