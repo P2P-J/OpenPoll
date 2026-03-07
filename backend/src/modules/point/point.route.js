@@ -6,6 +6,7 @@ const router = Router();
 
 router.use(authenticate);
 
-router.post('/attendance', pointController.checkAttendance); // 여기 연속출석도 포함
+router.get('/attendance/status', pointController.getAttendanceStatus);
+router.post('/attendance', pointController.checkAttendance);
 
 export default router;

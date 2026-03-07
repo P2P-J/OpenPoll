@@ -17,6 +17,7 @@ import {
 } from "./components";
 import { ShareModal } from "./components/ShareModal";
 import { Toast } from "@/components/molecules/toast/Toast";
+import { AdBanner } from "@/components/atoms/adBanner/AdBanner";
 
 export function DosResult() {
   usePageMeta("DOS 테스트 결과", "나의 정치 성향 분석 결과를 확인하세요.");
@@ -68,6 +69,7 @@ export function DosResult() {
         <DescriptionSection detail={detail} />
         <CharacteristicsSection features={features} tags={tags} />
         <NoticeSection />
+        <AdBanner className="mb-8" />
         <ActionButtons onShare={() => setShowShareModal(true)} onImageSave={handleImageSave} />
         <NavigationLinks />
       </div>
