@@ -30,6 +30,7 @@ export function BalanceList() {
     isLoading,
     errorMessage,
     filteredIssues,
+    hotRankMap,
     isModalOpen,
     setIsModalOpen,
     modalMode,
@@ -163,6 +164,7 @@ export function BalanceList() {
                 >
                   <BalanceGameCard
                     issue={issue}
+                    hotRank={hotRankMap[issue.id] ?? null}
                     isLoggedIn={isLoggedIn}
                     isAdmin={isAdmin}
                     hideAdminActions={hideAdminActions}
