@@ -13,7 +13,7 @@ export const CTASection = memo(function CTASection() {
           지금 바로 시작해보세요
         </h2>
         <p className={`text-lg sm:text-xl ${isDark ? 'text-gray-600' : 'text-gray-300'} mb-6 sm:mb-8`}>
-          3분이면 나의 정치 성향을 알 수 있어요
+          10분이면 나의 정치 성향을 알 수 있어요
         </p>
         <Link
           to="/dos"

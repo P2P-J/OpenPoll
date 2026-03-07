@@ -11,7 +11,7 @@ export function getGenderText(gender: string): string {
 
 const POINT_TYPE_MAP: Record<string, string> = {
   SIGNUP: "회원가입 완료",
-  DOS: "정치 MBTI 완료",
+  DOS: "DOS 검사 완료",
   BALANCE_GAME: "밸런스 게임 참여",
   NEWS_READ: "뉴스 읽기",
   DAILY_ATTENDANCE: "일일 출석",

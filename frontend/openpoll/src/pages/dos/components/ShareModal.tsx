@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, type ReactNode } from "react";
+import { useState, useRef, useEffect, useCallback, type ReactNode } from "react";
 import { X, Link2, Check, Copy, QrCode } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { QRCodeSVG } from "qrcode.react";
@@ -61,11 +61,12 @@ export function ShareModal({ isOpen, onClose, type }: ShareModalProps) {
     const shareUrl = `${window.location.origin}/dos/share/${type}`;
 
     // Reset states when modal closes
-    const handleClose = useCallback(() => {
-        setCopied(false);
-        setEmailCopied(false);
-        onClose();
-    }, [onClose]);
+    useEffect(() => {
+        if (!isOpen) {
+            setCopied(false);
+            setEmailCopied(false);
+        }
+    }, [isOpen]);
 
     const handleCopy = useCallback(async () => {
         try {
@@ -146,7 +147,7 @@ export function ShareModal({ isOpen, onClose, type }: ShareModalProps) {
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.2 }}
                     className="fixed inset-0 z-50 flex items-center justify-center px-8"
-                    onClick={handleClose}
+                    onClick={onClose}
                 >
                     {/* Backdrop */}
                     <div className="absolute inset-0 bg-black/50" style={{ backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)' }} />
@@ -172,7 +173,7 @@ export function ShareModal({ isOpen, onClose, type }: ShareModalProps) {
                                 </div>
                             </div>
                             <button
-                                onClick={handleClose}
+                                onClick={onClose}
                                 className="p-2 rounded-lg hover:bg-white/10 transition-colors"
                             >
                                 <X className="w-5 h-5 text-white" />
@@ -288,7 +289,7 @@ export function ShareModal({ isOpen, onClose, type }: ShareModalProps) {
 
                         <div className="p-5 border-t border-white/10 flex justify-end">
                             <button
-                                onClick={handleClose}
+                                onClick={onClose}
                                 className="px-4 py-2 rounded-lg border border-white/10 text-gray-300 hover:text-white hover:border-white/20 transition-colors"
                             >
                                 닫기
