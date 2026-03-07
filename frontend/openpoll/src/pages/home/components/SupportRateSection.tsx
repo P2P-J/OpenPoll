@@ -1,7 +1,7 @@
 import { memo, useState, useEffect } from "react";
 import { motion, AnimatePresence, useSpring, useTransform } from "motion/react";
 import type { PartyData } from "@/types/party.types";
-import { VoteButton } from "@/components/atoms";
+import { VoteButton } from "@/components/atoms/voteButton/VoteButton";
 import { useUser } from "@/contexts/UserContext";
 import { AlertCircle, TrendingUp } from "lucide-react";
 
@@ -275,7 +275,7 @@ const PartyCard = memo(function PartyCard({
           <span className="text-2xl sm:text-3xl font-bold relative">
             <AnimatedValue
               value={party.percentage}
-              decimals={1}
+              decimals={2}
               color={party.color}
               suffix="%"
               showChangeIndicator={true}
