@@ -11,7 +11,7 @@ export function HeroSection() {
       <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight mb-4 sm:mb-6">
         정치,
         <br />
-        <span className="text-gray-400">이제는 쉽게</span>
+        <span className="text-gray-400">이제는 쉽게!!!</span>
       </h1>
       <p className="text-base sm:text-lg lg:text-xl text-gray-300 mb-8 sm:mb-12 max-w-2xl mx-auto leading-relaxed px-4">
         복잡한 정치 뉴스 대신, 중립적이고 순화된 정보를
@@ -21,3 +21,4 @@ export function HeroSection() {
     </motion.div>
   );
 }
+
