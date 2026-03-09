@@ -22,6 +22,7 @@ import {
   CarouselArrows,
   NavigationButtons,
 } from "./components";
+import { useTheme } from "@/contexts/ThemeContext";
 
 import "swiper/swiper-bundle.css";
 import "./DosTest.css";
@@ -49,6 +50,7 @@ export function DosTest() {
     setToast
   );
 
+  const { isDark } = useTheme();
   useScrollLock();
   useAutoFocus(isLoading, questions.length > 0);
 
@@ -124,7 +126,7 @@ export function DosTest() {
     <div
       id="dos-test-container"
       tabIndex={0}
-      className="h-screen bg-black text-white flex flex-col overflow-hidden outline-none"
+      className={`h-screen flex flex-col overflow-hidden outline-none ${isDark ? 'bg-black text-white' : 'bg-white text-black'}`}
     >
       <ProgressBar progress={progress} />
       <Header
