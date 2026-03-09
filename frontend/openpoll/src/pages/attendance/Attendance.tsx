@@ -73,8 +73,6 @@ export function Attendance() {
         onClose={() => setShowToast(false)}
       />
 
-      <LoginModal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)} />
-
       <div className="pt-16 min-h-screen bg-background text-foreground pb-24 sm:pb-8">
         <div className="max-w-2xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
           {/* 헤더 */}
