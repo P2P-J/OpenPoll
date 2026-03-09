@@ -8,11 +8,11 @@ const cardVariants = cva(
   {
     variants: {
       variant: {
-        default: 'bg-white border border-gray-100',
-        glass: 'bg-white/5 backdrop-blur-sm border border-white/10',
-        gradient: 'bg-gradient-to-br from-white to-gray-50 border-2 border-black',
-        dark: 'bg-black text-white',
-        outline: 'bg-transparent border-2 border-black',
+        default: 'bg-surface border border-default',
+        glass: 'glass-effect',
+        gradient: 'bg-surface border-gradient',
+        dark: 'bg-primary text-primary-fg',
+        outline: 'bg-transparent border-2 border-default',
       },
       padding: {
         none: '',
@@ -104,7 +104,7 @@ export const CardFooter = forwardRef<HTMLDivElement, CardFooterProps>(
     return (
       <div
         ref={ref}
-        className={cn('mt-4 sm:mt-6 pt-4 border-t border-gray-100', className)}
+        className={cn('mt-4 sm:mt-6 pt-4 border-t border-default', className)}
         {...props}
       />
     );

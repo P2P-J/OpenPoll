@@ -13,6 +13,7 @@ import {
   BalanceGameCard,
 } from "./components";
 import type { BalanceListItem } from "@/types/balance.types";
+import { AdBanner } from "@/components/atoms/adBanner/AdBanner";
 
 type MeLike = {
   email?: string;
@@ -173,6 +174,8 @@ export function BalanceList() {
               ))}
             </section>
           ))}
+
+        <AdBanner className="mt-8" />
 
         <motion.div
           initial={{ opacity: 0 }}

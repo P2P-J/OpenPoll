@@ -4,7 +4,7 @@ import { ArrowRight, Mail, Lock, Gift, Home } from 'lucide-react';
 import { motion } from 'motion/react';
 import { ROUTES } from '@/shared/constants';
 import { useUser } from '@/contexts/UserContext';
-import { AuthSidePanel } from '@/components/organisms';
+import { AuthSidePanel } from '@/components/organisms/auth/AuthSidePanel';
 import naverLogo from '@/img/naver-logo.svg';
 import googleLogo from '@/img/google-logo.svg';
 
