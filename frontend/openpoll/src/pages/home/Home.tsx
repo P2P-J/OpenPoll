@@ -11,6 +11,7 @@ import {
   CTASection,
 } from "./components";
 import { Toast } from "@/components/molecules/toast/Toast";
+import { AdBanner } from "@/components/atoms/adBanner/AdBanner";
 import { LoginModal } from "@/components/molecules/loginModal";
 import { useVoting } from "@/contexts/VotingContext";
 import { useUser } from "@/contexts/UserContext";
@@ -196,8 +197,13 @@ export function Home() {
           <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white to-transparent opacity-20" />
         </section>
 
+        <AdBanner className="max-w-4xl mx-auto my-8 px-4" />
+
         <FeaturesGrid features={FEATURES} />
         <StatsSection stats={homeStats} />
+
+        <AdBanner className="max-w-4xl mx-auto my-8 px-4" />
+
         <CTASection />
       </div>
     </>

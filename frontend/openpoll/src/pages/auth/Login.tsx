@@ -4,7 +4,7 @@ import { ArrowRight, Mail, Lock, Gift, Home } from 'lucide-react';
 import { motion } from 'motion/react';
 import { ROUTES } from '@/shared/constants';
 import { useUser } from '@/contexts/UserContext';
-import { AuthSidePanel } from '@/components/organisms';
+import { AuthSidePanel } from '@/components/organisms/auth/AuthSidePanel';
 import naverLogo from '@/img/naver-logo.svg';
 import googleLogo from '@/img/google-logo.svg';
 
@@ -147,7 +147,41 @@ export function Login() {
                   </p>
                 )}
               </div>
+              {showError('password') && (
+                <p className="mt-2 text-xs" style={{ color: '#ef4444' }}>
+                  {errors.password}
+                </p>
+              )}
+            </div>
 
+            <button
+              type="submit"
+              className="w-full h-14 rounded-2xl bg-white text-black font-bold flex items-center justify-center gap-2 hover:bg-gray-100 transition-colors"
+            >
+              로그인 <ArrowRight className="w-5 h-5" />
+            </button>
+
+            <div className="w-full h-14 rounded-2xl border border-green-500/25 bg-green-500/10 shadow-[0_0_40px_rgba(34,197,94,0.15)] flex items-center justify-center gap-2 font-semibold">
+              <Gift className="w-5 h-5 text-green-400" />
+              <span className="text-green-400">회원가입 시 500P 지급!</span>
+            </div>
+
+            <p className="text-center text-sm text-gray-400">
+              아직 계정이 없으신가요?{' '}
+              <Link to={ROUTES.REGISTER} className="text-white font-semibold hover:underline">
+                회원가입
+              </Link>
+            </p>
+
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={handleNaverLogin}
+                className="flex-1 h-10 rounded-lg border border-white/15 bg-white/5 hover:bg-white/10 transition-colors flex items-center justify-center"
+                aria-label="네이버 로그인"
+              >
+                <img src={naverLogo} alt="네이버" className="w-4 h-4" />
+              </button>
               <button
                 type="submit"
                 className="w-full h-14 rounded-2xl bg-white text-black font-bold flex items-center justify-center gap-2 hover:bg-gray-100 transition-colors"

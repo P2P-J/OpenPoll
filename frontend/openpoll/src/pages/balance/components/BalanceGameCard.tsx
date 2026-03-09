@@ -16,6 +16,7 @@ import type {
 
 interface BalanceGameCardProps {
   issue: BalanceListItem;
+  hotRank: number | null;
   isLoggedIn: boolean;
   isAdmin: boolean;
   hideAdminActions: boolean;
@@ -25,6 +26,7 @@ interface BalanceGameCardProps {
 
 export function BalanceGameCard({
   issue,
+  hotRank,
   isLoggedIn,
   isAdmin,
   hideAdminActions,
@@ -43,7 +45,7 @@ export function BalanceGameCard({
   const disagreePercentSafe =
     participantsSafe <= 0 ? 0 : Math.max(0, 100 - agreePercentSafe);
 
-  const isHotIssue = participantsSafe >= 3000;
+  const isHotIssue = hotRank !== null && hotRank <= 3;
   const showCompleted =
     isLoggedIn && (Boolean(issueEx.voted) || issue.myVote !== null);
 

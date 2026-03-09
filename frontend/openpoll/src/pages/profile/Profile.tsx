@@ -15,6 +15,7 @@ import {
   PointHistorySection,
   SecuritySection,
 } from "./components";
+import { AdBanner } from "@/components/atoms/adBanner/AdBanner";
 
 export function Profile() {
   usePageMeta("내 프로필");
@@ -44,6 +45,7 @@ export function Profile() {
         <ProfileCard user={user} />
         <PartyVotesSection voteStats={voteStats} />
         <PointGuideSection />
+        <AdBanner className="my-6" />
         <PointHistorySection pointHistory={pointHistory} />
         <SecuritySection
           onOpenPasswordModal={() => setShowPasswordModal(true)}
