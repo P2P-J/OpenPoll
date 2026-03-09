@@ -44,7 +44,7 @@ export function Footer() {
               이용약관
             </Link>
             <a
-              href="mailto:soul117843@gmail.com"
+              href="mailto:openpoll2026@gmail.com"
               className="transition-colors text-foreground-muted hover:text-foreground"
             >
               문의하기
