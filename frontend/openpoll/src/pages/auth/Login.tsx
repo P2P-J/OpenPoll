@@ -4,7 +4,7 @@ import { ArrowRight, Mail, Lock, Gift, Home } from 'lucide-react';
 import { motion } from 'motion/react';
 import { ROUTES } from '@/shared/constants';
 import { useUser } from '@/contexts/UserContext';
-import { AuthSidePanel } from '@/components/organisms';
+import { AuthSidePanel } from '@/components/organisms/auth/AuthSidePanel';
 import naverLogo from '@/img/naver-logo.svg';
 import googleLogo from '@/img/google-logo.svg';
 
@@ -41,7 +41,9 @@ export function Login() {
     try {
       await login(email.trim(), password);
       const from = (location.state as { from?: string })?.from;
-      navigate(from || ROUTES.HOME);
+      const params = new URLSearchParams(location.search);
+      const redirectPath = from || params.get('redirect') || ROUTES.HOME;
+      navigate(redirectPath);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : '로그인에 실패했습니다.';
       setErrors((prev) => ({ ...prev, password: errorMessage }));
@@ -85,59 +87,65 @@ export function Login() {
         />
         <AuthSidePanel />
 
-    <section className="flex items-center justify-center px-8 py-10 sm:px-10">
-        <motion.div
-          style={{ width: 450, maxWidth: '100%' }}
-          initial={{ opacity: 0, y: 14 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.25 }}
-        >
-           <h1 className="text-4xl font-extrabold text-center mb-2">로그인</h1>
-          <p className="text-center text-gray-400 mb-10">오픈폴에 오신 것을 환영합니다</p>
+        <section className="flex items-center justify-center px-8 py-10 sm:px-10">
+          <motion.div
+            style={{ width: 450, maxWidth: '100%' }}
+            initial={{ opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.25 }}
+          >
+            <h1 className="text-4xl font-extrabold text-center mb-2">로그인</h1>
+            <p className="text-center text-gray-400 mb-10">오픈폴에 오신 것을 환영합니다</p>
 
-          <form onSubmit={onSubmit} className="space-y-6">
-            <div>
-              <label className="block text-sm font-semibold mb-2">이메일</label>
-              <div
-                className="flex items-center gap-3 h-14 rounded-2xl bg-white/5 px-4 border"
-                style={{ borderColor: borderColor('email') }}
-              >
-                <Mail className="w-5 h-5 text-gray-400" />
-                <input
-                  className="w-full bg-transparent outline-none text-sm placeholder:text-gray-500"
-                  placeholder="your@email.com"
-                  type="email"
-                  value={email}
-                  onChange={(e) => {
-                    setEmail(e.target.value);
-                    setErrors((prev) => ({ ...prev, email: undefined }));
-                  }}
-                />
+            <form onSubmit={onSubmit} className="space-y-6">
+              <div>
+                <label className="block text-sm font-semibold mb-2">이메일</label>
+                <div
+                  className="flex items-center gap-3 h-14 rounded-2xl bg-white/5 px-4 border"
+                  style={{ borderColor: borderColor('email') }}
+                >
+                  <Mail className="w-5 h-5 text-gray-400" />
+                  <input
+                    className="w-full bg-transparent outline-none text-sm placeholder:text-gray-500"
+                    placeholder="your@email.com"
+                    type="email"
+                    value={email}
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      setErrors((prev) => ({ ...prev, email: undefined }));
+                    }}
+                  />
+                </div>
+                {showError('email') && (
+                  <p className="mt-2 text-xs" style={{ color: '#ef4444' }}>
+                    {errors.email}
+                  </p>
+                )}
               </div>
-              {showError('email') && (
-                <p className="mt-2 text-xs" style={{ color: '#ef4444' }}>
-                  {errors.email}
-                </p>
-              )}
-            </div>
 
-            <div>
-              <label className="block text-sm font-semibold mb-2">비밀번호</label>
-              <div
-                className="flex items-center gap-3 h-14 rounded-2xl bg-white/5 px-4 border"
-                style={{ borderColor: borderColor('password') }}
-              >
-                <Lock className="w-5 h-5 text-gray-400" />
-                <input
-                  className="w-full bg-transparent outline-none text-sm placeholder:text-gray-500"
-                  placeholder="••••••••"
-                  type="password"
-                  value={password}
-                  onChange={(e) => {
-                    setPassword(e.target.value);
-                    setErrors((prev) => ({ ...prev, password: undefined }));
-                  }}
-                />
+              <div>
+                <label className="block text-sm font-semibold mb-2">비밀번호</label>
+                <div
+                  className="flex items-center gap-3 h-14 rounded-2xl bg-white/5 px-4 border"
+                  style={{ borderColor: borderColor('password') }}
+                >
+                  <Lock className="w-5 h-5 text-gray-400" />
+                  <input
+                    className="w-full bg-transparent outline-none text-sm placeholder:text-gray-500"
+                    placeholder="••••••••"
+                    type="password"
+                    value={password}
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      setErrors((prev) => ({ ...prev, password: undefined }));
+                    }}
+                  />
+                </div>
+                {showError('password') && (
+                  <p className="mt-2 text-xs" style={{ color: '#ef4444' }}>
+                    {errors.password}
+                  </p>
+                )}
               </div>
               {showError('password') && (
                 <p className="mt-2 text-xs" style={{ color: '#ef4444' }}>
@@ -155,7 +163,7 @@ export function Login() {
 
             <div className="w-full h-14 rounded-2xl border border-green-500/25 bg-green-500/10 shadow-[0_0_40px_rgba(34,197,94,0.15)] flex items-center justify-center gap-2 font-semibold">
               <Gift className="w-5 h-5 text-green-400" />
-              <span className="text-green-400">로그인 시 500P 지급!</span>
+              <span className="text-green-400">회원가입 시 500P 지급!</span>
             </div>
 
             <p className="text-center text-sm text-gray-400">
@@ -175,34 +183,62 @@ export function Login() {
                 <img src={naverLogo} alt="네이버" className="w-4 h-4" />
               </button>
               <button
-                type="button"
-                onClick={handleGoogleLogin}
-                className="flex-1 h-10 rounded-lg border border-white/15 bg-white/5 hover:bg-white/10 transition-colors flex items-center justify-center"
-                aria-label="구글 로그인"
+                type="submit"
+                className="w-full h-14 rounded-2xl bg-white text-black font-bold flex items-center justify-center gap-2 hover:bg-gray-100 transition-colors"
               >
-                <img src={googleLogo} alt="구글" className="w-4 h-4" />
+                로그인 <ArrowRight className="w-5 h-5" />
               </button>
-            </div>
 
-            <div className="flex items-center gap-4 pt-2">
-              <div className="h-px flex-1 bg-white/10" />
-              <span className="text-xs text-gray-500">또는</span>
-              <div className="h-px flex-1 bg-white/10" />
-            </div>
+              <div className="w-full h-14 rounded-2xl border border-green-500/25 bg-green-500/10 shadow-[0_0_40px_rgba(34,197,94,0.15)] flex items-center justify-center gap-2 font-semibold">
+                <Gift className="w-5 h-5 text-green-400" />
+                <span className="text-green-400">로그인 시 500P 지급!</span>
+              </div>
 
-            <div className="flex justify-center pt-2">
-              <Link
-                to={ROUTES.HOME}
-                className="group w-full h-16 rounded-xl bg-gradient-to-r from-gray-800 to-gray-900 hover:from-gray-700 hover:to-gray-800 border border-white/20 hover:border-white/30 transition-all duration-300 flex items-center justify-center gap-3 font-bold text-base shadow-lg hover:shadow-xl hover:scale-[1.02]"
-              >
-                <Home className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                <span>홈으로 돌아가기</span>
-              </Link>
-            </div>
-          </form>
-        </motion.div>
-      </section>
+              <p className="text-center text-sm text-gray-400">
+                아직 계정이 없으신가요?{' '}
+                <Link to={ROUTES.REGISTER} className="text-white font-semibold hover:underline">
+                  회원가입
+                </Link>
+              </p>
+
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={handleNaverLogin}
+                  className="flex-1 h-10 rounded-lg border border-white/15 bg-white/5 hover:bg-white/10 transition-colors flex items-center justify-center"
+                  aria-label="네이버 로그인"
+                >
+                  <img src={naverLogo} alt="네이버" className="w-4 h-4" />
+                </button>
+                <button
+                  type="button"
+                  onClick={handleGoogleLogin}
+                  className="flex-1 h-10 rounded-lg border border-white/15 bg-white/5 hover:bg-white/10 transition-colors flex items-center justify-center"
+                  aria-label="구글 로그인"
+                >
+                  <img src={googleLogo} alt="구글" className="w-4 h-4" />
+                </button>
+              </div>
+
+              <div className="flex items-center gap-4 pt-2">
+                <div className="h-px flex-1 bg-white/10" />
+                <span className="text-xs text-gray-500">또는</span>
+                <div className="h-px flex-1 bg-white/10" />
+              </div>
+
+              <div className="flex justify-center pt-2">
+                <Link
+                  to={ROUTES.HOME}
+                  className="group w-full h-16 rounded-xl bg-gradient-to-r from-gray-800 to-gray-900 hover:from-gray-700 hover:to-gray-800 border border-white/20 hover:border-white/30 transition-all duration-300 flex items-center justify-center gap-3 font-bold text-base shadow-lg hover:shadow-xl hover:scale-[1.02]"
+                >
+                  <Home className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                  <span>홈으로 돌아가기</span>
+                </Link>
+              </div>
+            </form>
+          </motion.div>
+        </section>
+      </div>
     </div>
-  </div>
-);
+  );
 }

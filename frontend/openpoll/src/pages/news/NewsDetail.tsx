@@ -7,6 +7,7 @@ import type { Components } from "react-markdown";
 import { getCategoryFromTags } from "@/shared/utils/newsHelpers";
 import { useArticleDetail } from "./hooks";
 import { useTheme } from "@/contexts/ThemeContext";
+import { AdBanner } from "@/components/atoms/adBanner/AdBanner";
 import {
   NewsDetailLoadingState,
   NewsDetailErrorState,
@@ -103,6 +104,8 @@ export function NewsDetail() {
             <OriginalLinkButton url={article.originalUrl} />
           </div>
         </motion.div>
+
+        <AdBanner className="mx-4 sm:mx-0 mt-6" />
       </div>
     </div>
   );

@@ -31,7 +31,7 @@ export function DosQuestionCard({
       >
         <h2 className="question-text">{question.question}</h2>
 
-        <div className="answer-buttons-container">
+        <div className="answer-buttons-container" role="radiogroup" aria-label="답변 선택">
           {SCALE_LABELS.map((label, labelIndex) => {
             const value = labelIndex - 3;
             const isSelected = answer === value;
@@ -39,6 +39,8 @@ export function DosQuestionCard({
             return (
               <button
                 key={labelIndex}
+                role="radio"
+                aria-checked={isSelected}
                 onClick={() => isActive && onAnswer(question.id, value)}
                 disabled={!isActive}
                 className={`answer-button ${isSelected ? "answer-button-selected" : "answer-button-default"} ${!isActive ? "cursor-default" : ""}`}
@@ -52,7 +54,8 @@ export function DosQuestionCard({
                       <motion.div
                         initial={{ scale: 0 }}
                         animate={{ scale: 1 }}
-                        className="w-full h-full rounded-full bg-black flex items-center justify-center"
+                        className="w-full h-full rounded-full flex items-center justify-center"
+                        style={{ backgroundColor: 'var(--color-foreground)' }}
                       >
                         <div className="answer-radio-dot" />
                       </motion.div>
