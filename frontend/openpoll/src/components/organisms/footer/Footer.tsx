@@ -1,6 +1,8 @@
 import { Link } from "react-router-dom";
+import { useTheme } from "@/contexts/ThemeContext";
 
 export function Footer() {
+  const { isDark } = useTheme();
   return (
     <footer
       className="border-t py-8 px-4 sm:px-6 bg-surface border-default"
@@ -9,7 +11,7 @@ export function Footer() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
           <div className="flex items-center gap-3">
             <img
-              src="/OPENPOLL-LARGE.png"
+              src={isDark ? "/OPENPOLL-LARGE.png" : "/openpoll-black.png"}
               alt="OpenPoll 로고"
               className="w-8 h-8 object-contain"
               draggable={false}
