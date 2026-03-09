@@ -23,6 +23,7 @@ import {
   getDisagreeCountSafe,
 } from "@/shared/utils/balanceHelpers";
 import type { BalanceComment } from "@/types/balance.types";
+import { AdBanner } from "@/components/atoms/adBanner/AdBanner";
 
 export function BalanceDetail() {
   const { id } = useParams();
@@ -164,6 +165,8 @@ export function BalanceDetail() {
           disagreePercentBar={disagreePercentBar}
           onVote={handleVote}
         />
+
+        <AdBanner className="my-6" />
 
         <BalanceCommentSection
           isLoggedIn={vm.isLoggedIn}

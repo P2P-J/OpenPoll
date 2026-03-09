@@ -1,7 +1,7 @@
 import { motion } from 'motion/react';
 import { Check } from 'lucide-react';
-import { Button } from '@/components/atoms';
-import { ProgressBar } from '@/components/atoms';
+import { Button } from '@/components/atoms/button/Button';
+import { ProgressBar } from '@/components/atoms/progressBar/ProgressBar';
 
 export interface PartyData {
   id: string;
@@ -76,8 +76,8 @@ export function PartyVoteItem({
 
       <ProgressBar
         value={party.value}
-        color={`bg-[${party.color}]`}
-        bgColor="bg-white/10"
+        color={party.color}
+        bgColor="rgba(255,255,255,0.1)"
         height="sm"
         animated
       />

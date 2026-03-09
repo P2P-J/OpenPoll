@@ -11,6 +11,7 @@ import {
   EmptyState,
 } from "./components";
 import { useTheme } from "@/contexts/ThemeContext";
+import { AdBanner } from "@/components/atoms/adBanner/AdBanner";
 
 export function NewsList() {
   usePageMeta("중립 뉴스", "AI가 순화한 중립적이고 객관적인 정치 뉴스를 읽어보세요.");
@@ -82,6 +83,8 @@ export function NewsList() {
             {updatedAgo}
           </p>
         )}
+
+        <AdBanner className="mb-6" />
 
         {currentNews.length > 0 ? (
           <>

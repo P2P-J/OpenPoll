@@ -13,6 +13,7 @@ import {
   BalanceGameCard,
 } from "./components";
 import type { BalanceListItem } from "@/types/balance.types";
+import { AdBanner } from "@/components/atoms/adBanner/AdBanner";
 
 type MeLike = {
   email?: string;
@@ -30,6 +31,7 @@ export function BalanceList() {
     isLoading,
     errorMessage,
     filteredIssues,
+    hotRankMap,
     isModalOpen,
     setIsModalOpen,
     modalMode,
@@ -163,6 +165,7 @@ export function BalanceList() {
                 >
                   <BalanceGameCard
                     issue={issue}
+                    hotRank={hotRankMap[issue.id] ?? null}
                     isLoggedIn={isLoggedIn}
                     isAdmin={isAdmin}
                     hideAdminActions={hideAdminActions}
@@ -173,6 +176,8 @@ export function BalanceList() {
               ))}
             </section>
           ))}
+
+        <AdBanner className="mt-8" />
 
         <motion.div
           initial={{ opacity: 0 }}

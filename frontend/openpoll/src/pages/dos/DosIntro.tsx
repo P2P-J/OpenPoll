@@ -6,6 +6,7 @@ import type { LucideIcon } from "lucide-react";
 import { useUser } from "@/contexts/UserContext";
 import { Toast } from "@/components/molecules/toast/Toast";
 import { usePageMeta } from "@/hooks/usePageMeta";
+import { AdBanner } from "@/components/atoms/adBanner/AdBanner";
 
 const AXES_DATA = [
   {
@@ -248,6 +249,7 @@ export function DosIntro() {
         <HeroSection />
         <InfoCardsGrid />
         <AxesSection />
+        <AdBanner className="mb-8 sm:mb-12" />
         <NoticeSection />
         <CTASection onStartTest={handleStartTest} />
       </div>
