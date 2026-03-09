@@ -155,7 +155,7 @@ export function Login() {
 
             <div className="w-full h-14 rounded-2xl border border-green-500/25 bg-green-500/10 shadow-[0_0_40px_rgba(34,197,94,0.15)] flex items-center justify-center gap-2 font-semibold">
               <Gift className="w-5 h-5 text-green-400" />
-              <span className="text-green-400">로그인 시 500P 지급!</span>
+              <span className="text-green-400">회원가입 시 500P 지급!</span>
             </div>
 
             <p className="text-center text-sm text-gray-400">
