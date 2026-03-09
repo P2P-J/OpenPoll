@@ -147,12 +147,7 @@ export function Login() {
                   </p>
                 )}
               </div>
-              {showError('password') && (
-                <p className="mt-2 text-xs" style={{ color: '#ef4444' }}>
-                  {errors.password}
-                </p>
-              )}
-            </div>
+            </form>
 
             <button
               type="submit"
