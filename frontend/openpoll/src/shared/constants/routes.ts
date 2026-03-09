@@ -17,7 +17,16 @@ export const ROUTES = {
   // Auth
   LOGIN: '/login',
   REGISTER: '/register',
+  SOCIAL_SIGNUP: '/auth/social-signup',
+  OAUTH_CALLBACK: '/auth/oauth/callback',
   PROFILE: '/profile',
+
+  // Attendance
+  ATTENDANCE: '/attendance',
+
+  // Legal
+  PRIVACY: '/privacy',
+  TERMS: '/terms',
 } as const;
 
 export type RouteKey = keyof typeof ROUTES;

@@ -144,13 +144,28 @@ export async function refreshTokens(): Promise<{
 }
 
 /**
+ * 로그인 없이 접근 가능한 공개 경로 목록
+ */
+const PUBLIC_PATHS = ["/dos/share", "/login", "/signup", "/register"];
+
+/**
+ * 현재 페이지가 공개 페이지인지 확인
+ */
+function isPublicPage(): boolean {
+  return PUBLIC_PATHS.some((path) => window.location.pathname.startsWith(path));
+}
+
+/**
  * 토큰 삭제 및 로그인 페이지로 리다이렉트
  */
 export function clearTokens(redirect = false) {
   localStorage.removeItem("accessToken");
   localStorage.removeItem("refreshToken");
   if (redirect) {
-    window.location.href = "/login";
+    // 공개 페이지에서는 redirect하지 않고 토큰만 정리
+    if (isPublicPage()) return;
+    const currentPath = window.location.pathname + window.location.search;
+    window.location.href = `/login?redirect=${encodeURIComponent(currentPath)}`;
   }
 }
 
@@ -257,6 +272,14 @@ apiClient.interceptors.response.use(
     const originalRequest = error.config as AxiosRequestConfig & {
       _retry?: boolean;
     };
+    const requestUrl = originalRequest?.url ?? "";
+    const isOAuthCallbackRequest =
+      requestUrl.includes("/auth/oauth/") && requestUrl.includes("/callback");
+
+    // OAuth callback 401 should be handled by callback page UI, not global auth redirect.
+    if (error.response?.status === 401 && isOAuthCallbackRequest) {
+      return Promise.reject(error);
+    }
 
     // If error is 401 and we haven't retried yet
     if (error.response?.status === 401 && !originalRequest._retry) {

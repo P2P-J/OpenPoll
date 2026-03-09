@@ -63,6 +63,29 @@ export const sendVerificationCode = async (email) => {
 };
 
 
+// 인증 코드 검증 (코드 삭제 없이 확인만)
+export const verifyEmailCode = async (email, code) => {
+  const cacheKey = `${CACHE_KEYS.EMAIL_VERIFY}${email}`;
+  const storedCode = await redis.get(cacheKey);
+
+  if (!storedCode) {
+    throw AppError.badRequest('인증 코드가 만료되었거나 발송되지 않았습니다.');
+  }
+  if (storedCode !== code) {
+    throw AppError.badRequest('인증 코드가 일치하지 않습니다.');
+  }
+};
+
+
+// 닉네임 중복 확인
+export const checkNickname = async (nickname) => {
+  const existing = await prisma.user.findUnique({
+    where: { nickname },
+  });
+  return { available: !existing };
+};
+
+
 export const signup = async (userData) => {
   const { email, password, nickname, age, region, gender, verificationCode } = userData;
 

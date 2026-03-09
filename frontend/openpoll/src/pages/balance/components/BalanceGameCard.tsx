@@ -13,9 +13,11 @@ import type {
   BalanceListItem,
   BalanceListItemExtended,
 } from "@/types/balance.types";
+import { useTheme } from "@/contexts/ThemeContext";
 
 interface BalanceGameCardProps {
   issue: BalanceListItem;
+  hotRank: number | null;
   isLoggedIn: boolean;
   isAdmin: boolean;
   hideAdminActions: boolean;
@@ -25,12 +27,14 @@ interface BalanceGameCardProps {
 
 export function BalanceGameCard({
   issue,
+  hotRank,
   isLoggedIn,
   isAdmin,
   hideAdminActions,
   onEdit,
   onDelete,
 }: BalanceGameCardProps) {
+  const { isDark } = useTheme();
   const [isFlipped, setIsFlipped] = useState(false);
   const [isFlipAnimating, setIsFlipAnimating] = useState(false);
   const flipTimerRef = useRef<number | null>(null);
@@ -43,7 +47,7 @@ export function BalanceGameCard({
   const disagreePercentSafe =
     participantsSafe <= 0 ? 0 : Math.max(0, 100 - agreePercentSafe);
 
-  const isHotIssue = participantsSafe >= 3000;
+  const isHotIssue = hotRank !== null && hotRank <= 3;
   const showCompleted =
     isLoggedIn && (Boolean(issueEx.voted) || issue.myVote !== null);
 
@@ -70,14 +74,27 @@ export function BalanceGameCard({
     };
   }, []);
 
-  const showAdminActions = isAdmin && !hideAdminActions && !isFlipAnimating;
+  useEffect(() => {
+    if (!hideAdminActions) return;
+    if (flipTimerRef.current) {
+      window.clearTimeout(flipTimerRef.current);
+      flipTimerRef.current = null;
+    }
+    // cleanup 시 state 초기화를 위해 requestAnimationFrame 사용
+    const rafId = requestAnimationFrame(() => {
+      setIsFlipAnimating(false);
+      setIsFlipped(false);
+    });
+    return () => cancelAnimationFrame(rafId);
+  }, [hideAdminActions]);
+
   const isBackFace = isFlipped && !isFlipAnimating;
+  const showAdminActions = isAdmin && !hideAdminActions && isBackFace;
 
-  const adminBtnClass = isBackFace
-    ? "w-11 h-11 bg-transparent border-0 rounded-none shadow-none hover:bg-transparent transition-all flex items-center justify-center"
-    : "w-11 h-11 rounded-full bg-black/80 border border-white/25 hover:border-white/50 hover:bg-black transition-all flex items-center justify-center";
-
-  const adminIconClass = isBackFace ? "text-black" : "text-white";
+  const editBtnClass =
+    "h-10 px-3 rounded-xl bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 transition-all flex items-center gap-1.5";
+  const deleteBtnClass =
+    "h-10 px-3 rounded-xl bg-red-500 text-white border border-red-500 hover:bg-red-400 transition-all flex items-center gap-1.5";
 
   return (
     <div
@@ -88,11 +105,11 @@ export function BalanceGameCard({
     >
       {showAdminActions && (
         <div
-          className="pointer-events-auto flex gap-0.5"
+          className="pointer-events-auto flex gap-2"
           style={{
             position: "absolute",
-            top: 4,
-            right: 6,
+            top: 12,
+            right: 12,
             zIndex: 99999,
             isolation: "isolate",
             pointerEvents: "auto",
@@ -106,10 +123,10 @@ export function BalanceGameCard({
               e.stopPropagation();
               onEdit(issue);
             }}
-            className={adminBtnClass}
-            style={{ transform: "translateX(8px)" }}
+            className={editBtnClass}
           >
-            <Pencil className={`w-5 h-5 ${adminIconClass}`} />
+            <Pencil className="w-4 h-4" />
+            <span className="text-sm font-semibold">수정</span>
           </button>
 
           <button
@@ -120,9 +137,11 @@ export function BalanceGameCard({
               e.stopPropagation();
               onDelete(issue);
             }}
-            className={adminBtnClass}
+            className={deleteBtnClass}
+            style={{ backgroundColor: "#ef4444", borderColor: "#ef4444", color: "#ffffff" }}
           >
-            <X className={`w-5 h-5 ${adminIconClass}`} />
+            <X className="w-4 h-4" />
+            <span className="text-sm font-semibold">삭제</span>
           </button>
         </div>
       )}
@@ -140,7 +159,7 @@ export function BalanceGameCard({
           >
             {/* Front Face */}
             <div
-              className="absolute inset-0 bg-gradient-to-br from-gray-900 to-black rounded-2xl sm:rounded-3xl overflow-hidden border-2 border-white/10 group-hover:border-white/30 transition-all shadow-lg"
+              className={`absolute inset-0 bg-gradient-to-br ${isDark ? 'from-gray-900 to-black' : 'from-gray-100 to-white'} rounded-2xl sm:rounded-3xl overflow-hidden border-2 ${isDark ? 'border-white/10 group-hover:border-white/30' : 'border-black/10 group-hover:border-black/30'} transition-all shadow-lg`}
               style={{ backfaceVisibility: "hidden" }}
             >
               <div className="relative p-6 sm:p-8 h-full flex flex-col">
@@ -148,7 +167,7 @@ export function BalanceGameCard({
                   <div className="flex items-center space-x-3 sm:space-x-4 flex-1">
                     <span className="text-4xl sm:text-5xl">{issue.emoji}</span>
                     <div className="flex-1">
-                      <h3 className="text-xl sm:text-2xl font-bold mb-1 group-hover:text-gray-300 transition-colors">
+                      <h3 className={`text-xl sm:text-2xl font-bold mb-1 ${isDark ? 'group-hover:text-gray-300' : 'group-hover:text-gray-600'} transition-colors`}>
                         {issue.title}
                       </h3>
                     </div>
@@ -166,7 +185,7 @@ export function BalanceGameCard({
                     )}
 
                     {showCompleted && (
-                      <div className="flex items-center space-x-1 px-3 py-1.5 bg-white/10 border border-white/20 text-white rounded-full text-xs font-bold">
+                      <div className={`flex items-center space-x-1 px-3 py-1.5 ${isDark ? 'bg-white/10 border-white/20' : 'bg-black/10 border-black/20'} border rounded-full text-xs font-bold`}>
                         <CheckCircle className="w-3.5 h-3.5" />
                         <span>완료</span>
                       </div>
@@ -174,25 +193,25 @@ export function BalanceGameCard({
                   </div>
                 </div>
 
-                <p className="text-gray-400 text-sm sm:text-base mb-6 leading-relaxed flex-1">
+                <p className={`${isDark ? 'text-gray-400' : 'text-gray-500'} text-sm sm:text-base mb-6 leading-relaxed flex-1`}>
                   {issue.description}
                 </p>
 
-                <div className="flex items-center justify-between pt-4 border-t border-white/10">
+                <div className={`flex items-center justify-between pt-4 border-t ${isDark ? 'border-white/10' : 'border-black/10'}`}>
                   <div className="flex flex-col">
                     <span className="text-xs text-gray-500 mb-1">참여 인원</span>
                     <div className="flex items-center space-x-2">
-                      <Users className="w-5 h-5 text-white" />
-                      <span className="font-bold text-2xl sm:text-3xl text-white">
+                      <Users className={`w-5 h-5 ${isDark ? 'text-white' : 'text-black'}`} />
+                      <span className={`font-bold text-2xl sm:text-3xl ${isDark ? 'text-white' : 'text-black'}`}>
                         {participantsSafe.toLocaleString()}
                       </span>
-                      <span className="text-sm text-gray-400 font-semibold">
+                      <span className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'} font-semibold`}>
                         명
                       </span>
                     </div>
                   </div>
 
-                  <div className="flex items-center space-x-2 text-white font-bold text-sm group-hover:translate-x-1 transition-transform">
+                  <div className={`flex items-center space-x-2 ${isDark ? 'text-white' : 'text-black'} font-bold text-sm group-hover:translate-x-1 transition-transform`}>
                     <span>투표하기</span>
                     <ArrowRight className="w-4 h-4" />
                   </div>
@@ -202,16 +221,17 @@ export function BalanceGameCard({
 
             {/* Back Face */}
             <div
-              className="absolute inset-0 bg-white rounded-2xl sm:rounded-3xl overflow-hidden border-2 border-black shadow-lg"
+              className={`absolute inset-0 rounded-2xl sm:rounded-3xl overflow-hidden border-2 ${isDark ? 'border-black' : 'border-white/20'} shadow-lg`}
               style={{
                 backfaceVisibility: "hidden",
                 transform: "rotateY(180deg)",
+                backgroundColor: isDark ? "#ffffff" : "#111827",
               }}
             >
               <div className="relative p-6 sm:p-8 h-full flex flex-col">
                 <div className="flex items-center space-x-3 sm:space-x-4 mb-6">
                   <span className="text-4xl sm:text-5xl">{issue.emoji}</span>
-                  <h3 className="text-xl sm:text-2xl font-bold text-black">
+                  <h3 className={`text-xl sm:text-2xl font-bold ${isDark ? 'text-black' : 'text-white'}`}>
                     {issue.title}
                   </h3>
                 </div>
@@ -220,60 +240,60 @@ export function BalanceGameCard({
                   <div className="mb-6">
                     <div className="flex items-center justify-between mb-3">
                       <div className="flex items-center space-x-2">
-                        <div className="w-2 h-2 bg-black rounded-full" />
-                        <span className="text-sm font-semibold text-black">
+                        <div className={`w-2 h-2 ${isDark ? 'bg-black' : 'bg-white'} rounded-full`} />
+                        <span className={`text-sm font-semibold ${isDark ? 'text-black' : 'text-white'}`}>
                           찬성
                         </span>
-                        <span className="text-2xl font-bold text-black">
+                        <span className={`text-2xl font-bold ${isDark ? 'text-black' : 'text-white'}`}>
                           {agreePercentSafe}%
                         </span>
                       </div>
 
                       <div className="flex items-center space-x-2">
-                        <span className="text-2xl font-bold text-gray-600">
+                        <span className={`text-2xl font-bold ${isDark ? 'text-gray-600' : 'text-gray-300'}`}>
                           {disagreePercentSafe}%
                         </span>
-                        <span className="text-sm font-semibold text-gray-600">
+                        <span className={`text-sm font-semibold ${isDark ? 'text-gray-600' : 'text-gray-300'}`}>
                           반대
                         </span>
-                        <div className="w-2 h-2 bg-gray-400 rounded-full" />
+                        <div className={`w-2 h-2 ${isDark ? 'bg-gray-400' : 'bg-gray-500'} rounded-full`} />
                       </div>
                     </div>
 
-                    <div className="relative h-3 bg-gray-200 rounded-full overflow-hidden border border-gray-300">
+                    <div className={`relative h-3 ${isDark ? 'bg-gray-200' : 'bg-white/10'} rounded-full overflow-hidden border ${isDark ? 'border-gray-300' : 'border-white/20'}`}>
                       <div
-                        className="absolute left-0 top-0 h-full bg-black rounded-full transition-all duration-500"
+                        className={`absolute left-0 top-0 h-full ${isDark ? 'bg-black' : 'bg-white'} rounded-full transition-all duration-500`}
                         style={{ width: `${agreePercentSafe}%` }}
                       />
                     </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-3">
-                    <div className="text-center p-3 bg-black/5 rounded-xl">
-                      <div className="text-xs text-gray-600 font-semibold mb-1">
+                    <div className={`text-center p-3 ${isDark ? 'bg-black/5' : 'bg-white/5'} rounded-xl`}>
+                      <div className={`text-xs ${isDark ? 'text-gray-600' : 'text-gray-300'} font-semibold mb-1`}>
                         찬성
                       </div>
-                      <div className="text-lg font-bold text-black">
+                      <div className={`text-lg font-bold ${isDark ? 'text-black' : 'text-white'}`}>
                         {agreeCountSafe.toLocaleString()}명
                       </div>
                     </div>
 
-                    <div className="text-center p-3 bg-black/5 rounded-xl">
-                      <div className="text-xs text-gray-600 font-semibold mb-1">
+                    <div className={`text-center p-3 ${isDark ? 'bg-black/5' : 'bg-white/5'} rounded-xl`}>
+                      <div className={`text-xs ${isDark ? 'text-gray-600' : 'text-gray-300'} font-semibold mb-1`}>
                         반대
                       </div>
-                      <div className="text-lg font-bold text-gray-600">
+                      <div className={`text-lg font-bold ${isDark ? 'text-gray-600' : 'text-gray-300'}`}>
                         {disagreeCountSafe.toLocaleString()}명
                       </div>
                     </div>
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between pt-4 border-t border-gray-300 mt-4">
-                  <div className="text-xs sm:text-sm text-gray-600 font-medium">
+                <div className={`flex items-center justify-between pt-4 border-t ${isDark ? 'border-gray-300' : 'border-white/20'} mt-4`}>
+                  <div className={`text-xs sm:text-sm ${isDark ? 'text-gray-600' : 'text-gray-300'} font-medium`}>
                     마우스를 떼면 다시 뒤집혀요
                   </div>
-                  <div className="flex items-center space-x-2 text-black font-bold text-sm">
+                  <div className={`flex items-center space-x-2 ${isDark ? 'text-black' : 'text-white'} font-bold text-sm`}>
                     <span>클릭해서 투표</span>
                     <ArrowRight className="w-4 h-4" />
                   </div>

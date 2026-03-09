@@ -22,6 +22,7 @@ import {
   CarouselArrows,
   NavigationButtons,
 } from "./components";
+import { useTheme } from "@/contexts/ThemeContext";
 
 import "swiper/swiper-bundle.css";
 import "./DosTest.css";
@@ -37,7 +38,6 @@ export function DosTest() {
   const navigate = useNavigate();
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState<Record<number, number>>({});
-  const [, setIsSubmitting] = useState(false);
   const [toast, setToast] = useState<ToastState>({
     show: false,
     message: "",
@@ -50,6 +50,7 @@ export function DosTest() {
     setToast
   );
 
+  const { isDark } = useTheme();
   useScrollLock();
   useAutoFocus(isLoading, questions.length > 0);
 
@@ -82,7 +83,6 @@ export function DosTest() {
     if (currentQuestion < questions.length - 1) {
       swiperRef.current?.slideNext();
     } else {
-      setIsSubmitting(true);
       try {
         const formattedAnswers = Object.entries(answers).map(
           ([questionId, value]) => ({
@@ -97,8 +97,6 @@ export function DosTest() {
         navigate(`/dos/result/${result.resultType}`, { state: { result } });
       } catch {
         showErrorToast("결과 계산에 실패했습니다");
-      } finally {
-        setIsSubmitting(false);
       }
     }
   }, [currentQuestion, questions.length, answers, navigate, showErrorToast]);
@@ -128,7 +126,7 @@ export function DosTest() {
     <div
       id="dos-test-container"
       tabIndex={0}
-      className="h-screen bg-black text-white flex flex-col overflow-hidden outline-none"
+      className={`h-screen flex flex-col overflow-hidden outline-none ${isDark ? 'bg-black text-white' : 'bg-white text-black'}`}
     >
       <ProgressBar progress={progress} />
       <Header

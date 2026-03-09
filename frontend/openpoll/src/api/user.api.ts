@@ -56,6 +56,14 @@ export const getMyVotes = async (): Promise<UserVoteStats> => {
 };
 
 /**
+ * 회원탈퇴
+ * DELETE /auth/withdraw
+ */
+export const deleteAccount = async (): Promise<void> => {
+  await apiClient.delete("/auth/withdraw");
+};
+
+/**
  * 비밀번호 변경
  * PATCH /auth/password
  */

@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { Check, Loader2 } from 'lucide-react';
 import { playSoundEffect } from '@/shared/utils/sound';
@@ -21,6 +21,13 @@ export function VoteButton({
   const [ripples, setRipples] = useState<Array<{ x: number; y: number; id: number }>>([]);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const rippleIdRef = useRef(0);
+  const rippleTimersRef = useRef<Set<ReturnType<typeof setTimeout>>>(new Set());
+
+  useEffect(() => {
+    return () => {
+      rippleTimersRef.current.forEach(clearTimeout);
+    };
+  }, []);
 
   const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     if (disabled || isLoading) return;
@@ -35,9 +42,11 @@ export function VoteButton({
       setRipples((prev) => [...prev, { x, y, id }]);
 
       // Remove ripple after animation
-      setTimeout(() => {
+      const timer = setTimeout(() => {
         setRipples((prev) => prev.filter((ripple) => ripple.id !== id));
+        rippleTimersRef.current.delete(timer);
       }, 600);
+      rippleTimersRef.current.add(timer);
     }
 
     // Play sound effect

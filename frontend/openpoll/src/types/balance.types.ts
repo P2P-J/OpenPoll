@@ -1,9 +1,7 @@
 import type { Dispatch, SetStateAction } from "react";
 
-export type BalanceVoteOption = "agree" | "disagree" | "AGREE" | "DISAGREE";
 export type VoteOption = "agree" | "disagree";
 export type VoteState = VoteOption | null;
-export type VoteSide = VoteOption | null;
 
 export interface BalanceListItem {
   id: number;
@@ -17,7 +15,7 @@ export interface BalanceListItem {
   participants?: number;
   agreePercent?: number;
   disagreePercent?: number;
-  myVote: boolean | null;
+  myVote: VoteState;
   createdAt?: string;
 }
 
@@ -58,7 +56,7 @@ export interface BalanceDetail {
   agreePercent?: number;
   disagreePercent?: number;
   commentCount?: number;
-  myVote: boolean | null;
+  myVote: VoteState;
   createdAt?: string;
   comments?: BalanceComment[];
 }

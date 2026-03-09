@@ -11,7 +11,7 @@ export default defineConfig({
     },
   },
   server: {
-    host: true, // localhost와 네트워크 접근 모두 허용
+    host: "0.0.0.0", // WSL2에서 Windows localhost 접근 허용
     port: 5173,
     strictPort: false,
     proxy: {

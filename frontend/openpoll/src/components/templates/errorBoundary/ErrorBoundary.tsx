@@ -21,8 +21,8 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
     return { hasError: true, error };
   }
 
-  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error('Error caught by boundary:', error, errorInfo);
+  componentDidCatch() {
+    // 프로덕션에서는 에러 리포팅 서비스로 전송 가능
   }
 
   handleReset = () => {

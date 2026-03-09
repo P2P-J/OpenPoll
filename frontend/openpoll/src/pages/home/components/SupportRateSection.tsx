@@ -1,7 +1,7 @@
 import { memo, useState, useEffect } from "react";
 import { motion, AnimatePresence, useSpring, useTransform } from "motion/react";
 import type { PartyData } from "@/types/party.types";
-import { VoteButton } from "@/components/atoms";
+import { VoteButton } from "@/components/atoms/voteButton/VoteButton";
 import { useUser } from "@/contexts/UserContext";
 import { AlertCircle, TrendingUp } from "lucide-react";
 
@@ -229,7 +229,7 @@ const PartyCard = memo(function PartyCard({
         {/* 정당 정보 */}
         <div className="flex items-center space-x-2 sm:space-x-3">
           <motion.div
-            className="text-2xl sm:text-3xl lg:text-4xl"
+            className="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 flex-shrink-0"
             animate={
               voteJustChanged
                 ? {
@@ -240,7 +240,11 @@ const PartyCard = memo(function PartyCard({
             }
             transition={{ duration: 0.4 }}
           >
-            {party.logo}
+            <img
+              src={party.logo}
+              alt={party.name}
+              className="w-full h-full object-contain rounded-full"
+            />
           </motion.div>
           <div>
             <div className="font-bold text-sm sm:text-base lg:text-lg">
@@ -271,7 +275,7 @@ const PartyCard = memo(function PartyCard({
           <span className="text-2xl sm:text-3xl font-bold relative">
             <AnimatedValue
               value={party.percentage}
-              decimals={1}
+              decimals={2}
               color={party.color}
               suffix="%"
               showChangeIndicator={true}

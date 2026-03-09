@@ -16,6 +16,7 @@ import {
 } from "@/api/client";
 import type { AxiosError } from "axios";
 import type { User, AuthResponse } from "@/types/api.types";
+const SOCIAL_PROFILE_PENDING_KEY = "social_profile_pending";
 
 interface UserContextType {
   user: User | null;
@@ -30,6 +31,7 @@ interface UserContextType {
     age: number;
     region: string;
     gender: "MALE" | "FEMALE";
+    verificationCode: string;
   }) => Promise<void>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
@@ -45,12 +47,14 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
   // Check if user is already logged in on mount
   useEffect(() => {
+    let retryTimerId: number | undefined;
     const initializeAuth = async () => {
       const accessToken = localStorage.getItem("accessToken");
       const refreshToken = localStorage.getItem("refreshToken");
 
       // 토큰이 없으면 로그인 필요
       if (!accessToken && !refreshToken) {
+        localStorage.removeItem(SOCIAL_PROFILE_PENDING_KEY);
         setIsLoading(false);
         return;
       }
@@ -104,7 +108,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
           // 기타 서버 에러 (500 등): 토큰을 유지하고 로컬 세션 사용
           tryLoadLocalSession();
           // 백그라운드에서 재시도
-          setTimeout(async () => {
+          retryTimerId = window.setTimeout(async () => {
             try {
               const userData = await userApi.getMe();
               setUser(userData);
@@ -153,6 +157,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
     // 컴포넌트 언마운트 시 타이머 정리
     return () => {
       cancelProactiveRefresh();
+      if (retryTimerId) window.clearTimeout(retryTimerId);
     };
   }, []);
 
@@ -166,6 +171,8 @@ export function UserProvider({ children }: { children: ReactNode }) {
       // Save tokens
       localStorage.setItem("accessToken", response.accessToken);
       localStorage.setItem("refreshToken", response.refreshToken);
+      localStorage.removeItem(SOCIAL_PROFILE_PENDING_KEY);
+      localStorage.removeItem("isOAuthUser");
 
       // Set user
       setUser(response.user);
@@ -198,6 +205,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
       age: number;
       region: string;
       gender: "MALE" | "FEMALE";
+      verificationCode: string;
     }) => {
       setIsLoading(true);
       setError(null);
@@ -208,6 +216,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
         // Save tokens
         localStorage.setItem("accessToken", response.accessToken);
         localStorage.setItem("refreshToken", response.refreshToken);
+        localStorage.removeItem(SOCIAL_PROFILE_PENDING_KEY);
 
         // Set user
         setUser(response.user);
@@ -249,6 +258,8 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
       // Clear localAuth session
       localStorage.removeItem("openpoll_session_v1");
+      localStorage.removeItem(SOCIAL_PROFILE_PENDING_KEY);
+      localStorage.removeItem("isOAuthUser");
       window.dispatchEvent(new Event("storage"));
     }
   }, []);

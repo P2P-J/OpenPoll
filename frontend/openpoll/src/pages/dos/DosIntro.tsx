@@ -6,6 +6,8 @@ import type { LucideIcon } from "lucide-react";
 import { useUser } from "@/contexts/UserContext";
 import { Toast } from "@/components/molecules/toast/Toast";
 import { usePageMeta } from "@/hooks/usePageMeta";
+import { useTheme } from "@/contexts/ThemeContext";
+import { AdBanner } from "@/components/atoms/adBanner/AdBanner";
 
 const AXES_DATA = [
   {
@@ -80,19 +82,20 @@ interface AxisItemProps {
 }
 
 function HeroSection() {
+  const { isDark } = useTheme();
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       className="text-center mb-12 sm:mb-16"
     >
-      <div className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 bg-white/10 rounded-2xl sm:rounded-3xl mb-4 sm:mb-6">
+      <div className={`inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 rounded-2xl sm:rounded-3xl mb-4 sm:mb-6 ${isDark ? 'bg-white/10' : 'bg-black/10'}`}>
         <Brain className="w-8 h-8 sm:w-10 sm:h-10" />
       </div>
       <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-4 sm:mb-6">
         나의 정치 성향은?
       </h1>
-      <p className="text-base sm:text-lg lg:text-xl text-gray-300 max-w-2xl mx-auto leading-relaxed px-4">
+      <p className={`text-base sm:text-lg lg:text-xl max-w-2xl mx-auto leading-relaxed px-4 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
         8values 기반의 정치 DOS 테스트로
         <br />
         당신의 정치적 좌표를 찾아보세요
@@ -108,17 +111,18 @@ function InfoCard({
   description,
   index,
 }: InfoCardProps) {
+  const { isDark } = useTheme();
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.2 + index * 0.1 }}
-      className="bg-white/5 backdrop-blur-sm rounded-xl sm:rounded-2xl p-5 sm:p-6 border border-white/10"
+      className={`backdrop-blur-sm rounded-xl sm:rounded-2xl p-5 sm:p-6 border ${isDark ? 'bg-white/5 border-white/10' : 'bg-black/5 border-black/10'}`}
     >
-      <Icon className="w-7 h-7 sm:w-8 sm:h-8 mb-3 sm:mb-4 text-gray-400" />
+      <Icon className={`w-7 h-7 sm:w-8 sm:h-8 mb-3 sm:mb-4 ${isDark ? 'text-gray-400' : 'text-gray-500'}`} />
       <h3 className="text-base sm:text-lg font-semibold mb-1">{title}</h3>
       <div className="text-xl sm:text-2xl font-bold mb-1">{value}</div>
-      <p className="text-xs sm:text-sm text-gray-400">{description}</p>
+      <p className={`text-xs sm:text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>{description}</p>
     </motion.div>
   );
 }
@@ -134,18 +138,19 @@ function InfoCardsGrid() {
 }
 
 function AxisItem({ name, left, right, description }: AxisItemProps) {
+  const { isDark } = useTheme();
   return (
-    <div className="bg-white/5 rounded-lg sm:rounded-xl p-4 sm:p-6 border border-white/10">
+    <div className={`rounded-lg sm:rounded-xl p-4 sm:p-6 border ${isDark ? 'bg-white/5 border-white/10' : 'bg-black/5 border-black/10'}`}>
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-3 gap-2">
         <span className="text-base sm:text-lg font-bold">{name}</span>
-        <span className="text-xs sm:text-sm text-gray-400">{description}</span>
+        <span className={`text-xs sm:text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>{description}</span>
       </div>
       <div className="flex items-center justify-between">
-        <div className="flex-1 text-center py-2 sm:py-2.5 bg-white/10 rounded-l-lg font-semibold text-sm sm:text-base">
+        <div className={`flex-1 text-center py-2 sm:py-2.5 rounded-l-lg font-semibold text-sm sm:text-base ${isDark ? 'bg-white/10' : 'bg-black/10'}`}>
           {left}
         </div>
         <div className="px-2 sm:px-4 text-sm sm:text-base">↔</div>
-        <div className="flex-1 text-center py-2 sm:py-2.5 bg-white/10 rounded-r-lg font-semibold text-sm sm:text-base">
+        <div className={`flex-1 text-center py-2 sm:py-2.5 rounded-r-lg font-semibold text-sm sm:text-base ${isDark ? 'bg-white/10' : 'bg-black/10'}`}>
           {right}
         </div>
       </div>
@@ -154,12 +159,13 @@ function AxisItem({ name, left, right, description }: AxisItemProps) {
 }
 
 function AxesSection() {
+  const { isDark } = useTheme();
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ delay: 0.5 }}
-      className="bg-white/5 backdrop-blur-sm rounded-2xl sm:rounded-3xl p-6 sm:p-8 border border-white/10 mb-8 sm:mb-12"
+      className={`backdrop-blur-sm rounded-2xl sm:rounded-3xl p-6 sm:p-8 border mb-8 sm:mb-12 ${isDark ? 'bg-white/5 border-white/10' : 'bg-black/5 border-black/10'}`}
     >
       <h2 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8 text-center">
         4가지 측정 축
@@ -174,6 +180,7 @@ function AxesSection() {
 }
 
 function NoticeSection() {
+  const { isDark } = useTheme();
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -184,7 +191,7 @@ function NoticeSection() {
       <h3 className="font-bold text-yellow-500 mb-2 sm:mb-3 text-base sm:text-lg">
         ⚠️ 중요 안내
       </h3>
-      <ul className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm text-gray-300">
+      <ul className={`space-y-1.5 sm:space-y-2 text-xs sm:text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
         {NOTICE_ITEMS.map((item, index) => (
           <li key={index}>• {item}</li>
         ))}
@@ -194,6 +201,7 @@ function NoticeSection() {
 }
 
 function CTASection({ onStartTest }: { onStartTest: () => void }) {
+  const { isDark } = useTheme();
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -203,12 +211,12 @@ function CTASection({ onStartTest }: { onStartTest: () => void }) {
     >
       <button
         onClick={onStartTest}
-        className="inline-flex items-center space-x-2 sm:space-x-3 px-10 sm:px-12 py-4 sm:py-5 bg-white text-black rounded-full font-bold text-base sm:text-lg hover:bg-gray-100 transition-colors group"
+        className={`inline-flex items-center space-x-2 sm:space-x-3 px-10 sm:px-12 py-4 sm:py-5 rounded-full font-bold text-base sm:text-lg transition-colors group ${isDark ? 'bg-white text-black hover:bg-gray-100' : 'bg-black text-white hover:bg-gray-800'}`}
       >
         <span>테스트 시작하기</span>
         <ArrowRight className="w-5 h-5 sm:w-6 sm:h-6 group-hover:translate-x-1 transition-transform" />
       </button>
-      <p className="mt-3 sm:mt-4 text-xs sm:text-sm text-gray-400">
+      <p className={`mt-3 sm:mt-4 text-xs sm:text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
         약 10분이면 나의 정치 성향을 알 수 있어요
       </p>
     </motion.div>
@@ -227,6 +235,7 @@ export function DosIntro() {
   const { isAuthenticated } = useUser();
   const [showToast, setShowToast] = useState(false);
 
+  const { isDark } = useTheme();
   useScrollToTop();
 
   const handleStartTest = useCallback(() => {
@@ -243,11 +252,12 @@ export function DosIntro() {
   const handleCloseToast = useCallback(() => setShowToast(false), []);
 
   return (
-    <div className="pt-16 min-h-screen bg-black text-white">
+    <div className={`pt-16 min-h-screen ${isDark ? 'bg-black text-white' : 'bg-white text-black'}`}>
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
         <HeroSection />
         <InfoCardsGrid />
         <AxesSection />
+        <AdBanner className="mb-8 sm:mb-12" />
         <NoticeSection />
         <CTASection onStartTest={handleStartTest} />
       </div>

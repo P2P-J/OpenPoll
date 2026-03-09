@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { usePageMeta } from "@/hooks/usePageMeta";
 import type { DosResult as DosResultData } from "@/types/api.types";
@@ -15,12 +15,23 @@ import {
   ActionButtons,
   NavigationLinks,
 } from "./components";
+import { ShareModal } from "./components/ShareModal";
+import { Toast } from "@/components/molecules/toast/Toast";
+import { AdBanner } from "@/components/atoms/adBanner/AdBanner";
+import { useTheme } from "@/contexts/ThemeContext";
 
 export function DosResult() {
   usePageMeta("DOS 테스트 결과", "나의 정치 성향 분석 결과를 확인하세요.");
   const { type } = useParams<{ type: string }>();
   const location = useLocation();
   const navigate = useNavigate();
+  const { isDark } = useTheme();
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [showToast, setShowToast] = useState(false);
+
+  const handleImageSave = useCallback(() => {
+    setShowToast(true);
+  }, []);
 
   const { resultTypeInfo, isLoading } = useResultData(type, navigate);
 
@@ -49,7 +60,7 @@ export function DosResult() {
   if (!resultTypeInfo) return <ErrorState />;
 
   return (
-    <div className="min-h-screen bg-black text-white pt-16">
+    <div className={`min-h-screen pt-16 ${isDark ? 'bg-black text-white' : 'bg-white text-black'}`}>
       <div className="max-w-4xl mx-auto px-4 py-8 sm:py-12">
         <ResultHeader
           type={type || ""}
@@ -60,9 +71,24 @@ export function DosResult() {
         <DescriptionSection detail={detail} />
         <CharacteristicsSection features={features} tags={tags} />
         <NoticeSection />
-        <ActionButtons />
+        <AdBanner className="mb-8" />
+        <ActionButtons onShare={() => setShowShareModal(true)} onImageSave={handleImageSave} />
         <NavigationLinks />
       </div>
+
+      <ShareModal
+        isOpen={showShareModal}
+        onClose={() => setShowShareModal(false)}
+        type={type || ""}
+      />
+
+      <Toast
+        message="추후 구현될 기능입니다!"
+        type="info"
+        isVisible={showToast}
+        onClose={() => setShowToast(false)}
+        contentStyle={{ backgroundColor: '#ffffff', color: '#1a1a1a' }}
+      />
     </div>
   );
 }

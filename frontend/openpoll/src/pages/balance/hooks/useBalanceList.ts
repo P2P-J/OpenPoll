@@ -30,6 +30,14 @@ export function useBalanceList(isLoggedIn: boolean) {
   const [editingDetailDescription, setEditingDetailDescription] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const buildTitleWithEmoji = (emoji: string | undefined, title: string) => {
+    const trimmed = String(title ?? "").trim();
+    if (!emoji) return trimmed;
+    if (!trimmed) return emoji;
+    if (trimmed.startsWith(emoji)) return trimmed;
+    return `${emoji} ${trimmed}`;
+  };
+
   const refresh = useCallback(async () => {
     const data = await getBalanceList();
     setIssues(data);
@@ -86,6 +94,19 @@ export function useBalanceList(isLoggedIn: boolean) {
     });
   }, [issues, filter, isLoggedIn]);
 
+  const hotRankMap = useMemo(() => {
+    const ranked = [...issues].sort((a, b) => {
+      const ap = Number(a.participants ?? a.totalVotes ?? 0);
+      const bp = Number(b.participants ?? b.totalVotes ?? 0);
+      return bp - ap;
+    });
+
+    return ranked.reduce<Record<number, number>>((acc, item, index) => {
+      acc[item.id] = index + 1;
+      return acc;
+    }, {});
+  }, [issues]);
+
   const openCreate = () => {
     setErrorMessage(null);
     setModalMode("create");
@@ -132,7 +153,8 @@ export function useBalanceList(isLoggedIn: boolean) {
         await createBalance(payload);
       } else {
         if (!editing) throw new Error("수정 대상을 찾을 수 없습니다.");
-        await updateBalance(editing.id, payload);
+        const title = buildTitleWithEmoji(editing.emoji, payload.title);
+        await updateBalance(editing.id, { ...payload, title });
       }
 
       setIsModalOpen(false);
@@ -153,7 +175,7 @@ export function useBalanceList(isLoggedIn: boolean) {
       ? undefined
       : editing
         ? {
-            title: String(editing.title ?? ""),
+            title: buildTitleWithEmoji(editing.emoji, editing.title ?? ""),
             subtitle: String(
               (editing as BalanceListItemExtended).subtitle ??
                 editing.description ??
@@ -169,6 +191,7 @@ export function useBalanceList(isLoggedIn: boolean) {
     isLoading,
     errorMessage,
     filteredIssues,
+    hotRankMap,
     isModalOpen,
     setIsModalOpen,
     modalMode,

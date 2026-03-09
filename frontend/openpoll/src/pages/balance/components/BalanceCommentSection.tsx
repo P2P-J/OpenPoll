@@ -3,12 +3,13 @@ import { motion } from "motion/react";
 import { ThumbsUp, ThumbsDown, Send } from "lucide-react";
 import { keyOf, countAllComments } from "@/shared/utils/balanceHelpers";
 import { CommentItem } from "./CommentItem";
-import type { BalanceComment, VoteSide } from "@/types/balance.types";
+import { useTheme } from "@/contexts/ThemeContext";
+import type { BalanceComment, VoteState } from "@/types/balance.types";
 
 interface BalanceCommentSectionProps {
   isLoggedIn: boolean;
   isLoggedInNow: () => boolean;
-  selectedOption: VoteSide;
+  selectedOption: VoteState;
   comment: string;
   setComment: (v: string) => void;
   comments: BalanceComment[];
@@ -62,6 +63,7 @@ export function BalanceCommentSection({
   toggleExpandReplies,
   handleSubmitComment,
 }: BalanceCommentSectionProps) {
+  const { isDark } = useTheme();
   const renderCommentNode = (c: BalanceComment, depth = 0): ReactNode => (
     <CommentItem
       comment={c}
@@ -97,7 +99,7 @@ export function BalanceCommentSection({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.4 }}
-      className="relative bg-gradient-to-br from-gray-900 to-black rounded-2xl sm:rounded-3xl p-8 border-2 border-white/10 overflow-hidden"
+      className={`relative bg-gradient-to-br ${isDark ? 'from-gray-900 to-black border-white/10' : 'from-gray-100 to-white border-black/10'} rounded-2xl sm:rounded-3xl p-8 border-2 overflow-hidden`}
     >
       <div className="relative">
         <h2 className="text-xl sm:text-2xl font-bold mb-6">
@@ -107,12 +109,12 @@ export function BalanceCommentSection({
         <div className="mb-8">
           <div className="flex items-start space-x-3">
             <div
-              className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${
+              className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center border ${
                 selectedOption === "agree"
-                  ? "bg-white/20 border border-white/30"
+                  ? `${isDark ? 'bg-white/20 border-white/30' : 'bg-black/20 border-black/30'}`
                   : selectedOption === "disagree"
-                    ? "bg-white/10 border border-white/20"
-                    : "bg-white/5 border border-white/10"
+                    ? `${isDark ? 'bg-white/10 border-white/20' : 'bg-black/10 border-black/20'}`
+                    : `${isDark ? 'bg-white/5 border-white/10' : 'bg-black/5 border-black/10'}`
               }`}
             >
               {selectedOption === "agree" ? (
@@ -138,7 +140,7 @@ export function BalanceCommentSection({
                 readOnly={!isLoggedInNow() || !selectedOption}
                 onFocus={() => !isLoggedInNow() && openLoginModal()}
                 onClick={() => !isLoggedInNow() && openLoginModal()}
-                className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl focus:outline-none focus:border-white/30 resize-none text-white placeholder-gray-500 read-only:opacity-50 read-only:cursor-not-allowed"
+                className={`w-full px-4 py-3 ${isDark ? 'bg-white/5 border-white/10 focus:border-white/30 text-white' : 'bg-black/5 border-black/10 focus:border-black/30 text-black'} border rounded-xl focus:outline-none resize-none placeholder-gray-500 read-only:opacity-50 read-only:cursor-not-allowed`}
                 rows={3}
               />
 
@@ -162,7 +164,7 @@ export function BalanceCommentSection({
                   disabled={
                     isLoggedInNow() ? !selectedOption || !comment.trim() : false
                   }
-                  className="flex items-center space-x-2 px-6 py-2.5 bg-white text-black rounded-lg font-semibold hover:bg-gray-200 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                  className={`flex items-center space-x-2 px-6 py-2.5 ${isDark ? 'bg-white text-black hover:bg-gray-200' : 'bg-black text-white hover:bg-gray-800'} rounded-lg font-semibold transition-colors disabled:opacity-30 disabled:cursor-not-allowed`}
                 >
                   <Send className="w-4 h-4" />
                   <span>댓글 작성</span>

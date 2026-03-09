@@ -6,6 +6,8 @@ import ReactMarkdown from "react-markdown";
 import type { Components } from "react-markdown";
 import { getCategoryFromTags } from "@/shared/utils/newsHelpers";
 import { useArticleDetail } from "./hooks";
+import { useTheme } from "@/contexts/ThemeContext";
+import { AdBanner } from "@/components/atoms/adBanner/AdBanner";
 import {
   NewsDetailLoadingState,
   NewsDetailErrorState,
@@ -18,29 +20,10 @@ import {
   OriginalLinkButton,
 } from "./components";
 
-const MARKDOWN_COMPONENTS: Components = {
-  h3: ({ children }) => (
-    <h3 className="text-xl sm:text-2xl font-bold mt-6 mb-4 text-gray-900 dark:text-gray-100">
-      {children}
-    </h3>
-  ),
-  p: ({ children }) => (
-    <p className="mb-4 text-gray-800 dark:text-gray-200 leading-relaxed">{children}</p>
-  ),
-  ul: ({ children }) => (
-    <ul className="list-disc list-inside mb-4 space-y-2">{children}</ul>
-  ),
-  ol: ({ children }) => (
-    <ol className="list-decimal list-inside mb-4 space-y-2">{children}</ol>
-  ),
-  li: ({ children }) => (
-    <li className="text-gray-800 dark:text-gray-200 leading-relaxed">{children}</li>
-  ),
-};
-
 export function NewsDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { isDark } = useTheme();
   const { article, isLoading, error } = useArticleDetail(id);
   usePageMeta(
     article ? article.refinedTitle : "뉴스 상세",
@@ -54,6 +37,26 @@ export function NewsDetail() {
     [article]
   );
 
+  const MARKDOWN_COMPONENTS: Components = useMemo(() => ({
+    h3: ({ children }) => (
+      <h3 className={`text-xl sm:text-2xl font-bold mt-6 mb-4 ${isDark ? 'text-gray-100' : 'text-gray-900'}`}>
+        {children}
+      </h3>
+    ),
+    p: ({ children }) => (
+      <p className={`mb-4 leading-relaxed ${isDark ? 'text-gray-200' : 'text-gray-800'}`}>{children}</p>
+    ),
+    ul: ({ children }) => (
+      <ul className="list-disc list-inside mb-4 space-y-2">{children}</ul>
+    ),
+    ol: ({ children }) => (
+      <ol className="list-decimal list-inside mb-4 space-y-2">{children}</ol>
+    ),
+    li: ({ children }) => (
+      <li className={`leading-relaxed ${isDark ? 'text-gray-200' : 'text-gray-800'}`}>{children}</li>
+    ),
+  }), [isDark]);
+
   if (isLoading) return <NewsDetailLoadingState />;
   if (error || !article) {
     return (
@@ -65,14 +68,16 @@ export function NewsDetail() {
   }
 
   return (
-    <div className="pt-16 min-h-screen bg-gray-50 dark:bg-gray-950 pb-12">
+    <div className={`pt-16 min-h-screen pb-12 ${isDark ? 'bg-black' : 'bg-gray-50'}`}>
       <div className="max-w-3xl mx-auto">
         <BackButton />
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white dark:bg-gray-900 rounded-t-3xl sm:rounded-3xl overflow-hidden border border-gray-200 dark:border-gray-800 shadow-lg mx-4 sm:mx-0 p-8 sm:p-10"
+          className={`rounded-t-3xl sm:rounded-3xl overflow-hidden border shadow-lg mx-4 sm:mx-0 p-8 sm:p-10 ${
+            isDark ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-200'
+          }`}
         >
           <ArticleHeader
             press={article.press}
@@ -81,13 +86,13 @@ export function NewsDetail() {
           />
 
           <div className="py-8 sm:py-9">
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-6 sm:mb-8 leading-tight dark:text-white">
+            <h1 className={`text-2xl sm:text-3xl lg:text-4xl font-bold mb-6 sm:mb-8 leading-tight ${isDark ? 'text-white' : 'text-black'}`}>
               {article.refinedTitle}
             </h1>
 
             <AINotice />
 
-            <article className="prose prose-base sm:prose-lg max-w-none text-gray-800 dark:text-gray-200 mb-8">
+            <article className={`prose prose-base sm:prose-lg max-w-none mb-8 ${isDark ? 'text-gray-200' : 'text-gray-800'}`}>
               <ReactMarkdown components={MARKDOWN_COMPONENTS}>
                 {article.refinedSummary}
               </ReactMarkdown>
@@ -99,6 +104,8 @@ export function NewsDetail() {
             <OriginalLinkButton url={article.originalUrl} />
           </div>
         </motion.div>
+
+        <AdBanner className="mx-4 sm:mx-0 mt-6" />
       </div>
     </div>
   );
