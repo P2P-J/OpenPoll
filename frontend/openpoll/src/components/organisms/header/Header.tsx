@@ -172,15 +172,15 @@ export function Header({ onAttendanceClick }: HeaderProps) {
                         {/* 사용자 정보 헤더와 메뉴를 가로로 배치 */}
                         <div className="flex items-center gap-4 px-4 py-3">
                           {/* 사용자 정보 */}
-                          <div className="flex items-center gap-3 flex-shrink-0">
+                          <div className="flex items-center gap-3 min-w-0 flex-1">
                             <div
-                              className="w-10 h-10 rounded-full flex items-center justify-center shadow-sm"
+                              className="w-10 h-10 rounded-full flex items-center justify-center shadow-sm flex-shrink-0"
                               style={{ backgroundColor: "var(--color-primary)" }}
                             >
                               <User className="w-5 h-5" style={{ color: "var(--color-primary-foreground)" }} />
                             </div>
-                            <div>
-                              <p className="font-bold text-sm whitespace-nowrap text-foreground">
+                            <div className="min-w-0">
+                              <p className="font-bold text-sm text-foreground truncate" style={{ maxWidth: "120px" }}>
                                 {userNickname}
                               </p>
                               <p className="text-xs text-foreground-muted">
