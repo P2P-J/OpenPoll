@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback, type ReactNode } from "react"
 import { X, Link2, Check, Copy, QrCode } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { QRCodeSVG } from "qrcode.react";
+import { useTheme } from "@/contexts/ThemeContext";
 
 interface ShareModalProps {
     isOpen: boolean;
@@ -53,6 +54,7 @@ const ICON_BASE_CLASS =
 const openPopup = (url: string) => window.open(url, "_blank", POPUP_OPTIONS);
 
 export function ShareModal({ isOpen, onClose, type }: ShareModalProps) {
+    const { isDark } = useTheme();
     const [copied, setCopied] = useState(false);
     const [emailCopied, setEmailCopied] = useState(false);
     const [showQR, setShowQR] = useState(false);
@@ -67,6 +69,16 @@ export function ShareModal({ isOpen, onClose, type }: ShareModalProps) {
             setEmailCopied(false);
         }
     }, [isOpen]);
+
+    // ESC key to close
+    useEffect(() => {
+        if (!isOpen) return;
+        const handleEsc = (e: KeyboardEvent) => {
+            if (e.key === "Escape") onClose();
+        };
+        document.addEventListener("keydown", handleEsc);
+        return () => document.removeEventListener("keydown", handleEsc);
+    }, [isOpen, onClose]);
 
     const handleCopy = useCallback(async () => {
         try {
@@ -97,7 +109,7 @@ export function ShareModal({ isOpen, onClose, type }: ShareModalProps) {
             label: "X",
             icon: <TwitterIcon />,
             bgStyle: {},
-            bgClass: `${ICON_BASE_CLASS} bg-black border border-white/20 group-hover:border-white/40`,
+            bgClass: `${ICON_BASE_CLASS} ${isDark ? 'bg-black border border-white/20 group-hover:border-white/40' : 'bg-gray-800 border border-gray-600 group-hover:border-gray-400'}`,
             onClick: () =>
                 openPopup(
                     `https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(SHARE_TEXT)}`
@@ -132,11 +144,15 @@ export function ShareModal({ isOpen, onClose, type }: ShareModalProps) {
             id: "email",
             label: emailCopied ? "링크 복사됨!" : "이메일",
             icon: <EmailIcon />,
-            bgStyle: { backgroundColor: emailCopied ? "#22c55e" : "#555" },
+            bgStyle: { backgroundColor: emailCopied ? "#22c55e" : isDark ? "#555" : "#6b7280" },
             bgClass: `${ICON_BASE_CLASS} group-hover:brightness-110`,
             onClick: handleEmailShare,
         },
     ];
+
+    const borderClass = isDark ? 'border-white/10' : 'border-black/10';
+    const mutedTextClass = isDark ? 'text-gray-400' : 'text-gray-500';
+    const labelTextClass = isDark ? 'text-gray-300' : 'text-gray-600';
 
     return (
         <AnimatePresence>
@@ -147,10 +163,13 @@ export function ShareModal({ isOpen, onClose, type }: ShareModalProps) {
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.2 }}
                     className="fixed inset-0 z-50 flex items-center justify-center px-8"
+                    role="dialog"
+                    aria-modal="true"
+                    aria-label="결과 공유하기"
                     onClick={onClose}
                 >
                     {/* Backdrop */}
-                    <div className="absolute inset-0 bg-black/50" style={{ backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)' }} />
+                    <div className="absolute inset-0 bg-black/50" aria-hidden="true" style={{ backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', overscrollBehavior: 'contain' }} />
 
                     {/* Modal */}
                     <motion.div
@@ -158,30 +177,31 @@ export function ShareModal({ isOpen, onClose, type }: ShareModalProps) {
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.95, y: 20 }}
                         transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
-                        className="relative max-w-lg rounded-2xl border border-white/10 shadow-2xl"
-                        style={{ backgroundColor: "#1a1a2e", width: "85%" }}
+                        className={`relative max-w-lg rounded-2xl border ${borderClass} shadow-2xl`}
+                        style={{ backgroundColor: isDark ? "#1a1a2e" : "#ffffff", width: "85%" }}
                         onClick={(e) => e.stopPropagation()}
                     >
                         {/* Header */}
-                        <div className="flex items-center justify-between p-5 border-b border-white/10">
+                        <div className={`flex items-center justify-between p-5 border-b ${borderClass}`}>
                             <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 bg-gradient-to-br from-blue-500/20 to-purple-500/20 border border-white/20 rounded-xl flex items-center justify-center">
-                                    <Link2 className="w-5 h-5 text-white" />
+                                <div className={`w-10 h-10 bg-gradient-to-br from-blue-500/20 to-purple-500/20 border ${isDark ? 'border-white/20' : 'border-black/20'} rounded-xl flex items-center justify-center`}>
+                                    <Link2 className={`w-5 h-5 ${isDark ? 'text-white' : 'text-black'}`} />
                                 </div>
-                                <div className="text-lg font-bold text-white">
+                                <div className={`text-lg font-bold ${isDark ? 'text-white' : 'text-black'}`}>
                                     결과 공유하기
                                 </div>
                             </div>
                             <button
                                 onClick={onClose}
-                                className="p-2 rounded-lg hover:bg-white/10 transition-colors"
+                                aria-label="닫기"
+                                className={`p-2 rounded-lg ${isDark ? 'hover:bg-white/10' : 'hover:bg-black/10'} transition-colors`}
                             >
-                                <X className="w-5 h-5 text-white" />
+                                <X className={`w-5 h-5 ${isDark ? 'text-white' : 'text-black'}`} />
                             </button>
                         </div>
 
-                        <div className="p-5 border-b border-white/10">
-                            <div className="text-sm text-gray-300 font-semibold mb-4">
+                        <div className={`p-5 border-b ${borderClass}`}>
+                            <div className={`text-sm ${labelTextClass} font-semibold mb-4`}>
                                 공유
                             </div>
                             <div className="flex items-start justify-around">
@@ -189,6 +209,7 @@ export function ShareModal({ isOpen, onClose, type }: ShareModalProps) {
                                     <button
                                         key={item.id}
                                         onClick={item.onClick}
+                                        aria-label={`${item.label}로 공유`}
                                         className="flex-1 flex flex-col items-center gap-2 group"
                                     >
                                         <div
@@ -197,7 +218,7 @@ export function ShareModal({ isOpen, onClose, type }: ShareModalProps) {
                                         >
                                             {item.icon}
                                         </div>
-                                        <span className="text-[11px] text-gray-400">
+                                        <span className={`text-[11px] ${mutedTextClass}`}>
                                             {item.label}
                                         </span>
                                     </button>
@@ -207,7 +228,7 @@ export function ShareModal({ isOpen, onClose, type }: ShareModalProps) {
 
                         <div className="p-5 space-y-4">
                             <div>
-                                <div className="text-sm text-gray-300 font-semibold mb-2">
+                                <div className={`text-sm ${labelTextClass} font-semibold mb-2`}>
                                     공유 링크
                                 </div>
                                 <div className="flex items-center gap-2">
@@ -218,13 +239,13 @@ export function ShareModal({ isOpen, onClose, type }: ShareModalProps) {
                                         type="text"
                                         readOnly
                                         value={shareUrl}
-                                        className="flex-1 px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white text-sm focus:outline-none"
+                                        className={`flex-1 px-4 py-3 ${isDark ? 'bg-white/5 border-white/10 text-white' : 'bg-black/5 border-black/10 text-black'} border rounded-xl text-sm focus:outline-none`}
                                     />
                                     <button
                                         onClick={handleCopy}
                                         className={`flex items-center gap-2 px-4 py-3 rounded-xl font-semibold text-sm transition-all duration-200 whitespace-nowrap ${copied
                                             ? "bg-green-500/20 text-green-400 border border-green-500/30"
-                                            : "bg-white text-black hover:bg-gray-200"
+                                            : isDark ? "bg-white text-black hover:bg-gray-200" : "bg-black text-white hover:bg-gray-800"
                                             }`}
                                     >
                                         {copied ? (
@@ -246,7 +267,7 @@ export function ShareModal({ isOpen, onClose, type }: ShareModalProps) {
                         <div className="px-5 pb-5">
                             <button
                                 onClick={() => setShowQR(!showQR)}
-                                className="flex items-center gap-2 text-sm text-gray-400 hover:text-white transition-colors"
+                                className={`flex items-center gap-2 text-sm ${mutedTextClass} ${isDark ? 'hover:text-white' : 'hover:text-black'} transition-colors`}
                             >
                                 <QrCode className="w-4 h-4" />
                                 <span>
@@ -287,10 +308,10 @@ export function ShareModal({ isOpen, onClose, type }: ShareModalProps) {
                             </AnimatePresence>
                         </div>
 
-                        <div className="p-5 border-t border-white/10 flex justify-end">
+                        <div className={`p-5 border-t ${borderClass} flex justify-end`}>
                             <button
                                 onClick={onClose}
-                                className="px-4 py-2 rounded-lg border border-white/10 text-gray-300 hover:text-white hover:border-white/20 transition-colors"
+                                className={`px-4 py-2 rounded-lg border ${isDark ? 'border-white/10 text-gray-300 hover:text-white hover:border-white/20' : 'border-black/10 text-gray-600 hover:text-black hover:border-black/20'} transition-colors`}
                             >
                                 닫기
                             </button>
