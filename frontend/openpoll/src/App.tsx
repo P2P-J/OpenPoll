@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import {
   BrowserRouter as Router,
   Navigate,
+  Outlet,
   Route,
   Routes,
   useLocation,
@@ -60,6 +61,15 @@ const OAuthCallbackPage = lazy(() =>
 const Profile = lazy(() =>
   import("@/pages/profile").then((m) => ({ default: m.Profile })),
 );
+const PrivacyPolicy = lazy(() =>
+  import("@/pages/legal").then((m) => ({ default: m.PrivacyPolicy })),
+);
+const TermsOfService = lazy(() =>
+  import("@/pages/legal").then((m) => ({ default: m.TermsOfService })),
+);
+const Components = lazy(() =>
+  import("@/pages/components").then((m) => ({ default: m.Components })),
+);
 const SOCIAL_PROFILE_PENDING_KEY = "social_profile_pending";
 
 function clearSocialPendingSession() {
@@ -97,43 +107,40 @@ export default function App() {
     <UserProvider>
       <ThemeProvider>
         <ErrorBoundary>
-          <NewsProvider>
-            <Router>
-              <Suspense fallback={<LoadingSpinner />}>
-                <SocialProfilePendingGuard>
-                  <Routes>
-                    {/* Public routes */}
-                    <Route path="/login" element={<LoginPage />} />
-                    <Route path="/signup" element={<SignupPage />} />
-                    <Route path="/register" element={<SignupPage />} /> {/* Redirect for backward compatibility */}
-                    <Route path="/auth/social-signup" element={<SocialSignupPage />} />
-                    <Route path="/auth/oauth/callback" element={<OAuthCallbackPage />} />
-                    <Route path="/dos/test" element={<DosTest />} />
-                    <Route path="/dos/result/:type" element={<DosResult />} />
-                    <Route path="/dos/share/:type" element={<DosShare />} />
-                    {/* Public routes with MainLayout */}
-                    <Route
-                      path="/"
-                      element={
-                        <VotingProvider>
-                          <MainLayout />
-                        </VotingProvider>
-                      }
-                    >
-                      {/* All pages are now public */}
-                      <Route index element={<Home />} />
-                      <Route path="/dos" element={<DosIntro />} />
+          <Router>
+            <Suspense fallback={<LoadingSpinner />}>
+              <SocialProfilePendingGuard>
+                <Routes>
+                  {/* Public routes */}
+                  <Route path="/login" element={<LoginPage />} />
+                  <Route path="/signup" element={<SignupPage />} />
+                  <Route path="/register" element={<SignupPage />} /> {/* Redirect for backward compatibility */}
+                  <Route path="/auth/social-signup" element={<SocialSignupPage />} />
+                  <Route path="/auth/oauth/callback" element={<OAuthCallbackPage />} />
+                  <Route path="/dos/test" element={<DosTest />} />
+                  <Route path="/dos/result/:type" element={<DosResult />} />
+                  <Route path="/dos/share/:type" element={<DosShare />} />
+                  {/* Public routes with MainLayout */}
+                  <Route path="/" element={<MainLayout />}>
+                    {/* Home — only route that needs VotingProvider (SSE) */}
+                    <Route index element={<VotingProvider><Home /></VotingProvider>} />
+                    <Route path="/dos" element={<DosIntro />} />
+                    {/* News routes — scoped NewsProvider keeps data across list↔detail */}
+                    <Route element={<NewsProvider><Outlet /></NewsProvider>}>
                       <Route path="/news" element={<NewsList />} />
                       <Route path="/news/:id" element={<NewsDetail />} />
-                      <Route path="/balance" element={<BalanceList />} />
-                      <Route path="/balance/:id" element={<BalanceDetail />} />
-                      <Route path="/profile" element={<Profile />} />
                     </Route>
-                  </Routes>
-                </SocialProfilePendingGuard>
-              </Suspense>
-            </Router>
-          </NewsProvider>
+                    <Route path="/balance" element={<BalanceList />} />
+                    <Route path="/balance/:id" element={<BalanceDetail />} />
+                    <Route path="/profile" element={<Profile />} />
+                    <Route path="/privacy" element={<PrivacyPolicy />} />
+                    <Route path="/terms" element={<TermsOfService />} />
+                    <Route path="/components" element={<Components />} />
+                  </Route>
+                </Routes>
+              </SocialProfilePendingGuard>
+            </Suspense>
+          </Router>
         </ErrorBoundary>
       </ThemeProvider>
     </UserProvider>

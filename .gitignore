@@ -6,4 +6,16 @@
 .gemini/
 .opencode/
 .windsurf/
+.augment/
+.codebuddy/
+.commandcode/
+.continue/
+.cortex/
+.cursor/
+skills-lock.json
+CLAUDE.md
+.mcp.json
+*.mcp.json
+
+# OS
 .DS_Store

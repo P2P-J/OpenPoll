@@ -3,6 +3,46 @@
  * Production-grade utility classes
  */
 
+/* ==================== SEMANTIC COLOR UTILITIES ==================== */
+/* These auto-switch between light/dark mode via design-tokens.css */
+
+/* Backgrounds */
+.bg-background { background-color: var(--color-background); }
+.bg-surface { background-color: var(--color-surface); }
+.bg-surface-elevated { background-color: var(--color-surface-elevated); }
+.bg-surface-overlay { background-color: var(--color-surface-overlay); }
+.bg-primary { background-color: var(--color-primary); }
+.bg-secondary { background-color: var(--color-secondary); }
+.bg-success-bg { background-color: var(--color-success-bg); }
+.bg-warning-bg { background-color: var(--color-warning-bg); }
+.bg-error-bg { background-color: var(--color-error-bg); }
+.bg-info-bg { background-color: var(--color-info-bg); }
+
+/* Text Colors */
+.text-foreground { color: var(--color-foreground); }
+.text-foreground-muted { color: var(--color-foreground-muted); }
+.text-foreground-subtle { color: var(--color-foreground-subtle); }
+.text-primary-fg { color: var(--color-primary-foreground); }
+.text-secondary-fg { color: var(--color-secondary-foreground); }
+.text-success { color: var(--color-success); }
+.text-warning { color: var(--color-warning); }
+.text-error { color: var(--color-error); }
+.text-info { color: var(--color-info); }
+
+/* Borders */
+.border-default { border-color: var(--color-border); }
+.border-hover { border-color: var(--color-border-hover); }
+.border-focus { border-color: var(--color-border-focus); }
+.border-success { border-color: var(--color-success-border); }
+.border-warning { border-color: var(--color-warning-border); }
+.border-error { border-color: var(--color-error-border); }
+
+/* Hover states */
+.hover\:bg-primary-hover:hover { background-color: var(--color-primary-hover); }
+.hover\:bg-secondary-hover:hover { background-color: var(--color-secondary-hover); }
+.hover\:bg-error-hover:hover { background-color: var(--color-error-hover); }
+.hover\:border-hover:hover { border-color: var(--color-border-hover); }
+
 /* ==================== LAYOUT UTILITIES ==================== */
 
 .container-fluid {
