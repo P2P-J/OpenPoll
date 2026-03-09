@@ -147,28 +147,28 @@ export function Login() {
                   </p>
                 )}
               </div>
+
+              <button
+                type="submit"
+                className="w-full h-14 rounded-2xl bg-white text-black font-bold flex items-center justify-center gap-2 hover:bg-gray-100 transition-colors"
+              >
+                로그인 <ArrowRight className="w-5 h-5" />
+              </button>
             </form>
 
-            <button
-              type="submit"
-              className="w-full h-14 rounded-2xl bg-white text-black font-bold flex items-center justify-center gap-2 hover:bg-gray-100 transition-colors"
-            >
-              로그인 <ArrowRight className="w-5 h-5" />
-            </button>
-
-            <div className="w-full h-14 rounded-2xl border border-green-500/25 bg-green-500/10 shadow-[0_0_40px_rgba(34,197,94,0.15)] flex items-center justify-center gap-2 font-semibold">
+            <div className="w-full h-14 rounded-2xl border border-green-500/25 bg-green-500/10 shadow-[0_0_40px_rgba(34,197,94,0.15)] flex items-center justify-center gap-2 font-semibold mt-6">
               <Gift className="w-5 h-5 text-green-400" />
               <span className="text-green-400">회원가입 시 500P 지급!</span>
             </div>
 
-            <p className="text-center text-sm text-gray-400">
+            <p className="text-center text-sm text-gray-400 mt-6">
               아직 계정이 없으신가요?{' '}
               <Link to={ROUTES.REGISTER} className="text-white font-semibold hover:underline">
                 회원가입
               </Link>
             </p>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 mt-6">
               <button
                 type="button"
                 onClick={handleNaverLogin}
@@ -178,59 +178,30 @@ export function Login() {
                 <img src={naverLogo} alt="네이버" className="w-4 h-4" />
               </button>
               <button
-                type="submit"
-                className="w-full h-14 rounded-2xl bg-white text-black font-bold flex items-center justify-center gap-2 hover:bg-gray-100 transition-colors"
+                type="button"
+                onClick={handleGoogleLogin}
+                className="flex-1 h-10 rounded-lg border border-white/15 bg-white/5 hover:bg-white/10 transition-colors flex items-center justify-center"
+                aria-label="구글 로그인"
               >
-                로그인 <ArrowRight className="w-5 h-5" />
+                <img src={googleLogo} alt="구글" className="w-4 h-4" />
               </button>
+            </div>
 
-              <div className="w-full h-14 rounded-2xl border border-green-500/25 bg-green-500/10 shadow-[0_0_40px_rgba(34,197,94,0.15)] flex items-center justify-center gap-2 font-semibold">
-                <Gift className="w-5 h-5 text-green-400" />
-                <span className="text-green-400">로그인 시 500P 지급!</span>
-              </div>
+            <div className="flex items-center gap-4 pt-2 mt-4">
+              <div className="h-px flex-1 bg-white/10" />
+              <span className="text-xs text-gray-500">또는</span>
+              <div className="h-px flex-1 bg-white/10" />
+            </div>
 
-              <p className="text-center text-sm text-gray-400">
-                아직 계정이 없으신가요?{' '}
-                <Link to={ROUTES.REGISTER} className="text-white font-semibold hover:underline">
-                  회원가입
-                </Link>
-              </p>
-
-              <div className="flex items-center gap-3">
-                <button
-                  type="button"
-                  onClick={handleNaverLogin}
-                  className="flex-1 h-10 rounded-lg border border-white/15 bg-white/5 hover:bg-white/10 transition-colors flex items-center justify-center"
-                  aria-label="네이버 로그인"
-                >
-                  <img src={naverLogo} alt="네이버" className="w-4 h-4" />
-                </button>
-                <button
-                  type="button"
-                  onClick={handleGoogleLogin}
-                  className="flex-1 h-10 rounded-lg border border-white/15 bg-white/5 hover:bg-white/10 transition-colors flex items-center justify-center"
-                  aria-label="구글 로그인"
-                >
-                  <img src={googleLogo} alt="구글" className="w-4 h-4" />
-                </button>
-              </div>
-
-              <div className="flex items-center gap-4 pt-2">
-                <div className="h-px flex-1 bg-white/10" />
-                <span className="text-xs text-gray-500">또는</span>
-                <div className="h-px flex-1 bg-white/10" />
-              </div>
-
-              <div className="flex justify-center pt-2">
-                <Link
-                  to={ROUTES.HOME}
-                  className="group w-full h-16 rounded-xl bg-gradient-to-r from-gray-800 to-gray-900 hover:from-gray-700 hover:to-gray-800 border border-white/20 hover:border-white/30 transition-all duration-300 flex items-center justify-center gap-3 font-bold text-base shadow-lg hover:shadow-xl hover:scale-[1.02]"
-                >
-                  <Home className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                  <span>홈으로 돌아가기</span>
-                </Link>
-              </div>
-            </form>
+            <div className="flex justify-center pt-2">
+              <Link
+                to={ROUTES.HOME}
+                className="group w-full h-16 rounded-xl bg-gradient-to-r from-gray-800 to-gray-900 hover:from-gray-700 hover:to-gray-800 border border-white/20 hover:border-white/30 transition-all duration-300 flex items-center justify-center gap-3 font-bold text-base shadow-lg hover:shadow-xl hover:scale-[1.02]"
+              >
+                <Home className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                <span>홈으로 돌아가기</span>
+              </Link>
+            </div>
           </motion.div>
         </section>
       </div>
