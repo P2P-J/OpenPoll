@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { ChevronLeft } from "lucide-react";
 import { usePageMeta } from "@/hooks/usePageMeta";
+import { useTheme } from "@/contexts/ThemeContext";
 
 import { LoginModal } from "@/components/molecules/loginModal";
 import { Toast } from "@/components/molecules/toast/Toast";
@@ -34,6 +35,7 @@ export function BalanceDetail() {
   const [toastType, setToastType] = useState<"success" | "error" | "info">(
     "info"
   );
+  const { isDark } = useTheme();
   usePageMeta(
     vm.issue ? `${vm.issue.title} - 밸런스 게임` : "밸런스 게임 상세",
     vm.issue?.description,
@@ -79,10 +81,13 @@ export function BalanceDetail() {
     vm.handleVote(option);
   };
 
+  const rootClass = `pt-16 min-h-screen pb-24 ${isDark ? 'bg-black text-white' : 'bg-white text-black'}`;
+  const backLinkClass = `inline-flex items-center space-x-2 mb-8 transition-colors ${isDark ? 'text-gray-400 hover:text-white' : 'text-gray-500 hover:text-black'}`;
+
   if (vm.isLoading) {
     return (
-      <div className="pt-16 min-h-screen bg-black text-white pb-24">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 text-gray-400">
+      <div className={rootClass}>
+        <div className={`max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
           불러오는 중...
         </div>
       </div>
@@ -91,16 +96,13 @@ export function BalanceDetail() {
 
   if (vm.errorMessage) {
     return (
-      <div className="pt-16 min-h-screen bg-black text-white pb-24">
+      <div className={rootClass}>
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <Link
-            to="/balance"
-            className="inline-flex items-center space-x-2 text-gray-400 hover:text-white mb-8 transition-colors"
-          >
+          <Link to="/balance" className={backLinkClass}>
             <ChevronLeft className="w-5 h-5" />
             <span className="font-medium">목록으로</span>
           </Link>
-          <div className="text-gray-400">{vm.errorMessage}</div>
+          <div className={isDark ? 'text-gray-400' : 'text-gray-500'}>{vm.errorMessage}</div>
         </div>
       </div>
     );
@@ -108,8 +110,8 @@ export function BalanceDetail() {
 
   if (!vm.issue) {
     return (
-      <div className="pt-16 min-h-screen bg-black text-white pb-24">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 text-gray-400">
+      <div className={rootClass}>
+        <div className={`max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
           이슈를 찾을 수 없습니다.
         </div>
       </div>
@@ -130,7 +132,7 @@ export function BalanceDetail() {
     totalVotesSafe === 0 ? 0 : Math.max(0, 100 - agreePercentBar);
 
   return (
-    <div className="pt-16 min-h-screen bg-black text-white pb-24">
+    <div className={rootClass}>
       <Toast
         message={toastMessage}
         type={toastType}
@@ -144,10 +146,7 @@ export function BalanceDetail() {
       />
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
-        <Link
-          to="/balance"
-          className="inline-flex items-center space-x-2 text-gray-400 hover:text-white mb-8 transition-colors"
-        >
+        <Link to="/balance" className={backLinkClass}>
           <ChevronLeft className="w-5 h-5" />
           <span className="font-medium">목록으로</span>
         </Link>

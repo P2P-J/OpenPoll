@@ -9,6 +9,7 @@ import {
   useLocation,
   useNavigationType,
 } from "react-router-dom";
+import { MotionConfig } from "motion/react";
 import { MainLayout } from "@/components/templates";
 import { ErrorBoundary } from "@/components/templates/errorBoundary/ErrorBoundary";
 import { LoadingSpinner } from "@/components/atoms/loadingSpinner/LoadingSpinner";
@@ -106,6 +107,7 @@ export default function App() {
   return (
     <UserProvider>
       <ThemeProvider>
+        <MotionConfig reducedMotion="user">
         <ErrorBoundary>
           <Router>
             <Suspense fallback={<LoadingSpinner />}>
@@ -142,6 +144,7 @@ export default function App() {
             </Suspense>
           </Router>
         </ErrorBoundary>
+        </MotionConfig>
       </ThemeProvider>
     </UserProvider>
   );

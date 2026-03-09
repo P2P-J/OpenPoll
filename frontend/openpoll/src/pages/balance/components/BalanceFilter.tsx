@@ -1,5 +1,6 @@
 import { motion } from "motion/react";
 import { Flame, Clock, CheckCircle } from "lucide-react";
+import { useTheme } from "@/contexts/ThemeContext";
 import type { FilterType } from "../hooks/useBalanceList";
 
 interface BalanceFilterProps {
@@ -14,6 +15,7 @@ const FILTERS = [
 ];
 
 export function BalanceFilter({ filter, onFilterChange }: BalanceFilterProps) {
+  const { isDark } = useTheme();
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -27,8 +29,8 @@ export function BalanceFilter({ filter, onFilterChange }: BalanceFilterProps) {
           onClick={() => onFilterChange(item.key)}
           className={`flex items-center space-x-1.5 sm:space-x-2 px-4 sm:px-6 py-2.5 sm:py-3 rounded-full font-semibold text-sm sm:text-base transition-all ${
             filter === item.key
-              ? "bg-white text-black"
-              : "bg-white/10 text-white hover:bg-white/20 border border-white/10"
+              ? isDark ? "bg-white text-black" : "bg-black text-white"
+              : isDark ? "bg-white/10 text-white hover:bg-white/20 border border-white/10" : "bg-black/10 text-black hover:bg-black/20 border border-black/10"
           }`}
         >
           <item.icon className="w-4 h-4 sm:w-5 sm:h-5" />

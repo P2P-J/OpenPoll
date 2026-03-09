@@ -18,12 +18,14 @@ import {
 import { ShareModal } from "./components/ShareModal";
 import { Toast } from "@/components/molecules/toast/Toast";
 import { AdBanner } from "@/components/atoms/adBanner/AdBanner";
+import { useTheme } from "@/contexts/ThemeContext";
 
 export function DosResult() {
   usePageMeta("DOS 테스트 결과", "나의 정치 성향 분석 결과를 확인하세요.");
   const { type } = useParams<{ type: string }>();
   const location = useLocation();
   const navigate = useNavigate();
+  const { isDark } = useTheme();
   const [showShareModal, setShowShareModal] = useState(false);
   const [showToast, setShowToast] = useState(false);
 
@@ -58,7 +60,7 @@ export function DosResult() {
   if (!resultTypeInfo) return <ErrorState />;
 
   return (
-    <div className="min-h-screen bg-black text-white pt-16">
+    <div className={`min-h-screen pt-16 ${isDark ? 'bg-black text-white' : 'bg-white text-black'}`}>
       <div className="max-w-4xl mx-auto px-4 py-8 sm:py-12">
         <ResultHeader
           type={type || ""}
