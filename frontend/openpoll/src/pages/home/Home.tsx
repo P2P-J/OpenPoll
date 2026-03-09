@@ -139,17 +139,17 @@ export function Home() {
 
   // Convert API Party data to PartyData format for display
   // SSE에서 실시간으로 받은 stats 데이터를 우선 사용
-  const partyData = parties.map((party) => {
+  const partyData = useMemo(() => parties.map((party) => {
     const partyStat = stats?.stats.find((s) => s.partyId === party.id);
     return {
       id: party.id.toString(),
       name: party.name,
       color: party.color,
       logo: PARTY_LOGOS[party.name] ?? "/parties/etc.png",
-      totalVotes: partyStat?.count ?? party.voteCount, // SSE에서 받은 count 우선 사용
+      totalVotes: partyStat?.count ?? party.voteCount,
       percentage: partyStat?.percentage ?? 0,
     };
-  });
+  }), [parties, stats]);
 
   return (
     <>

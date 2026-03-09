@@ -47,6 +47,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
   // Check if user is already logged in on mount
   useEffect(() => {
+    let retryTimerId: number | undefined;
     const initializeAuth = async () => {
       const accessToken = localStorage.getItem("accessToken");
       const refreshToken = localStorage.getItem("refreshToken");
@@ -107,7 +108,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
           // 기타 서버 에러 (500 등): 토큰을 유지하고 로컬 세션 사용
           tryLoadLocalSession();
           // 백그라운드에서 재시도
-          setTimeout(async () => {
+          retryTimerId = window.setTimeout(async () => {
             try {
               const userData = await userApi.getMe();
               setUser(userData);
@@ -156,6 +157,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
     // 컴포넌트 언마운트 시 타이머 정리
     return () => {
       cancelProactiveRefresh();
+      if (retryTimerId) window.clearTimeout(retryTimerId);
     };
   }, []);
 

@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback, type ReactNode } from "react";
+import { useState, useRef, useEffect, useCallback, useMemo, type ReactNode } from "react";
 import { X, Link2, Check, Copy, QrCode } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { QRCodeSVG } from "qrcode.react";
@@ -103,7 +103,7 @@ export function ShareModal({ isOpen, onClose, type }: ShareModalProps) {
     }, [shareUrl]);
 
     // Social share configuration
-    const socialItems: SocialItem[] = [
+    const socialItems: SocialItem[] = useMemo(() => [
         {
             id: "twitter",
             label: "X",
@@ -148,7 +148,7 @@ export function ShareModal({ isOpen, onClose, type }: ShareModalProps) {
             bgClass: `${ICON_BASE_CLASS} group-hover:brightness-110`,
             onClick: handleEmailShare,
         },
-    ];
+    ], [shareUrl, emailCopied, isDark, handleEmailShare]);
 
     const borderClass = isDark ? 'border-white/10' : 'border-black/10';
     const mutedTextClass = isDark ? 'text-gray-400' : 'text-gray-500';
