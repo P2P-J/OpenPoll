@@ -122,7 +122,7 @@ export function PrivacyPolicy() {
           </p>
           <ul className={listClass}>
             <li>담당자: OpenPoll 운영팀</li>
-            <li>이메일: soul117843@gmail.com</li>
+            <li>이메일: openpoll2026@gmail.com</li>
           </ul>
         </div>
 
