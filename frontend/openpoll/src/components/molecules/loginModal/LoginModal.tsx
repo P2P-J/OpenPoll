@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { X, Mail, Lock, ArrowRight, Gift } from "lucide-react";
 import { motion } from "motion/react";
-import { ROUTES } from "@/shared/constants";
+import { ROUTES, STORAGE_KEYS } from "@/shared/constants";
 import { useUser } from "@/contexts/UserContext";
 import { Modal } from "@/components/atoms/modal/Modal";
 import naverLogo from "@/img/naver-logo.svg";
@@ -54,7 +54,7 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
   const oauthBaseUrl = import.meta.env.VITE_API_BASE_URL || "/api";
 
   const startOAuth = (provider: "google" | "naver", mode?: "rejoin") => {
-    localStorage.setItem("oauthProvider", provider);
+    localStorage.setItem(STORAGE_KEYS.OAUTH_PROVIDER, provider);
     const modeQuery = mode ? `?mode=${mode}` : "";
     onClose();
     window.location.href = `${oauthBaseUrl}/auth/oauth/${provider}${modeQuery}`;

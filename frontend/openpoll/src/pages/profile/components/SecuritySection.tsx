@@ -1,6 +1,7 @@
 import { motion } from "motion/react";
 import { Lock, Shield, Info, UserX } from "lucide-react";
 import { useTheme } from "@/contexts/ThemeContext";
+import { STORAGE_KEYS } from "@/shared/constants";
 
 interface SecuritySectionProps {
   onOpenPasswordModal: () => void;
@@ -9,7 +10,7 @@ interface SecuritySectionProps {
 
 export function SecuritySection({ onOpenPasswordModal, onOpenWithdrawModal }: SecuritySectionProps) {
   const { isDark } = useTheme();
-  const isOAuthUser = localStorage.getItem("isOAuthUser") === "true";
+  const isOAuthUser = localStorage.getItem(STORAGE_KEYS.IS_OAUTH_USER) === "true";
 
   return (
     <motion.div

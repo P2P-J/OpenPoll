@@ -11,6 +11,7 @@ import {
   getErrorMessage,
 } from "@/api";
 import { useUser } from "@/contexts/UserContext";
+import { STORAGE_KEYS } from "@/shared/constants";
 import {
   keyOf,
   getMyUserIdFromSession,
@@ -58,7 +59,7 @@ export function useBalanceDetail(id?: string): UseBalanceDetailResult {
     () =>
       isAuthenticated ||
       !!getSession() ||
-      !!localStorage.getItem("accessToken"),
+      !!localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN),
     [isAuthenticated]
   );
 

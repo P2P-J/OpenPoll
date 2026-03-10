@@ -17,7 +17,7 @@ import { ThemeProvider } from "@/contexts/ThemeContext";
 import { UserProvider } from "@/contexts/UserContext";
 import { VotingProvider } from "@/contexts/VotingContext";
 import { NewsProvider } from "@/contexts/NewsContext";
-import { ROUTES } from "@/shared/constants";
+import { ROUTES, STORAGE_KEYS } from "@/shared/constants";
 
 // Lazy load all page components
 const Home = lazy(() =>
@@ -71,21 +71,20 @@ const TermsOfService = lazy(() =>
 const Components = lazy(() =>
   import("@/pages/components").then((m) => ({ default: m.Components })),
 );
-const SOCIAL_PROFILE_PENDING_KEY = "social_profile_pending";
 
 function clearSocialPendingSession() {
-  localStorage.removeItem("accessToken");
-  localStorage.removeItem("refreshToken");
-  localStorage.removeItem("openpoll_session_v1");
-  localStorage.removeItem(SOCIAL_PROFILE_PENDING_KEY);
-  localStorage.removeItem("oauthProvider");
+  localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
+  localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
+  localStorage.removeItem(STORAGE_KEYS.SESSION);
+  localStorage.removeItem(STORAGE_KEYS.SOCIAL_PROFILE_PENDING);
+  localStorage.removeItem(STORAGE_KEYS.OAUTH_PROVIDER);
   window.dispatchEvent(new Event("storage"));
 }
 
 function SocialProfilePendingGuard({ children }: { children: ReactNode }) {
   const location = useLocation();
   const navigationType = useNavigationType();
-  const isPending = localStorage.getItem(SOCIAL_PROFILE_PENDING_KEY) === "1";
+  const isPending = localStorage.getItem(STORAGE_KEYS.SOCIAL_PROFILE_PENDING) === "1";
 
   if (!isPending) return <>{children}</>;
 

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { ArrowRight, Mail, Lock, Gift, Home } from 'lucide-react';
 import { motion } from 'motion/react';
-import { ROUTES } from '@/shared/constants';
+import { ROUTES, STORAGE_KEYS } from '@/shared/constants';
 import { useUser } from '@/contexts/UserContext';
 import { AuthSidePanel } from '@/components/organisms/auth/AuthSidePanel';
 import naverLogo from '@/img/naver-logo.svg';
@@ -57,7 +57,7 @@ export function Login() {
   const oauthBaseUrl = import.meta.env.VITE_API_BASE_URL || '/api';
 
   const startOAuth = (provider: 'google' | 'naver', mode?: 'rejoin') => {
-    localStorage.setItem('oauthProvider', provider);
+    localStorage.setItem(STORAGE_KEYS.OAUTH_PROVIDER, provider);
     const modeQuery = mode ? `?mode=${mode}` : '';
     window.location.href = `${oauthBaseUrl}/auth/oauth/${provider}${modeQuery}`;
   };
