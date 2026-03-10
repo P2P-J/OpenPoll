@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { User, Calendar, Users, MapPin } from "lucide-react";
 import { motion } from "motion/react";
-import { ROUTES } from "@/shared/constants";
+import { ROUTES, STORAGE_KEYS } from "@/shared/constants";
 import { authApi } from "@/api";
 import { useUser } from "@/contexts/UserContext";
 
@@ -12,7 +12,6 @@ type SocialSignupErrors = {
   gender?: string;
   region?: string;
 };
-const SOCIAL_PROFILE_PENDING_KEY = "social_profile_pending";
 
 export function SocialSignup() {
   const navigate = useNavigate();
@@ -29,18 +28,18 @@ export function SocialSignup() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const cancelPendingSignup = () => {
-    localStorage.removeItem("accessToken");
-    localStorage.removeItem("refreshToken");
-    localStorage.removeItem("openpoll_session_v1");
-    localStorage.removeItem(SOCIAL_PROFILE_PENDING_KEY);
-    localStorage.removeItem("oauthProvider");
-    localStorage.removeItem("isOAuthUser");
+    localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
+    localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
+    localStorage.removeItem(STORAGE_KEYS.SESSION);
+    localStorage.removeItem(STORAGE_KEYS.SOCIAL_PROFILE_PENDING);
+    localStorage.removeItem(STORAGE_KEYS.OAUTH_PROVIDER);
+    localStorage.removeItem(STORAGE_KEYS.IS_OAUTH_USER);
     window.dispatchEvent(new Event("storage"));
     window.location.replace(ROUTES.HOME);
   };
 
   useEffect(() => {
-    const isPending = localStorage.getItem(SOCIAL_PROFILE_PENDING_KEY) === "1";
+    const isPending = localStorage.getItem(STORAGE_KEYS.SOCIAL_PROFILE_PENDING) === "1";
     if (!isPending) {
       navigate(ROUTES.HOME, { replace: true });
     }
@@ -104,19 +103,19 @@ export function SocialSignup() {
       const data = await authApi.completeSocialProfile(payload);
 
       if (data) {
-        if (data.accessToken) localStorage.setItem("accessToken", data.accessToken);
-        if (data.refreshToken) localStorage.setItem("refreshToken", data.refreshToken);
+        if (data.accessToken) localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, data.accessToken);
+        if (data.refreshToken) localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, data.refreshToken);
 
         const session = {
           nickname: data.user.nickname,
           email: data.user.email,
           points: data.user.points,
         };
-        localStorage.setItem("openpoll_session_v1", JSON.stringify(session));
+        localStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(session));
         window.dispatchEvent(new Event("storage"));
       }
 
-      localStorage.removeItem(SOCIAL_PROFILE_PENDING_KEY);
+      localStorage.removeItem(STORAGE_KEYS.SOCIAL_PROFILE_PENDING);
       await refreshUser();
       navigate(ROUTES.HOME);
     } catch (err) {

@@ -16,7 +16,7 @@ import {
 } from "@/api/client";
 import type { AxiosError } from "axios";
 import type { User, AuthResponse } from "@/types/api.types";
-const SOCIAL_PROFILE_PENDING_KEY = "social_profile_pending";
+import { STORAGE_KEYS } from "@/shared/constants";
 
 interface UserContextType {
   user: User | null;
@@ -49,12 +49,12 @@ export function UserProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let retryTimerId: number | undefined;
     const initializeAuth = async () => {
-      const accessToken = localStorage.getItem("accessToken");
-      const refreshToken = localStorage.getItem("refreshToken");
+      const accessToken = localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
+      const refreshToken = localStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN);
 
       // 토큰이 없으면 로그인 필요
       if (!accessToken && !refreshToken) {
-        localStorage.removeItem(SOCIAL_PROFILE_PENDING_KEY);
+        localStorage.removeItem(STORAGE_KEYS.SOCIAL_PROFILE_PENDING);
         setIsLoading(false);
         return;
       }
@@ -86,7 +86,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
           email: userData.email,
           points: userData.points,
         };
-        localStorage.setItem("openpoll_session_v1", JSON.stringify(session));
+        localStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(session));
 
         // 선제적 토큰 갱신 스케줄 설정
         scheduleProactiveRefresh();
@@ -117,7 +117,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
                 email: userData.email,
                 points: userData.points,
               };
-              localStorage.setItem("openpoll_session_v1", JSON.stringify(session));
+              localStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(session));
             } catch {
               // 백그라운드 갱신 실패는 무시
             }
@@ -131,7 +131,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
     // 로컬 세션 정보로 임시 사용자 데이터 설정
     const tryLoadLocalSession = () => {
       try {
-        const sessionStr = localStorage.getItem("openpoll_session_v1");
+        const sessionStr = localStorage.getItem(STORAGE_KEYS.SESSION);
         if (sessionStr) {
           const session = JSON.parse(sessionStr);
           // 세션 정보로 최소한의 User 객체 생성
@@ -169,10 +169,10 @@ export function UserProvider({ children }: { children: ReactNode }) {
       const response: AuthResponse = await authApi.login({ email, password });
 
       // Save tokens
-      localStorage.setItem("accessToken", response.accessToken);
-      localStorage.setItem("refreshToken", response.refreshToken);
-      localStorage.removeItem(SOCIAL_PROFILE_PENDING_KEY);
-      localStorage.removeItem("isOAuthUser");
+      localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, response.accessToken);
+      localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, response.refreshToken);
+      localStorage.removeItem(STORAGE_KEYS.SOCIAL_PROFILE_PENDING);
+      localStorage.removeItem(STORAGE_KEYS.IS_OAUTH_USER);
 
       // Set user
       setUser(response.user);
@@ -183,7 +183,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
         email: response.user.email,
         points: response.user.points,
       };
-      localStorage.setItem("openpoll_session_v1", JSON.stringify(session));
+      localStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(session));
       window.dispatchEvent(new Event("storage"));
 
       // 선제적 토큰 갱신 스케줄 설정
@@ -214,9 +214,9 @@ export function UserProvider({ children }: { children: ReactNode }) {
         const response: AuthResponse = await authApi.signup(data);
 
         // Save tokens
-        localStorage.setItem("accessToken", response.accessToken);
-        localStorage.setItem("refreshToken", response.refreshToken);
-        localStorage.removeItem(SOCIAL_PROFILE_PENDING_KEY);
+        localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, response.accessToken);
+        localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, response.refreshToken);
+        localStorage.removeItem(STORAGE_KEYS.SOCIAL_PROFILE_PENDING);
 
         // Set user
         setUser(response.user);
@@ -227,7 +227,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
           email: response.user.email,
           points: response.user.points,
         };
-        localStorage.setItem("openpoll_session_v1", JSON.stringify(session));
+        localStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(session));
         window.dispatchEvent(new Event("storage"));
 
         // 선제적 토큰 갱신 스케줄 설정
@@ -257,15 +257,15 @@ export function UserProvider({ children }: { children: ReactNode }) {
       setUser(null);
 
       // Clear localAuth session
-      localStorage.removeItem("openpoll_session_v1");
-      localStorage.removeItem(SOCIAL_PROFILE_PENDING_KEY);
-      localStorage.removeItem("isOAuthUser");
+      localStorage.removeItem(STORAGE_KEYS.SESSION);
+      localStorage.removeItem(STORAGE_KEYS.SOCIAL_PROFILE_PENDING);
+      localStorage.removeItem(STORAGE_KEYS.IS_OAUTH_USER);
       window.dispatchEvent(new Event("storage"));
     }
   }, []);
 
   const refreshUser = useCallback(async () => {
-    if (!localStorage.getItem("accessToken")) {
+    if (!localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN)) {
       return;
     }
 
@@ -279,7 +279,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
         email: userData.email,
         points: userData.points,
       };
-      localStorage.setItem("openpoll_session_v1", JSON.stringify(session));
+      localStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(session));
       window.dispatchEvent(new Event("storage"));
     } catch {
       // 사용자 갱신 실패는 무시
