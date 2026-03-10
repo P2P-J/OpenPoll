@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { CalendarCheck } from "lucide-react";
 import { usePageMeta } from "@/hooks/usePageMeta";
@@ -21,6 +21,8 @@ export function Attendance() {
   // 출석 완료 후 포인트 팝업 표시
   const [earnedPoints, setEarnedPoints] = useState<number | null>(null);
   const [isStreakBonus, setIsStreakBonus] = useState(false);
+  const pointsTimer = useRef<number | null>(null);
+  useEffect(() => () => { if (pointsTimer.current) clearTimeout(pointsTimer.current); }, []);
 
   const handleCheckIn = async () => {
     if (!isAuthenticated) {
@@ -35,7 +37,8 @@ export function Attendance() {
       await refreshUser();
 
       // 3초 후 포인트 팝업 숨기기
-      setTimeout(() => setEarnedPoints(null), 3000);
+      if (pointsTimer.current) clearTimeout(pointsTimer.current);
+      pointsTimer.current = window.setTimeout(() => setEarnedPoints(null), 3000);
     } catch {
       setToastMessage("출석 체크에 실패했습니다.");
       setToastType("error");

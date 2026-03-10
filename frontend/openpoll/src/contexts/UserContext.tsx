@@ -18,6 +18,17 @@ import type { AxiosError } from "axios";
 import type { User, AuthResponse } from "@/types/api.types";
 import { STORAGE_KEYS } from "@/shared/constants";
 
+/** localStorage 세션을 userData와 동기화하고, notify가 true이면 storage 이벤트를 발행 */
+function syncSession(userData: { nickname: string; email: string; points: number }, notify = false) {
+  const session = {
+    nickname: userData.nickname,
+    email: userData.email,
+    points: userData.points,
+  };
+  localStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(session));
+  if (notify) window.dispatchEvent(new Event("storage"));
+}
+
 interface UserContextType {
   user: User | null;
   isAuthenticated: boolean;
@@ -80,13 +91,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
         const userData = await userApi.getMe();
         setUser(userData);
 
-        // Sync with localAuth session
-        const session = {
-          nickname: userData.nickname,
-          email: userData.email,
-          points: userData.points,
-        };
-        localStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(session));
+        syncSession(userData);
 
         // 선제적 토큰 갱신 스케줄 설정
         scheduleProactiveRefresh();
@@ -112,12 +117,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
             try {
               const userData = await userApi.getMe();
               setUser(userData);
-              const session = {
-                nickname: userData.nickname,
-                email: userData.email,
-                points: userData.points,
-              };
-              localStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(session));
+              syncSession(userData);
             } catch {
               // 백그라운드 갱신 실패는 무시
             }
@@ -177,14 +177,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
       // Set user
       setUser(response.user);
 
-      // Sync with localAuth session for Header compatibility
-      const session = {
-        nickname: response.user.nickname,
-        email: response.user.email,
-        points: response.user.points,
-      };
-      localStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(session));
-      window.dispatchEvent(new Event("storage"));
+      syncSession(response.user, true);
 
       // 선제적 토큰 갱신 스케줄 설정
       scheduleProactiveRefresh();
@@ -221,14 +214,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
         // Set user
         setUser(response.user);
 
-        // Sync with localAuth session for Header compatibility
-        const session = {
-          nickname: response.user.nickname,
-          email: response.user.email,
-          points: response.user.points,
-        };
-        localStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(session));
-        window.dispatchEvent(new Event("storage"));
+        syncSession(response.user, true);
 
         // 선제적 토큰 갱신 스케줄 설정
         scheduleProactiveRefresh();
@@ -273,14 +259,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
       const userData = await userApi.getMe();
       setUser(userData);
 
-      // Sync with localAuth session
-      const session = {
-        nickname: userData.nickname,
-        email: userData.email,
-        points: userData.points,
-      };
-      localStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(session));
-      window.dispatchEvent(new Event("storage"));
+      syncSession(userData, true);
     } catch {
       // 사용자 갱신 실패는 무시
     }

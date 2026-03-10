@@ -4,6 +4,7 @@ import type { AxiosError } from "axios";
 import { authApi } from "@/api";
 import { ROUTES, STORAGE_KEYS } from "@/shared/constants";
 import { useUser } from "@/contexts/UserContext";
+import { usePageMeta } from "@/hooks/usePageMeta";
 import googleLogo from "@/img/google-logo.svg";
 import naverLogo from "@/img/naver-logo.svg";
 
@@ -18,6 +19,7 @@ function isProvider(v: string | null): v is OAuthProvider {
 }
 
 export function OAuthCallbackPage() {
+  usePageMeta("로그인 처리 중");
   const location = useLocation();
   const navigate = useNavigate();
   const { refreshUser } = useUser();

@@ -2,9 +2,10 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { User, Calendar, Users, MapPin } from "lucide-react";
 import { motion } from "motion/react";
-import { ROUTES, STORAGE_KEYS } from "@/shared/constants";
+import { ROUTES, STORAGE_KEYS, REGION_OPTIONS, GENDER_OPTIONS } from "@/shared/constants";
 import { authApi } from "@/api";
 import { useUser } from "@/contexts/UserContext";
+import { usePageMeta } from "@/hooks/usePageMeta";
 
 type SocialSignupErrors = {
   nickname?: string;
@@ -14,6 +15,7 @@ type SocialSignupErrors = {
 };
 
 export function SocialSignup() {
+  usePageMeta("추가 정보 입력", "소셜 로그인 추가 정보를 입력하여 회원가입을 완료하세요.");
   const navigate = useNavigate();
   const { refreshUser } = useUser();
 
@@ -221,12 +223,9 @@ export function SocialSignup() {
                     <option value="" className="bg-black">
                       선택하세요
                     </option>
-                    <option value="MALE" className="bg-black">
-                      남성
-                    </option>
-                    <option value="FEMALE" className="bg-black">
-                      여성
-                    </option>
+                    {GENDER_OPTIONS.map((g) => (
+                      <option key={g.value} value={g.value} className="bg-black">{g.label}</option>
+                    ))}
                   </select>
                 </div>
                 {showError("gender") && (
@@ -255,23 +254,9 @@ export function SocialSignup() {
                   <option value="" className="bg-black">
                     거주 지역을 선택하세요
                   </option>
-                  <option value="서울" className="bg-black">서울</option>
-                  <option value="부산" className="bg-black">부산</option>
-                  <option value="대구" className="bg-black">대구</option>
-                  <option value="인천" className="bg-black">인천</option>
-                  <option value="광주" className="bg-black">광주</option>
-                  <option value="대전" className="bg-black">대전</option>
-                  <option value="울산" className="bg-black">울산</option>
-                  <option value="세종" className="bg-black">세종</option>
-                  <option value="경기" className="bg-black">경기</option>
-                  <option value="강원" className="bg-black">강원</option>
-                  <option value="충북" className="bg-black">충북</option>
-                  <option value="충남" className="bg-black">충남</option>
-                  <option value="전북" className="bg-black">전북</option>
-                  <option value="전남" className="bg-black">전남</option>
-                  <option value="경북" className="bg-black">경북</option>
-                  <option value="경남" className="bg-black">경남</option>
-                  <option value="제주" className="bg-black">제주</option>
+                  {REGION_OPTIONS.map((r) => (
+                    <option key={r} value={r} className="bg-black">{r}</option>
+                  ))}
                 </select>
               </div>
               {showError("region") && (

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "motion/react";
 import { ArrowRight, Clock, Award, Share2, Brain } from "lucide-react";
@@ -238,10 +238,13 @@ export function DosIntro() {
   const { isDark } = useTheme();
   useScrollToTop();
 
+  const redirectTimer = useRef<number | null>(null);
+  useEffect(() => () => { if (redirectTimer.current) clearTimeout(redirectTimer.current); }, []);
+
   const handleStartTest = useCallback(() => {
     if (!isAuthenticated) {
       setShowToast(true);
-      setTimeout(() => {
+      redirectTimer.current = window.setTimeout(() => {
         navigate("/login", { state: { from: "/dos" } });
       }, LOGIN_REDIRECT_DELAY_MS);
       return;

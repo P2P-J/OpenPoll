@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback, useMemo, type ReactNode } from "react";
+import { useState, useRef, useEffect, useCallback, type ReactNode } from "react";
 import { X, Link2, Check, Copy, QrCode } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { QRCodeSVG } from "qrcode.react";
@@ -80,6 +80,13 @@ export function ShareModal({ isOpen, onClose, type }: ShareModalProps) {
         return () => document.removeEventListener("keydown", handleEsc);
     }, [isOpen, onClose]);
 
+    const copyTimer = useRef<number | null>(null);
+    const emailTimer = useRef<number | null>(null);
+    useEffect(() => () => {
+        if (copyTimer.current) clearTimeout(copyTimer.current);
+        if (emailTimer.current) clearTimeout(emailTimer.current);
+    }, []);
+
     const handleCopy = useCallback(async () => {
         try {
             await navigator.clipboard.writeText(shareUrl);
@@ -88,7 +95,8 @@ export function ShareModal({ isOpen, onClose, type }: ShareModalProps) {
             document.execCommand("copy");
         }
         setCopied(true);
-        setTimeout(() => setCopied(false), COPY_RESET_MS);
+        if (copyTimer.current) clearTimeout(copyTimer.current);
+        copyTimer.current = window.setTimeout(() => setCopied(false), COPY_RESET_MS);
     }, [shareUrl]);
 
     const handleEmailShare = useCallback(async () => {
@@ -99,17 +107,22 @@ export function ShareModal({ isOpen, onClose, type }: ShareModalProps) {
             // fallback
         }
         setEmailCopied(true);
-        setTimeout(() => setEmailCopied(false), COPY_RESET_MS);
+        if (emailTimer.current) clearTimeout(emailTimer.current);
+        emailTimer.current = window.setTimeout(() => setEmailCopied(false), COPY_RESET_MS);
     }, [shareUrl]);
 
     // Social share configuration
-    const socialItems: SocialItem[] = useMemo(() => [
+    const twitterBgClass = `${ICON_BASE_CLASS} ${isDark ? 'bg-black border border-white/20 group-hover:border-white/40' : 'bg-gray-800 border border-gray-600 group-hover:border-gray-400'}`;
+    const defaultBgClass = `${ICON_BASE_CLASS} group-hover:brightness-110`;
+    const emailBgColor = emailCopied ? "#22c55e" : isDark ? "#555" : "#6b7280";
+
+    const socialItems: SocialItem[] = [
         {
             id: "twitter",
             label: "X",
             icon: <TwitterIcon />,
             bgStyle: {},
-            bgClass: `${ICON_BASE_CLASS} ${isDark ? 'bg-black border border-white/20 group-hover:border-white/40' : 'bg-gray-800 border border-gray-600 group-hover:border-gray-400'}`,
+            bgClass: twitterBgClass,
             onClick: () =>
                 openPopup(
                     `https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(SHARE_TEXT)}`
@@ -120,7 +133,7 @@ export function ShareModal({ isOpen, onClose, type }: ShareModalProps) {
             label: "Facebook",
             icon: <FacebookIcon />,
             bgStyle: { backgroundColor: "#1877F2" },
-            bgClass: `${ICON_BASE_CLASS} group-hover:brightness-110`,
+            bgClass: defaultBgClass,
             onClick: () =>
                 openPopup(
                     `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`
@@ -134,7 +147,7 @@ export function ShareModal({ isOpen, onClose, type }: ShareModalProps) {
                 background:
                     "radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%)",
             },
-            bgClass: `${ICON_BASE_CLASS} group-hover:brightness-110`,
+            bgClass: defaultBgClass,
             onClick: async () => {
                 await navigator.clipboard.writeText(shareUrl);
                 window.open("https://www.instagram.com/", "_blank");
@@ -144,11 +157,11 @@ export function ShareModal({ isOpen, onClose, type }: ShareModalProps) {
             id: "email",
             label: emailCopied ? "링크 복사됨!" : "이메일",
             icon: <EmailIcon />,
-            bgStyle: { backgroundColor: emailCopied ? "#22c55e" : isDark ? "#555" : "#6b7280" },
-            bgClass: `${ICON_BASE_CLASS} group-hover:brightness-110`,
+            bgStyle: { backgroundColor: emailBgColor },
+            bgClass: defaultBgClass,
             onClick: handleEmailShare,
         },
-    ], [shareUrl, emailCopied, isDark, handleEmailShare]);
+    ];
 
     const borderClass = isDark ? 'border-white/10' : 'border-black/10';
     const mutedTextClass = isDark ? 'text-gray-400' : 'text-gray-500';
@@ -205,6 +218,7 @@ export function ShareModal({ isOpen, onClose, type }: ShareModalProps) {
                                 공유
                             </div>
                             <div className="flex items-start justify-around">
+                                {/* eslint-disable-next-line react-hooks/refs -- onClick handlers only access refs on click, not during render */}
                                 {socialItems.map((item) => (
                                     <button
                                         key={item.id}
