@@ -1,4 +1,4 @@
-import { useEffect, type CSSProperties } from 'react';
+import { useEffect, useRef, type CSSProperties } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, AlertCircle, CheckCircle, Info } from 'lucide-react';
 
@@ -19,12 +19,15 @@ export function Toast({
   duration = 3000,
   contentStyle
 }: ToastProps) {
+  const onCloseRef = useRef(onClose);
+  useEffect(() => { onCloseRef.current = onClose; });
+
   useEffect(() => {
     if (isVisible && duration > 0) {
-      const timer = setTimeout(onClose, duration);
+      const timer = setTimeout(() => onCloseRef.current(), duration);
       return () => clearTimeout(timer);
     }
-  }, [isVisible, duration, onClose]);
+  }, [isVisible, duration]);
 
   const icons = {
     info: Info,

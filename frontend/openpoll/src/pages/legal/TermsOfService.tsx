@@ -27,7 +27,7 @@ export function TermsOfService() {
         </h1>
 
         <p className={`mb-6 text-sm ${isDark ? "text-gray-500" : "text-gray-400"}`}>
-          시행일: 2025년 1월 1일 | 최종 수정일: 2025년 5월 1일
+          시행일: 2026년 3월 10일 | 최종 수정일: 2026년 3월 10일
         </p>
 
         <div className={sectionClass}>

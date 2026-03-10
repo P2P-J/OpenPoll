@@ -18,6 +18,7 @@ import { UserProvider } from "@/contexts/UserContext";
 import { VotingProvider } from "@/contexts/VotingContext";
 import { NewsProvider } from "@/contexts/NewsContext";
 import { ROUTES, STORAGE_KEYS } from "@/shared/constants";
+import { useGTMPageView } from "@/hooks";
 
 // Lazy load all page components
 const Home = lazy(() =>
@@ -71,6 +72,9 @@ const TermsOfService = lazy(() =>
 const Components = lazy(() =>
   import("@/pages/components").then((m) => ({ default: m.Components })),
 );
+const NotFound = lazy(() =>
+  import("@/pages/notFound").then((m) => ({ default: m.NotFound })),
+);
 
 function clearSocialPendingSession() {
   localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
@@ -79,6 +83,11 @@ function clearSocialPendingSession() {
   localStorage.removeItem(STORAGE_KEYS.SOCIAL_PROFILE_PENDING);
   localStorage.removeItem(STORAGE_KEYS.OAUTH_PROVIDER);
   window.dispatchEvent(new Event("storage"));
+}
+
+function GTMPageTracker() {
+  useGTMPageView();
+  return null;
 }
 
 function SocialProfilePendingGuard({ children }: { children: ReactNode }) {
@@ -109,6 +118,7 @@ export default function App() {
         <MotionConfig reducedMotion="user">
         <ErrorBoundary>
           <Router>
+            <GTMPageTracker />
             <Suspense fallback={<LoadingSpinner />}>
               <SocialProfilePendingGuard>
                 <Routes>
@@ -138,6 +148,8 @@ export default function App() {
                     <Route path="/terms" element={<TermsOfService />} />
                     <Route path="/components" element={<Components />} />
                   </Route>
+                  {/* 404 catch-all */}
+                  <Route path="*" element={<NotFound />} />
                 </Routes>
               </SocialProfilePendingGuard>
             </Suspense>

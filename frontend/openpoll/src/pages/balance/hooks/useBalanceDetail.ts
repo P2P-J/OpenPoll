@@ -19,7 +19,6 @@ import {
   getAuthorLabel,
   getMyLabelFromSession,
   fromMyVote,
-  toApiVote,
   applyVoteOptimistic,
   ensureCommentsShape,
 } from "@/shared/utils/balanceHelpers";
@@ -154,7 +153,7 @@ export function useBalanceDetail(id?: string): UseBalanceDetailResult {
     try {
       setIsVoting(true);
       setErrorMessage(null);
-      await voteBalance(prevIssue.id, toApiVote(option));
+      await voteBalance(prevIssue.id, option);
     } catch (e) {
       setSelectedOption(null);
       setIssue(prevIssue);

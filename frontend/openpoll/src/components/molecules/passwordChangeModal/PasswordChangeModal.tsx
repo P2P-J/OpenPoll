@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Lock, X, AlertCircle, CheckCircle2, Shield } from "lucide-react";
 import { changePassword } from "@/api/user.api";
@@ -20,7 +20,11 @@ export function PasswordChangeModal({
   const [passwordSuccess, setPasswordSuccess] = useState(false);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
 
+  const autoCloseTimer = useRef<number | null>(null);
+  useEffect(() => () => { if (autoCloseTimer.current) clearTimeout(autoCloseTimer.current); }, []);
+
   const handleClose = () => {
+    if (autoCloseTimer.current) { clearTimeout(autoCloseTimer.current); autoCloseTimer.current = null; }
     setCurrentPassword("");
     setNewPassword("");
     setConfirmPassword("");
@@ -64,7 +68,7 @@ export function PasswordChangeModal({
       await changePassword(currentPassword, newPassword);
       setPasswordSuccess(true);
 
-      setTimeout(() => {
+      autoCloseTimer.current = window.setTimeout(() => {
         handleClose();
       }, 2000);
     } catch (error) {
