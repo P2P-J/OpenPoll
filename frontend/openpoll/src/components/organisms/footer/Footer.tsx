@@ -1,9 +1,13 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useTheme } from "@/contexts/ThemeContext";
+import { ContactModal } from "@/components/organisms/contactModal/ContactModal";
 
 export function Footer() {
   const { isDark } = useTheme();
+  const [isContactOpen, setIsContactOpen] = useState(false);
   return (
+    <>
     <footer
       className="border-t py-8 px-4 sm:px-6 bg-surface border-default"
     >
@@ -43,12 +47,14 @@ export function Footer() {
             >
               이용약관
             </Link>
-            <a
-              href="mailto:openpoll2026@gmail.com"
+            <button
+              type="button"
+              onClick={() => setIsContactOpen(true)}
               className="transition-colors text-foreground-muted hover:text-foreground"
+              style={{ background: "none", border: "none", padding: 0, cursor: "pointer", font: "inherit" }}
             >
               문의하기
-            </a>
+            </button>
           </nav>
         </div>
 
@@ -57,5 +63,10 @@ export function Footer() {
         </p>
       </div>
     </footer>
+
+      {isContactOpen && (
+        <ContactModal isOpen={isContactOpen} onClose={() => setIsContactOpen(false)} />
+      )}
+    </>
   );
 }

@@ -25,6 +25,7 @@ export type {
   UpdateBalancePayload,
 } from "./balance.api";
 export * as newsApi from "./news.api";
+export * as contactApi from "./contact.api";
 
 // Export client utilities
 export { apiClient, getErrorMessage } from "./client";

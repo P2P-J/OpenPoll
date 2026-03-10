@@ -67,24 +67,26 @@ export function Modal({
     [onClose]
   );
 
+  // 초기 포커스 & 복원 — isOpen 전환 시에만 실행
   useEffect(() => {
     if (isOpen) {
       previousFocusRef.current = document.activeElement as HTMLElement;
-      document.addEventListener("keydown", handleKeyDown);
       requestAnimationFrame(() => {
         const firstFocusable = dialogRef.current?.querySelector<HTMLElement>(
           'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
         );
         firstFocusable?.focus();
       });
+    } else {
+      previousFocusRef.current?.focus();
     }
+  }, [isOpen]);
 
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-      if (!isOpen) {
-        previousFocusRef.current?.focus();
-      }
-    };
+  // 키보드 핸들러 등록 — handleKeyDown 변경 시에도 리스너 갱신
+  useEffect(() => {
+    if (!isOpen) return;
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
   }, [isOpen, handleKeyDown]);
 
   return (
