@@ -5,8 +5,6 @@ import type {
   AuthResponse,
   OAuthAuthResponse,
   CompleteSocialProfileRequest,
-  RefreshTokenRequest,
-  RefreshTokenResponse,
   ApiResponse,
 } from "@/types/api.types";
 
@@ -81,20 +79,6 @@ export const checkNickname = async (
   const response = await apiClient.get<ApiResponse<{ available: boolean }>>(
     "/auth/check-nickname",
     { params: { nickname } },
-  );
-  return response.data.data;
-};
-
-/**
- * 토큰 재발급
- * POST /auth/refresh
- */
-export const refreshToken = async (
-  data: RefreshTokenRequest,
-): Promise<RefreshTokenResponse> => {
-  const response = await apiClient.post<ApiResponse<RefreshTokenResponse>>(
-    "/auth/refresh",
-    data,
   );
   return response.data.data;
 };

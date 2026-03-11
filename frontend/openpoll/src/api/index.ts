@@ -1,4 +1,5 @@
 // Export all API modules
+export * as attendanceApi from "./attendance.api";
 export * as authApi from "./auth.api";
 export * as userApi from "./user.api";
 export * as partyApi from "./party.api";
@@ -24,6 +25,7 @@ export type {
   UpdateBalancePayload,
 } from "./balance.api";
 export * as newsApi from "./news.api";
+export * as contactApi from "./contact.api";
 
 // Export client utilities
 export { apiClient, getErrorMessage } from "./client";

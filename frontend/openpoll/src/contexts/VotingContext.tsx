@@ -121,8 +121,11 @@ export function VotingProvider({ children }: { children: ReactNode }) {
     };
   }, [connectSSE]);
 
+  const votingRef = useRef(false);
   const castVote = useCallback(
     async (partyId: number) => {
+      if (votingRef.current) return;
+      votingRef.current = true;
       setLoading(true);
       setError(null);
 
@@ -135,13 +138,13 @@ export function VotingProvider({ children }: { children: ReactNode }) {
         // Refresh stats to show new vote count
         const updatedStats = await dashboardApi.getStats();
         setStats(updatedStats);
-
-        setLoading(false);
       } catch (err) {
         const errorMessage = getErrorMessage(err);
         setError(errorMessage);
-        setLoading(false);
         throw new Error(errorMessage);
+      } finally {
+        votingRef.current = false;
+        setLoading(false);
       }
     },
     [refreshUser],

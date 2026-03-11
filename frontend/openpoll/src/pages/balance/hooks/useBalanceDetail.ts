@@ -11,6 +11,7 @@ import {
   getErrorMessage,
 } from "@/api";
 import { useUser } from "@/contexts/UserContext";
+import { STORAGE_KEYS } from "@/shared/constants";
 import {
   keyOf,
   getMyUserIdFromSession,
@@ -18,7 +19,6 @@ import {
   getAuthorLabel,
   getMyLabelFromSession,
   fromMyVote,
-  toApiVote,
   applyVoteOptimistic,
   ensureCommentsShape,
 } from "@/shared/utils/balanceHelpers";
@@ -58,7 +58,7 @@ export function useBalanceDetail(id?: string): UseBalanceDetailResult {
     () =>
       isAuthenticated ||
       !!getSession() ||
-      !!localStorage.getItem("accessToken"),
+      !!localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN),
     [isAuthenticated]
   );
 
@@ -153,7 +153,7 @@ export function useBalanceDetail(id?: string): UseBalanceDetailResult {
     try {
       setIsVoting(true);
       setErrorMessage(null);
-      await voteBalance(prevIssue.id, toApiVote(option));
+      await voteBalance(prevIssue.id, option);
     } catch (e) {
       setSelectedOption(null);
       setIssue(prevIssue);

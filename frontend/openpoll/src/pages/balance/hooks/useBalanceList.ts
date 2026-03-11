@@ -94,6 +94,19 @@ export function useBalanceList(isLoggedIn: boolean) {
     });
   }, [issues, filter, isLoggedIn]);
 
+  const hotRankMap = useMemo(() => {
+    const ranked = [...issues].sort((a, b) => {
+      const ap = Number(a.participants ?? a.totalVotes ?? 0);
+      const bp = Number(b.participants ?? b.totalVotes ?? 0);
+      return bp - ap;
+    });
+
+    return ranked.reduce<Record<number, number>>((acc, item, index) => {
+      acc[item.id] = index + 1;
+      return acc;
+    }, {});
+  }, [issues]);
+
   const openCreate = () => {
     setErrorMessage(null);
     setModalMode("create");
@@ -178,6 +191,7 @@ export function useBalanceList(isLoggedIn: boolean) {
     isLoading,
     errorMessage,
     filteredIssues,
+    hotRankMap,
     isModalOpen,
     setIsModalOpen,
     modalMode,

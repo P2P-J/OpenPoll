@@ -1,5 +1,6 @@
 import axios, { AxiosError } from "axios";
 import type { AxiosRequestConfig } from "axios";
+import { STORAGE_KEYS } from "@/shared/constants";
 
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL || "/api";
@@ -36,7 +37,7 @@ function decodeJWT(token: string): { userId: string; exp: number } | null {
  * @param bufferSeconds 만료 전 여유 시간 (초) - 기본 60초
  */
 export function isTokenExpiringSoon(bufferSeconds = 60): boolean {
-  const token = localStorage.getItem("accessToken");
+  const token = localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
   if (!token) return true;
 
   const decoded = decodeJWT(token);
@@ -50,7 +51,7 @@ export function isTokenExpiringSoon(bufferSeconds = 60): boolean {
  * Access Token이 완전히 만료되었는지 확인
  */
 export function isTokenExpired(): boolean {
-  const token = localStorage.getItem("accessToken");
+  const token = localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
   if (!token) return true;
 
   const decoded = decodeJWT(token);
@@ -103,7 +104,7 @@ export async function refreshTokens(): Promise<{
   accessToken: string;
   refreshToken: string;
 } | null> {
-  const refreshToken = localStorage.getItem("refreshToken");
+  const refreshToken = localStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN);
 
   if (!refreshToken) {
     clearTokens();
@@ -113,7 +114,7 @@ export async function refreshTokens(): Promise<{
   // 이미 갱신 중이면 완료를 기다림
   if (isRefreshing) {
     const token = await waitForTokenRefresh();
-    const newRefreshToken = localStorage.getItem("refreshToken") || "";
+    const newRefreshToken = localStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN) || "";
     return { accessToken: token, refreshToken: newRefreshToken };
   }
 
@@ -127,8 +128,8 @@ export async function refreshTokens(): Promise<{
     const { accessToken, refreshToken: newRefreshToken } = response.data.data;
 
     // 새 토큰 저장
-    localStorage.setItem("accessToken", accessToken);
-    localStorage.setItem("refreshToken", newRefreshToken);
+    localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, accessToken);
+    localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, newRefreshToken);
 
     // 대기 중인 요청들에게 알림
     onRefreshSuccess(accessToken);
@@ -144,13 +145,28 @@ export async function refreshTokens(): Promise<{
 }
 
 /**
+ * 로그인 없이 접근 가능한 공개 경로 목록
+ */
+const PUBLIC_PATHS = ["/dos/share", "/login", "/signup", "/register"];
+
+/**
+ * 현재 페이지가 공개 페이지인지 확인
+ */
+function isPublicPage(): boolean {
+  return PUBLIC_PATHS.some((path) => window.location.pathname.startsWith(path));
+}
+
+/**
  * 토큰 삭제 및 로그인 페이지로 리다이렉트
  */
 export function clearTokens(redirect = false) {
-  localStorage.removeItem("accessToken");
-  localStorage.removeItem("refreshToken");
+  localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
+  localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
   if (redirect) {
-    window.location.href = "/login";
+    // 공개 페이지에서는 redirect하지 않고 토큰만 정리
+    if (isPublicPage()) return;
+    const currentPath = window.location.pathname + window.location.search;
+    window.location.href = `/login?redirect=${encodeURIComponent(currentPath)}`;
   }
 }
 
@@ -170,7 +186,7 @@ export function scheduleProactiveRefresh() {
     proactiveRefreshTimer = null;
   }
 
-  const token = localStorage.getItem("accessToken");
+  const token = localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
   if (!token) return;
 
   const decoded = decodeJWT(token);
@@ -227,7 +243,7 @@ export const apiClient = axios.create({
 // Request interceptor - Add auth token to requests
 apiClient.interceptors.request.use(
   async (config) => {
-    let token = localStorage.getItem("accessToken");
+    let token = localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
 
     // 토큰이 곧 만료되면 미리 갱신 시도 (선제적 갱신)
     if (token && isTokenExpiringSoon(30)) {
