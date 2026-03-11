@@ -27,7 +27,7 @@ export function PrivacyPolicy() {
         </h1>
 
         <p className={`mb-6 text-sm ${isDark ? "text-gray-500" : "text-gray-400"}`}>
-          시행일: 2025년 1월 1일 | 최종 수정일: 2025년 5월 1일
+          시행일: 2026년 3월 10일 | 최종 수정일: 2026년 3월 10일
         </p>
 
         <div className={sectionClass}>
@@ -122,7 +122,7 @@ export function PrivacyPolicy() {
           </p>
           <ul className={listClass}>
             <li>담당자: OpenPoll 운영팀</li>
-            <li>이메일: soul117843@gmail.com</li>
+            <li>이메일: openpoll2026@gmail.com</li>
           </ul>
         </div>
 

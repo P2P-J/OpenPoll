@@ -2,13 +2,13 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import type { AxiosError } from "axios";
 import { authApi } from "@/api";
-import { ROUTES } from "@/shared/constants";
+import { ROUTES, STORAGE_KEYS } from "@/shared/constants";
 import { useUser } from "@/contexts/UserContext";
+import { usePageMeta } from "@/hooks/usePageMeta";
 import googleLogo from "@/img/google-logo.svg";
 import naverLogo from "@/img/naver-logo.svg";
 
 type OAuthProvider = "google" | "naver";
-const SOCIAL_PROFILE_PENDING_KEY = "social_profile_pending";
 
 type CallbackState =
   | { phase: "loading"; message: string }
@@ -19,6 +19,7 @@ function isProvider(v: string | null): v is OAuthProvider {
 }
 
 export function OAuthCallbackPage() {
+  usePageMeta("로그인 처리 중");
   const location = useLocation();
   const navigate = useNavigate();
   const { refreshUser } = useUser();
@@ -34,13 +35,13 @@ export function OAuthCallbackPage() {
   const code = query.get("code");
   const oauthState = query.get("state");
   const queryProvider = query.get("provider");
-  const localProvider = localStorage.getItem("oauthProvider");
+  const localProvider = localStorage.getItem(STORAGE_KEYS.OAUTH_PROVIDER);
   const provider = (isProvider(queryProvider) ? queryProvider : localProvider) as
     | OAuthProvider
     | null;
 
   const startOAuth = useCallback((targetProvider: OAuthProvider, mode?: "rejoin") => {
-    localStorage.setItem("oauthProvider", targetProvider);
+    localStorage.setItem(STORAGE_KEYS.OAUTH_PROVIDER, targetProvider);
     const modeQuery = mode ? `?mode=${mode}` : "";
     window.location.href = `${oauthBaseUrl}/auth/oauth/${targetProvider}${modeQuery}`;
   }, [oauthBaseUrl]);
@@ -66,27 +67,27 @@ export function OAuthCallbackPage() {
       try {
         const data = await authApi.oauthCallback(provider, code, oauthState);
 
-        localStorage.setItem("accessToken", data.accessToken);
-        localStorage.setItem("refreshToken", data.refreshToken);
-        localStorage.removeItem("oauthProvider");
-        localStorage.setItem("isOAuthUser", "true");
+        localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, data.accessToken);
+        localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, data.refreshToken);
+        localStorage.removeItem(STORAGE_KEYS.OAUTH_PROVIDER);
+        localStorage.setItem(STORAGE_KEYS.IS_OAUTH_USER, "true");
 
         const session = {
           nickname: data.user.nickname,
           email: data.user.email,
           points: data.user.points,
         };
-        localStorage.setItem("openpoll_session_v1", JSON.stringify(session));
+        localStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(session));
         window.dispatchEvent(new Event("storage"));
 
         await refreshUser();
 
         if (!data.profileComplete) {
-          localStorage.setItem(SOCIAL_PROFILE_PENDING_KEY, "1");
+          localStorage.setItem(STORAGE_KEYS.SOCIAL_PROFILE_PENDING, "1");
           navigate(ROUTES.SOCIAL_SIGNUP, { replace: true });
           return;
         }
-        localStorage.removeItem(SOCIAL_PROFILE_PENDING_KEY);
+        localStorage.removeItem(STORAGE_KEYS.SOCIAL_PROFILE_PENDING);
         navigate(ROUTES.HOME, { replace: true });
       } catch (err) {
         const axiosErr = err as AxiosError<{ message?: string }>;

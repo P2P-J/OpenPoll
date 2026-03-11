@@ -3,6 +3,7 @@ import { motion } from "motion/react";
 import { Plus } from "lucide-react";
 import { usePageMeta } from "@/hooks/usePageMeta";
 import { useTheme } from "@/contexts/ThemeContext";
+import { STORAGE_KEYS } from "@/shared/constants";
 
 import { getMe } from "@/api/user.api";
 import { getSession } from "@/shared/utils/localAuth";
@@ -22,7 +23,7 @@ type MeLike = {
 
 export function BalanceList() {
   usePageMeta("밸런스 게임", "정치 이슈에 대한 찬반 투표로 당신의 생각을 표현하세요.");
-  const hasToken = !!localStorage.getItem("accessToken");
+  const hasToken = !!localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
   const isLoggedIn = !!getSession() || hasToken;
   const [isAdmin, setIsAdmin] = useState(false);
   const { isDark } = useTheme();

@@ -33,10 +33,10 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
   render() {
     if (this.state.hasError) {
       return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+        <div className="min-h-screen flex items-center justify-center px-4 bg-surface">
           <div className="max-w-md w-full text-center">
             <div className="mb-6">
-              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4" style={{ backgroundColor: 'rgba(239,68,68,0.15)' }}>
                 <svg
                   className="w-8 h-8 text-red-600"
                   fill="none"
@@ -52,15 +52,15 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
                   />
                 </svg>
               </div>
-              <h1 className="text-2xl font-bold text-gray-900 mb-2">
+              <h1 className="text-2xl font-bold text-foreground mb-2">
                 문제가 발생했습니다
               </h1>
-              <p className="text-gray-600 mb-6">
+              <p className="text-foreground-muted mb-6">
                 예상치 못한 오류가 발생했습니다. 잠시 후 다시 시도해주세요.
               </p>
               {import.meta.env.DEV && this.state.error && (
-                <details className="mb-6 text-left bg-gray-100 p-4 rounded-lg">
-                  <summary className="cursor-pointer font-semibold text-sm text-gray-700 mb-2">
+                <details className="mb-6 text-left p-4 rounded-lg bg-surface-elevated">
+                  <summary className="cursor-pointer font-semibold text-sm text-foreground-muted mb-2">
                     오류 상세 정보
                   </summary>
                   <pre className="text-xs text-red-600 overflow-auto">

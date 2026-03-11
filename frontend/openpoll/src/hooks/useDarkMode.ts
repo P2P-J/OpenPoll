@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { STORAGE_KEYS } from '@/shared/constants';
 
 type Theme = 'light' | 'dark' | 'system';
 
@@ -11,7 +12,7 @@ export function useDarkMode() {
   const [theme, setThemeState] = useState<Theme>(() => {
     if (typeof window === 'undefined') return 'light';
 
-    const savedTheme = localStorage.getItem('theme') as Theme | null;
+    const savedTheme = localStorage.getItem(STORAGE_KEYS.THEME) as Theme | null;
     return savedTheme || 'light';
   });
 
@@ -32,7 +33,7 @@ export function useDarkMode() {
     root.classList.remove('light', 'dark');
     root.classList.add(isDark ? 'dark' : 'light');
     root.setAttribute('data-theme', isDark ? 'dark' : 'light');
-    localStorage.setItem('theme', theme);
+    localStorage.setItem(STORAGE_KEYS.THEME, theme);
   }, [theme, isDark]);
 
   // Listen to system theme changes when in system mode

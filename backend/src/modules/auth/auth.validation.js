@@ -36,8 +36,8 @@ export const signupValidation = [
     .withMessage('유효한 이메일 주소를 입력해주세요.')
     .normalizeEmail(),
   body('password')
-    .isLength({ min: 8 })
-    .withMessage('비밀번호는 최소 8자 이상이어야 합니다.')
+    .isLength({ min: 8, max: 128 })
+    .withMessage('비밀번호는 8~128자 사이여야 합니다.')
     .matches(/^(?=.*[a-zA-Z])(?=.*[0-9])/)
     .withMessage('비밀번호는 영문과 숫자를 포함해야 합니다.'),
   body('nickname')
@@ -82,8 +82,8 @@ export const changePasswordValidation = [
     .notEmpty()
     .withMessage('현재 비밀번호를 입력해주세요.'),
   body('newPassword')
-    .isLength({ min: 8 })
-    .withMessage('새 비밀번호는 최소 8자 이상이어야 합니다.')
+    .isLength({ min: 8, max: 128 })
+    .withMessage('새 비밀번호는 8~128자 사이여야 합니다.')
     .matches(/^(?=.*[a-zA-Z])(?=.*[0-9])/)
     .withMessage('새 비밀번호는 영문과 숫자를 포함해야 합니다.'),
 ];

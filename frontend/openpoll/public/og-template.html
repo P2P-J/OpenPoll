@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+
+  body {
+    width: 1200px;
+    height: 630px;
+    background: #0a0a0a;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* Subtle grid texture */
+  body::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+
+  /* Subtle radial glow behind logo */
+  body::after {
+    content: '';
+    position: absolute;
+    width: 500px;
+    height: 500px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -55%);
+    background: radial-gradient(circle, rgba(255,255,255,0.04) 0%, transparent 70%);
+    border-radius: 50%;
+  }
+
+  .container {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+  }
+
+  .logo {
+    width: 180px;
+    height: 180px;
+    object-fit: contain;
+    margin-bottom: 32px;
+    filter: drop-shadow(0 0 40px rgba(255,255,255,0.08));
+  }
+
+  .title {
+    font-size: 56px;
+    font-weight: 800;
+    color: #ffffff;
+    letter-spacing: -1.5px;
+    margin-bottom: 16px;
+  }
+
+  .tagline {
+    font-size: 22px;
+    font-weight: 400;
+    color: rgba(255,255,255,0.5);
+    letter-spacing: 0.5px;
+  }
+
+  .divider {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-top: 8px;
+  }
+
+  .dot {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.3);
+  }
+
+  .tag {
+    font-size: 18px;
+    color: rgba(255,255,255,0.4);
+    font-weight: 600;
+  }
+
+  /* Bottom URL bar */
+  .url {
+    position: absolute;
+    bottom: 32px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 16px;
+    color: rgba(255,255,255,0.25);
+    font-weight: 600;
+    letter-spacing: 2px;
+  }
+</style>
+</head>
+<body>
+  <div class="container">
+    <img src="OPENPOLL-LARGE.png" class="logo" alt="">
+    <div class="title">OpenPoll</div>
+    <div class="tagline">열린 여론조사</div>
+    <div class="divider">
+      <span class="tag">정치 성향 테스트</span>
+      <span class="dot"></span>
+      <span class="tag">밸런스 게임</span>
+      <span class="dot"></span>
+      <span class="tag">중립 뉴스</span>
+    </div>
+  </div>
+  <div class="url">openpoll.co.kr</div>
+</body>
+</html>

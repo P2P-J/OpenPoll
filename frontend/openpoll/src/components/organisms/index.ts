@@ -2,3 +2,4 @@
 export * from './header';
 export * from './navigation';
 export * from './auth/AuthSidePanel';
+export * from './contactModal/ContactModal';

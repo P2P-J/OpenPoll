@@ -1,7 +1,13 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
+import { useTheme } from "@/contexts/ThemeContext";
+import { ContactModal } from "@/components/organisms/contactModal/ContactModal";
 
 export function Footer() {
+  const { isDark } = useTheme();
+  const [isContactOpen, setIsContactOpen] = useState(false);
   return (
+    <>
     <footer
       className="border-t py-8 px-4 sm:px-6 bg-surface border-default"
     >
@@ -9,7 +15,7 @@ export function Footer() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
           <div className="flex items-center gap-3">
             <img
-              src="/OPENPOLL-LARGE.png"
+              src={isDark ? "/OPENPOLL-LARGE.png" : "/openpoll-black.png"}
               alt="OpenPoll 로고"
               className="w-8 h-8 object-contain"
               draggable={false}
@@ -41,12 +47,14 @@ export function Footer() {
             >
               이용약관
             </Link>
-            <a
-              href="mailto:soul117843@gmail.com"
+            <button
+              type="button"
+              onClick={() => setIsContactOpen(true)}
               className="transition-colors text-foreground-muted hover:text-foreground"
+              style={{ background: "none", border: "none", padding: 0, cursor: "pointer", font: "inherit" }}
             >
               문의하기
-            </a>
+            </button>
           </nav>
         </div>
 
@@ -55,5 +63,10 @@ export function Footer() {
         </p>
       </div>
     </footer>
+
+      {isContactOpen && (
+        <ContactModal isOpen={isContactOpen} onClose={() => setIsContactOpen(false)} />
+      )}
+    </>
   );
 }

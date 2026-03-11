@@ -2,8 +2,9 @@ import { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { ArrowRight, Mail, Lock, Gift, Home } from 'lucide-react';
 import { motion } from 'motion/react';
-import { ROUTES } from '@/shared/constants';
+import { ROUTES, STORAGE_KEYS } from '@/shared/constants';
 import { useUser } from '@/contexts/UserContext';
+import { usePageMeta } from '@/hooks/usePageMeta';
 import { AuthSidePanel } from '@/components/organisms/auth/AuthSidePanel';
 import naverLogo from '@/img/naver-logo.svg';
 import googleLogo from '@/img/google-logo.svg';
@@ -14,6 +15,7 @@ type LoginErrors = {
 };
 
 export function Login() {
+  usePageMeta("로그인", "OpenPoll에 로그인하여 정치 성향 테스트, 밸런스 게임 투표에 참여하세요.");
   const navigate = useNavigate();
   const location = useLocation();
   const { login } = useUser();
@@ -57,7 +59,7 @@ export function Login() {
   const oauthBaseUrl = import.meta.env.VITE_API_BASE_URL || '/api';
 
   const startOAuth = (provider: 'google' | 'naver', mode?: 'rejoin') => {
-    localStorage.setItem('oauthProvider', provider);
+    localStorage.setItem(STORAGE_KEYS.OAUTH_PROVIDER, provider);
     const modeQuery = mode ? `?mode=${mode}` : '';
     window.location.href = `${oauthBaseUrl}/auth/oauth/${provider}${modeQuery}`;
   };

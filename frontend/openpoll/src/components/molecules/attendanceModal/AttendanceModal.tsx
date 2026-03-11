@@ -77,6 +77,7 @@ export function AttendanceModal({ isOpen, onClose }: AttendanceModalProps) {
   const [isChecking, setIsChecking] = useState(false);
   const [result, setResult] = useState<CheckAttendanceResult | null>(null);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const fetchStatus = useCallback(async () => {
     try {
@@ -96,17 +97,21 @@ export function AttendanceModal({ isOpen, onClose }: AttendanceModalProps) {
       setResult(null);
       setShowSuccess(false);
       setIsChecking(false);
+      setErrorMsg(null);
     }
   }, [isOpen, fetchStatus]);
 
   const handleCheckIn = async () => {
     try {
       setIsChecking(true);
+      setErrorMsg(null);
       const checkResult = await attendanceApi.checkAttendance();
       setResult(checkResult);
       setShowSuccess(true);
       refreshUser();
     } catch {
+      setErrorMsg("출석 처리에 실패했습니다. 다시 시도해주세요.");
+    } finally {
       setIsChecking(false);
     }
   };
@@ -370,6 +375,13 @@ export function AttendanceModal({ isOpen, onClose }: AttendanceModalProps) {
               );
             })}
           </div>
+
+          {/* 에러 메시지 */}
+          {errorMsg && (
+            <p className="text-center text-sm font-medium mt-3" style={{ color: COLORS.redText }}>
+              {errorMsg}
+            </p>
+          )}
 
           {/* 하단 출석하기 버튼 */}
           <div className="mt-4 sm:mt-6">

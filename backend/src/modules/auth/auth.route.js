@@ -37,7 +37,16 @@ const emailCodeLimiter = rateLimit({
   legacyHeaders: false,
 });
 
-router.get('/check-nickname', checkNicknameValidation, validate, authController.checkNickname);
+// 닉네임 열거 방지: 1분당 60회 제한
+const nicknameLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 60,
+  message: { success: false, message: '너무 많은 요청입니다. 잠시 후 다시 시도해주세요.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+router.get('/check-nickname', nicknameLimiter, checkNicknameValidation, validate, authController.checkNickname);
 router.post('/email/send-code', emailCodeLimiter, sendVerificationCodeValidation, validate, authController.sendVerificationCode);
 router.post('/email/verify-code', emailCodeLimiter, verifyCodeValidation, validate, authController.verifyCode);
 router.post('/signup', signupLimiter, signupValidation, validate, authController.signup);
