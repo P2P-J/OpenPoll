@@ -2,9 +2,10 @@ import { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { ArrowRight, Mail, Lock, Gift, Home } from 'lucide-react';
 import { motion } from 'motion/react';
-import { ROUTES } from '@/shared/constants';
+import { ROUTES, STORAGE_KEYS } from '@/shared/constants';
 import { useUser } from '@/contexts/UserContext';
-import { AuthSidePanel } from '@/components/organisms';
+import { usePageMeta } from '@/hooks/usePageMeta';
+import { AuthSidePanel } from '@/components/organisms/auth/AuthSidePanel';
 import naverLogo from '@/img/naver-logo.svg';
 import googleLogo from '@/img/google-logo.svg';
 
@@ -14,6 +15,7 @@ type LoginErrors = {
 };
 
 export function Login() {
+  usePageMeta("로그인", "OpenPoll에 로그인하여 정치 성향 테스트, 밸런스 게임 투표에 참여하세요.");
   const navigate = useNavigate();
   const location = useLocation();
   const { login } = useUser();
@@ -41,7 +43,9 @@ export function Login() {
     try {
       await login(email.trim(), password);
       const from = (location.state as { from?: string })?.from;
-      navigate(from || ROUTES.HOME);
+      const params = new URLSearchParams(location.search);
+      const redirectPath = from || params.get('redirect') || ROUTES.HOME;
+      navigate(redirectPath);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : '로그인에 실패했습니다.';
       setErrors((prev) => ({ ...prev, password: errorMessage }));
@@ -55,7 +59,7 @@ export function Login() {
   const oauthBaseUrl = import.meta.env.VITE_API_BASE_URL || '/api';
 
   const startOAuth = (provider: 'google' | 'naver', mode?: 'rejoin') => {
-    localStorage.setItem('oauthProvider', provider);
+    localStorage.setItem(STORAGE_KEYS.OAUTH_PROVIDER, provider);
     const modeQuery = mode ? `?mode=${mode}` : '';
     window.location.href = `${oauthBaseUrl}/auth/oauth/${provider}${modeQuery}`;
   };
@@ -85,87 +89,88 @@ export function Login() {
         />
         <AuthSidePanel />
 
-    <section className="flex items-center justify-center px-8 py-10 sm:px-10">
-        <motion.div
-          style={{ width: 450, maxWidth: '100%' }}
-          initial={{ opacity: 0, y: 14 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.25 }}
-        >
-           <h1 className="text-4xl font-extrabold text-center mb-2">로그인</h1>
-          <p className="text-center text-gray-400 mb-10">오픈폴에 오신 것을 환영합니다</p>
+        <section className="flex items-center justify-center px-8 py-10 sm:px-10">
+          <motion.div
+            style={{ width: 450, maxWidth: '100%' }}
+            initial={{ opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.25 }}
+          >
+            <h1 className="text-4xl font-extrabold text-center mb-2">로그인</h1>
+            <p className="text-center text-gray-400 mb-10">오픈폴에 오신 것을 환영합니다</p>
 
-          <form onSubmit={onSubmit} className="space-y-6">
-            <div>
-              <label className="block text-sm font-semibold mb-2">이메일</label>
-              <div
-                className="flex items-center gap-3 h-14 rounded-2xl bg-white/5 px-4 border"
-                style={{ borderColor: borderColor('email') }}
-              >
-                <Mail className="w-5 h-5 text-gray-400" />
-                <input
-                  className="w-full bg-transparent outline-none text-sm placeholder:text-gray-500"
-                  placeholder="your@email.com"
-                  type="email"
-                  value={email}
-                  onChange={(e) => {
-                    setEmail(e.target.value);
-                    setErrors((prev) => ({ ...prev, email: undefined }));
-                  }}
-                />
+            <form onSubmit={onSubmit} className="space-y-6">
+              <div>
+                <label className="block text-sm font-semibold mb-2">이메일</label>
+                <div
+                  className="flex items-center gap-3 h-14 rounded-2xl bg-white/5 px-4 border"
+                  style={{ borderColor: borderColor('email') }}
+                >
+                  <Mail className="w-5 h-5 text-gray-400" />
+                  <input
+                    className="w-full bg-transparent outline-none text-sm placeholder:text-gray-500"
+                    placeholder="your@email.com"
+                    type="email"
+                    value={email}
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      setErrors((prev) => ({ ...prev, email: undefined }));
+                    }}
+                  />
+                </div>
+                {showError('email') && (
+                  <p className="mt-2 text-xs" style={{ color: '#ef4444' }}>
+                    {errors.email}
+                  </p>
+                )}
               </div>
-              {showError('email') && (
-                <p className="mt-2 text-xs" style={{ color: '#ef4444' }}>
-                  {errors.email}
-                </p>
-              )}
-            </div>
 
-            <div>
-              <label className="block text-sm font-semibold mb-2">비밀번호</label>
-              <div
-                className="flex items-center gap-3 h-14 rounded-2xl bg-white/5 px-4 border"
-                style={{ borderColor: borderColor('password') }}
-              >
-                <Lock className="w-5 h-5 text-gray-400" />
-                <input
-                  className="w-full bg-transparent outline-none text-sm placeholder:text-gray-500"
-                  placeholder="••••••••"
-                  type="password"
-                  value={password}
-                  onChange={(e) => {
-                    setPassword(e.target.value);
-                    setErrors((prev) => ({ ...prev, password: undefined }));
-                  }}
-                />
+              <div>
+                <label className="block text-sm font-semibold mb-2">비밀번호</label>
+                <div
+                  className="flex items-center gap-3 h-14 rounded-2xl bg-white/5 px-4 border"
+                  style={{ borderColor: borderColor('password') }}
+                >
+                  <Lock className="w-5 h-5 text-gray-400" />
+                  <input
+                    className="w-full bg-transparent outline-none text-sm placeholder:text-gray-500"
+                    placeholder="••••••••"
+                    type="password"
+                    value={password}
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      setErrors((prev) => ({ ...prev, password: undefined }));
+                    }}
+                  />
+                </div>
+                {showError('password') && (
+                  <p className="mt-2 text-xs" style={{ color: '#ef4444' }}>
+                    {errors.password}
+                  </p>
+                )}
               </div>
-              {showError('password') && (
-                <p className="mt-2 text-xs" style={{ color: '#ef4444' }}>
-                  {errors.password}
-                </p>
-              )}
-            </div>
 
-            <button
-              type="submit"
-              className="w-full h-14 rounded-2xl bg-white text-black font-bold flex items-center justify-center gap-2 hover:bg-gray-100 transition-colors"
-            >
-              로그인 <ArrowRight className="w-5 h-5" />
-            </button>
+              <button
+                type="submit"
+                className="w-full h-14 rounded-2xl bg-white text-black font-bold flex items-center justify-center gap-2 hover:bg-gray-100 transition-colors"
+              >
+                로그인 <ArrowRight className="w-5 h-5" />
+              </button>
+            </form>
 
-            <div className="w-full h-14 rounded-2xl border border-green-500/25 bg-green-500/10 shadow-[0_0_40px_rgba(34,197,94,0.15)] flex items-center justify-center gap-2 font-semibold">
+            <div className="w-full h-14 rounded-2xl border border-green-500/25 bg-green-500/10 shadow-[0_0_40px_rgba(34,197,94,0.15)] flex items-center justify-center gap-2 font-semibold mt-6">
               <Gift className="w-5 h-5 text-green-400" />
-              <span className="text-green-400">로그인 시 500P 지급!</span>
+              <span className="text-green-400">회원가입 시 500P 지급!</span>
             </div>
 
-            <p className="text-center text-sm text-gray-400">
+            <p className="text-center text-sm text-gray-400 mt-6">
               아직 계정이 없으신가요?{' '}
               <Link to={ROUTES.REGISTER} className="text-white font-semibold hover:underline">
                 회원가입
               </Link>
             </p>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 mt-6">
               <button
                 type="button"
                 onClick={handleNaverLogin}
@@ -184,7 +189,7 @@ export function Login() {
               </button>
             </div>
 
-            <div className="flex items-center gap-4 pt-2">
+            <div className="flex items-center gap-4 pt-2 mt-4">
               <div className="h-px flex-1 bg-white/10" />
               <span className="text-xs text-gray-500">또는</span>
               <div className="h-px flex-1 bg-white/10" />
@@ -199,10 +204,9 @@ export function Login() {
                 <span>홈으로 돌아가기</span>
               </Link>
             </div>
-          </form>
-        </motion.div>
-      </section>
+          </motion.div>
+        </section>
+      </div>
     </div>
-  </div>
-);
+  );
 }

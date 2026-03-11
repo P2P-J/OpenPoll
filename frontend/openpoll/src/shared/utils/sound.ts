@@ -120,16 +120,3 @@ export function playSoundEffect(effect: 'vote' | 'error' | 'success') {
   }
 }
 
-/**
- * Enable or disable sound effects globally
- */
-export function setSoundEnabled(enabled: boolean) {
-  soundManager.setEnabled(enabled);
-}
-
-/**
- * Check if sound is enabled
- */
-export function isSoundEnabled() {
-  return soundManager.isEnabled();
-}

@@ -52,6 +52,9 @@ export const AnimatedNumber = memo(function AnimatedNumber({
     spring.set(value);
   }, [value, spring]);
 
+  const changeTimer = useRef<number | null>(null);
+  useEffect(() => () => { if (changeTimer.current) clearTimeout(changeTimer.current); }, []);
+
   useEffect(() => {
     if (isFirstRender.current) {
       isFirstRender.current = false;
@@ -60,6 +63,11 @@ export const AnimatedNumber = memo(function AnimatedNumber({
       setChangeAmount(diff);
       setHasChanged(diff !== 0);
       prevValue.current = value;
+
+      if (diff !== 0) {
+        if (changeTimer.current) clearTimeout(changeTimer.current);
+        changeTimer.current = window.setTimeout(() => setHasChanged(false), 1500);
+      }
     }
   }, [value]);
 

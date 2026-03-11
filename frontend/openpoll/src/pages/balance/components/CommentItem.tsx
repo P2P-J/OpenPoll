@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { motion } from "motion/react";
 import { ThumbsUp, ThumbsDown, Heart } from "lucide-react";
 import { getAuthorLabel, keyOf } from "@/shared/utils/balanceHelpers";
+import { useTheme } from "@/contexts/ThemeContext";
 import type { BalanceComment, VoteState } from "@/types/balance.types";
 
 interface CommentItemProps {
@@ -59,6 +60,7 @@ export function CommentItem({
   renderChild,
   openLoginModal,
 }: CommentItemProps) {
+  const { isDark } = useTheme();
   const replies = c.replies ?? [];
   const hasReplies = replies.length > 0;
   const isExpanded = expandedComments.has(keyOf(c.id));
@@ -79,11 +81,11 @@ export function CommentItem({
       {isReply && (
         <>
           <div
-            className="absolute top-0 bottom-0 w-px bg-white/20"
+            className={`absolute top-0 bottom-0 w-px ${isDark ? 'bg-white/20' : 'bg-black/20'}`}
             style={{ left: "16px" }}
           />
           <div
-            className="absolute h-px bg-white/20"
+            className={`absolute h-px ${isDark ? 'bg-white/20' : 'bg-black/20'}`}
             style={{ left: "16px", top: "24px", width: "16px" }}
           />
         </>
@@ -94,12 +96,12 @@ export function CommentItem({
         animate={{ opacity: 1, y: 0 }}
         className={`p-4 sm:p-5 rounded-xl border ${
           isReply
-            ? "bg-white/[0.03] border-white/10"
-            : "bg-white/5 border-white/10"
+            ? `${isDark ? 'bg-white/[0.03] border-white/10' : 'bg-black/[0.03] border-black/10'}`
+            : `${isDark ? 'bg-white/5 border-white/10' : 'bg-black/5 border-black/10'}`
         }`}
       >
         <div className="flex items-start space-x-3">
-          <div className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center bg-white/5 border border-white/10">
+          <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center border ${isDark ? 'bg-white/5 border-white/10' : 'bg-black/5 border-black/10'}`}>
             {isAgree === true ? (
               <ThumbsUp className="w-5 h-5" />
             ) : isAgree === false ? (
@@ -115,10 +117,10 @@ export function CommentItem({
               <span
                 className={`text-xs px-2 py-0.5 rounded-full ${
                   isAgree === true
-                    ? "bg-white/10 text-white"
+                    ? `${isDark ? 'bg-white/10' : 'bg-black/10'}`
                     : isAgree === false
-                      ? "bg-white/5 text-gray-400"
-                      : "bg-white/5 text-gray-500"
+                      ? `${isDark ? 'bg-white/5 text-gray-400' : 'bg-black/5 text-gray-500'}`
+                      : `${isDark ? 'bg-white/5 text-gray-500' : 'bg-black/5 text-gray-400'}`
                 }`}
               >
                 {isAgree === true
@@ -135,7 +137,7 @@ export function CommentItem({
                 <textarea
                   value={editingContent}
                   onChange={(e) => setEditingContent(e.target.value)}
-                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl focus:outline-none focus:border-white/30 resize-none text-white placeholder-gray-500"
+                  className={`w-full px-4 py-3 ${isDark ? 'bg-white/5 border-white/10 focus:border-white/30 text-white' : 'bg-black/5 border-black/10 focus:border-black/30 text-black'} border rounded-xl focus:outline-none resize-none placeholder-gray-500`}
                   rows={3}
                 />
                 <div className="flex justify-end gap-2 mt-2">
@@ -145,7 +147,7 @@ export function CommentItem({
                       setEditingCommentId(null);
                       setEditingContent("");
                     }}
-                    className="px-4 py-2 rounded-lg border border-white/10 text-gray-300 hover:text-white hover:border-white/20 transition-colors"
+                    className={`px-4 py-2 rounded-lg border ${isDark ? 'border-white/10 text-gray-300 hover:text-white hover:border-white/20' : 'border-black/10 text-gray-600 hover:text-black hover:border-black/20'} transition-colors`}
                   >
                     취소
                   </button>
@@ -153,14 +155,14 @@ export function CommentItem({
                     type="button"
                     onClick={() => onSubmitEdit(c.id)}
                     disabled={!editingContent.trim()}
-                    className="px-4 py-2 rounded-lg bg-white text-black font-semibold hover:bg-gray-200 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                    className={`px-4 py-2 rounded-lg ${isDark ? 'bg-white text-black hover:bg-gray-200' : 'bg-black text-white hover:bg-gray-800'} font-semibold transition-colors disabled:opacity-30 disabled:cursor-not-allowed`}
                   >
                     저장
                   </button>
                 </div>
               </>
             ) : (
-              <p className="text-gray-300 leading-relaxed mb-3 text-sm sm:text-base">
+              <p className={`${isDark ? 'text-gray-300' : 'text-gray-600'} leading-relaxed mb-3 text-sm sm:text-base`}>
                 {c.content}
               </p>
             )}
@@ -169,10 +171,12 @@ export function CommentItem({
               <button
                 type="button"
                 onClick={() => onToggleLike(c.id)}
-                className="flex items-center space-x-2 text-sm text-gray-400 hover:text-white transition-colors"
+                aria-label={c.isLiked ? "좋아요 취소" : "좋아요"}
+                aria-pressed={!!c.isLiked}
+                className={`flex items-center space-x-2 text-sm ${isDark ? 'text-gray-400 hover:text-white' : 'text-gray-500 hover:text-black'} transition-colors`}
               >
                 <Heart
-                  className={`w-4 h-4 ${c.isLiked ? "text-white" : ""}`}
+                  className={`w-4 h-4 ${c.isLiked ? (isDark ? "text-white" : "text-black") : ""}`}
                   fill={c.isLiked ? "currentColor" : "none"}
                 />
                 <span className="font-medium">
@@ -184,7 +188,7 @@ export function CommentItem({
                 <button
                   type="button"
                   onClick={() => onStartReply(c.id, depth)}
-                  className="text-sm text-gray-400 hover:text-white transition-colors"
+                  className={`text-sm ${isDark ? 'text-gray-400 hover:text-white' : 'text-gray-500 hover:text-black'} transition-colors`}
                 >
                   답글
                 </button>
@@ -193,7 +197,7 @@ export function CommentItem({
                 <button
                   type="button"
                   onClick={() => onStartEdit(c)}
-                  className="text-sm text-gray-400 hover:text-white transition-colors"
+                  className={`text-sm ${isDark ? 'text-gray-400 hover:text-white' : 'text-gray-500 hover:text-black'} transition-colors`}
                 >
                   수정
                 </button>
@@ -202,7 +206,7 @@ export function CommentItem({
                 <button
                   type="button"
                   onClick={() => onDeleteComment(c.id)}
-                  className="text-sm text-gray-400 hover:text-white transition-colors"
+                  className={`text-sm ${isDark ? 'text-gray-400 hover:text-white' : 'text-gray-500 hover:text-black'} transition-colors`}
                 >
                   삭제
                 </button>
@@ -211,7 +215,7 @@ export function CommentItem({
                 <button
                   type="button"
                   onClick={() => onToggleExpandReplies(c.id)}
-                  className="text-sm text-gray-400 hover:text-white transition-colors"
+                  className={`text-sm ${isDark ? 'text-gray-400 hover:text-white' : 'text-gray-500 hover:text-black'} transition-colors`}
                 >
                   {isExpanded ? "답글 숨기기" : `답글 ${replies.length}개`}
                 </button>
@@ -233,7 +237,7 @@ export function CommentItem({
                   readOnly={!isLoggedInNow() || !selectedOption}
                   onFocus={() => !isLoggedInNow() && openLoginModal()}
                   onClick={() => !isLoggedInNow() && openLoginModal()}
-                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl focus:outline-none focus:border-white/30 resize-none text-white placeholder-gray-500 read-only:opacity-50 read-only:cursor-not-allowed"
+                  className={`w-full px-4 py-3 ${isDark ? 'bg-white/5 border-white/10 focus:border-white/30 text-white' : 'bg-black/5 border-black/10 focus:border-black/30 text-black'} border rounded-xl focus:outline-none resize-none placeholder-gray-500 read-only:opacity-50 read-only:cursor-not-allowed`}
                   rows={2}
                 />
                 <div className="flex justify-end gap-2 mt-2">
@@ -243,7 +247,7 @@ export function CommentItem({
                       setReplyToId(null);
                       setReplyContent("");
                     }}
-                    className="px-4 py-2 rounded-lg border border-white/10 text-gray-300 hover:text-white hover:border-white/20 transition-colors"
+                    className={`px-4 py-2 rounded-lg border ${isDark ? 'border-white/10 text-gray-300 hover:text-white hover:border-white/20' : 'border-black/10 text-gray-600 hover:text-black hover:border-black/20'} transition-colors`}
                   >
                     취소
                   </button>
@@ -251,7 +255,7 @@ export function CommentItem({
                     type="button"
                     onClick={() => onSubmitReply(c.id)}
                     disabled={!selectedOption || !replyContent.trim()}
-                    className="px-4 py-2 rounded-lg bg-white text-black font-semibold hover:bg-gray-200 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                    className={`px-4 py-2 rounded-lg ${isDark ? 'bg-white text-black hover:bg-gray-200' : 'bg-black text-white hover:bg-gray-800'} font-semibold transition-colors disabled:opacity-30 disabled:cursor-not-allowed`}
                   >
                     등록
                   </button>

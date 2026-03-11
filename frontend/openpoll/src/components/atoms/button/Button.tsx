@@ -9,7 +9,7 @@ const buttonVariants = cva(
     variants: {
       variant: {
         primary: [
-          'text-white shadow-smooth hover-lift',
+          'text-primary-fg shadow-smooth hover-lift',
           'bg-gradient-primary',
           'hover:shadow-primary',
         ].join(' '),

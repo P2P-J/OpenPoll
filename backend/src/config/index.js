@@ -50,8 +50,8 @@ const config = {
   },
 
   // 뉴스 설정
-  newsIntervalMs: process.env.NEWS_INTERVAL_MS,
-  cooldownSec: process.env.COOLDOWN_SEC,
+  newsIntervalMs: parseInt(process.env.NEWS_INTERVAL_MS, 10) || 600000,
+  cooldownSec: parseInt(process.env.COOLDOWN_SEC, 10) || 590,
   
   // OAuth 설정
   oauth: {

@@ -171,6 +171,7 @@ model BalanceVote {
   game BalanceGame @relation(fields: [gameId], references: [id], onDelete: Cascade)
 
   @@unique([userId, gameId]) // 사안당 1회 투표
+  @@index([gameId])          // 게임별 투표 집계 쿼리 성능
   @@map("balance_votes")
 }
 
@@ -203,6 +204,7 @@ model BalanceCommentLike {
   comment BalanceComment @relation(fields: [commentId], references: [id], onDelete: Cascade)
 
   @@unique([userId, commentId])
+  @@index([commentId])       // 댓글별 좋아요 수 집계
   @@map("balance_comment_likes")
 }
 
@@ -219,5 +221,6 @@ model Article {
 
   createdAt     DateTime @default(now())
 
+  @@index([createdAt])       // 뉴스 목록 날짜순 정렬
   @@map("articles")
 }

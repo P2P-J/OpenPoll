@@ -6,6 +6,18 @@ import { startNewsRefreshJob, stopNewsRefreshJob } from './modules/news/jobs/ref
 
 validateConfig(); // 환경변수 검증
 
+// 전역 에러 핸들러 — Express 외부에서 발생하는 에러 처리
+process.on('unhandledRejection', (reason) => {
+  console.error('Unhandled Rejection:', reason);
+});
+
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught Exception:', err);
+  process.exit(1);
+});
+
+const SHUTDOWN_TIMEOUT_MS = 10_000;
+
 const startServer = async () => {
   try {
     await prisma.$connect();
@@ -25,12 +37,23 @@ const startServer = async () => {
 
       stopNewsRefreshJob();
 
+      // 타임아웃: keep-alive 연결이 안 끊길 경우 강제 종료
+      const forceExit = setTimeout(() => {
+        console.error('Graceful shutdown timed out, forcing exit');
+        process.exit(1);
+      }, SHUTDOWN_TIMEOUT_MS);
+      forceExit.unref();
+
       server.close(async () => {
-        console.log('HTTP server closed');
-        await prisma.$disconnect();
-        console.log('PostgreSQL disconnected');
-        redis.disconnect();
-        console.log('Redis disconnected');
+        try {
+          console.log('HTTP server closed');
+          await prisma.$disconnect();
+          console.log('PostgreSQL disconnected');
+          redis.disconnect();
+          console.log('Redis disconnected');
+        } catch (err) {
+          console.error('Error during shutdown cleanup:', err);
+        }
         process.exit(0);
       });
     };

@@ -76,10 +76,6 @@ export function fromMyVote(
   return null;
 }
 
-export function toApiVote(option: VoteOption): VoteOption {
-  return option;
-}
-
 export function getAgreeCountSafe(issue: BalanceDetail): number {
   const total = Number(issue.totalVotes ?? 0);
   if (typeof issue.agreeCount === "number") return issue.agreeCount;

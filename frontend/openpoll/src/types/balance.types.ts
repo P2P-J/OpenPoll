@@ -20,7 +20,6 @@ export interface BalanceListItem {
 }
 
 export interface BalanceListItemExtended extends BalanceListItem {
-  subtitle?: string;
   voted?: boolean | null;
 }
 
