@@ -1,8 +1,9 @@
 import app from './app.js';
 import config, { validateConfig } from './config/index.js';
 import prisma from './config/database.js';
-import redis from './config/redis.js';
+import redis, { subRedis } from './config/redis.js';
 import { startNewsRefreshJob, stopNewsRefreshJob } from './modules/news/jobs/refreshJob.js';
+import { initSSESubscriber } from './modules/dashboard/dashboard.service.js';
 
 validateConfig(); // 환경변수 검증
 
@@ -24,7 +25,10 @@ const startServer = async () => {
     console.log('PostgreSQL connected');
 
     await redis.connect();
+    await subRedis.connect();
     console.log('Redis connected');
+
+    await initSSESubscriber();
 
     const server = app.listen(config.port, () => {
       console.log(`Server running on port ${config.port} in ${config.nodeEnv} mode`);
@@ -37,7 +41,6 @@ const startServer = async () => {
 
       stopNewsRefreshJob();
 
-      // 타임아웃: keep-alive 연결이 안 끊길 경우 강제 종료
       const forceExit = setTimeout(() => {
         console.error('Graceful shutdown timed out, forcing exit');
         process.exit(1);
@@ -50,6 +53,7 @@ const startServer = async () => {
           await prisma.$disconnect();
           console.log('PostgreSQL disconnected');
           redis.disconnect();
+          subRedis.disconnect();
           console.log('Redis disconnected');
         } catch (err) {
           console.error('Error during shutdown cleanup:', err);

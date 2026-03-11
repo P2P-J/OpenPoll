@@ -16,10 +16,9 @@ export const castVote = async (userId, partyId) => {
   }
 
   const result = await prisma.$transaction(async (tx) => {
-    const user = await tx.user.findUnique({
-      where: { id: userId },
-      select: { points: true },
-    });
+    const [user] = await tx.$queryRaw`
+      SELECT points FROM users WHERE id = ${userId} FOR UPDATE
+    `;
 
     const pointCost = Math.abs(config.points.partyVote);
     if (user.points < pointCost) {
@@ -62,8 +61,8 @@ export const castVote = async (userId, partyId) => {
     return { vote, remainingPoints: updatedUser.points };
   });
 
-  await invalidateStatsCache(); // redis 캐시 삭제
-  await broadcastVoteUpdate(); // SSE로 모든 클라이언트에 알림
+  await invalidateStatsCache();
+  await broadcastVoteUpdate();
 
   return {
     ...result.vote,
@@ -71,7 +70,6 @@ export const castVote = async (userId, partyId) => {
   };
 };
 
-// 캐시 무효화(삭제)
 const invalidateStatsCache = async () => {
   await Promise.all([
     redis.del(CACHE_KEYS.STATS_OVERALL),

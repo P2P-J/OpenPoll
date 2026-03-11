@@ -1,6 +1,5 @@
 import prisma from '../../config/database.js';
-import redis, { CACHE_KEYS, CACHE_TTL } from '../../config/redis.js';
-import { getAgeGroup } from '../../constants/ageGroups.js';
+import redis, { subRedis, CACHE_KEYS, CACHE_TTL, SSE_CHANNELS } from '../../config/redis.js';
 
 const clients = new Set();
 
@@ -12,19 +11,28 @@ export const removeClient = (res) => {
   clients.delete(res);
 };
 
-// 투표 업데이트를 전체 클라이언트에게 push(vote.service.js에서 사용)
+// 투표 업데이트를 Redis Pub/Sub으로 발행 (모든 서버 인스턴스에 전달)
 export const broadcastVoteUpdate = async () => {
-  if (clients.size === 0) return;
-
   const stats = await getOverallStats(true);
-  const data = `data: ${JSON.stringify({ type: 'vote_update', stats })}\n\n`;
-  
-  clients.forEach((client) => {
-    try {
-      client.write(data);
-    } catch (err) {
-      clients.delete(client);
-    }
+  const data = JSON.stringify({ type: 'vote_update', stats });
+  await redis.publish(SSE_CHANNELS.VOTE_UPDATE, data);
+};
+
+// 서버 시작 시 호출 — Redis 채널 구독 후 로컬 클라이언트에 SSE 전송
+export const initSSESubscriber = async () => {
+  await subRedis.subscribe(SSE_CHANNELS.VOTE_UPDATE);
+
+  subRedis.on('message', (channel, message) => {
+    if (channel !== SSE_CHANNELS.VOTE_UPDATE || clients.size === 0) return;
+
+    const sseData = `data: ${message}\n\n`;
+    clients.forEach((client) => {
+      try {
+        client.write(sseData);
+      } catch (err) {
+        clients.delete(client);
+      }
+    });
   });
 };
 
@@ -80,30 +88,32 @@ export const getStatsByAge = async () => {
     return JSON.parse(cached);
   }
 
-  const votes = await prisma.vote.findMany({
-    select: {
-      partyId: true,
-      user: {
-        select: { age: true },
-      },
-    },
-  });
-
-  const ageGroupStats = {};
-  
-  votes.forEach((vote) => {
-    const ageGroup = getAgeGroup(vote.user.age);
-    if (!ageGroupStats[ageGroup]) {
-      ageGroupStats[ageGroup] = {};
-    }
-    if (!ageGroupStats[ageGroup][vote.partyId]) {
-      ageGroupStats[ageGroup][vote.partyId] = 0;
-    }
-    ageGroupStats[ageGroup][vote.partyId]++;
-  });
+  const rows = await prisma.$queryRaw`
+    SELECT
+      CASE
+        WHEN u.age BETWEEN 18 AND 29 THEN '20대'
+        WHEN u.age BETWEEN 30 AND 39 THEN '30대'
+        WHEN u.age BETWEEN 40 AND 49 THEN '40대'
+        WHEN u.age BETWEEN 50 AND 59 THEN '50대'
+        WHEN u.age >= 60 THEN '60대 이상'
+        ELSE '기타'
+      END AS age_group,
+      v."partyId",
+      COUNT(*)::int AS count
+    FROM votes v
+    JOIN users u ON u.id = v."userId"
+    GROUP BY age_group, v."partyId"
+  `;
 
   const parties = await prisma.party.findMany({
     orderBy: { order: 'asc' },
+  });
+
+  const ageGroupStats = {};
+  rows.forEach((row) => {
+    const group = row.age_group;
+    if (!ageGroupStats[group]) ageGroupStats[group] = {};
+    ageGroupStats[group][row.partyId] = row.count;
   });
 
   const result = Object.entries(ageGroupStats).map(([ageGroup, partyVotes]) => {
@@ -135,30 +145,22 @@ export const getStatsByRegion = async () => {
     return JSON.parse(cached);
   }
 
-  const votes = await prisma.vote.findMany({
-    select: {
-      partyId: true,
-      user: {
-        select: { region: true },
-      },
-    },
-  });
-
-  const regionStats = {};
-  
-  votes.forEach((vote) => {
-    const { region } = vote.user;
-    if (!regionStats[region]) {
-      regionStats[region] = {};
-    }
-    if (!regionStats[region][vote.partyId]) {
-      regionStats[region][vote.partyId] = 0;
-    }
-    regionStats[region][vote.partyId]++;
-  });
+  const rows = await prisma.$queryRaw`
+    SELECT u.region, v."partyId", COUNT(*)::int AS count
+    FROM votes v
+    JOIN users u ON u.id = v."userId"
+    GROUP BY u.region, v."partyId"
+  `;
 
   const parties = await prisma.party.findMany({
     orderBy: { order: 'asc' },
+  });
+
+  const regionStats = {};
+  rows.forEach((row) => {
+    const { region } = row;
+    if (!regionStats[region]) regionStats[region] = {};
+    regionStats[region][row.partyId] = row.count;
   });
 
   const result = Object.entries(regionStats).map(([region, partyVotes]) => {
