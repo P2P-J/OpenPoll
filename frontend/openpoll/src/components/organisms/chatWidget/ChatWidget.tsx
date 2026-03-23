@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { MessageCircle, ChevronDown } from "lucide-react";
+import { MessageCircle, ChevronDown, GripVertical } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useTheme } from "@/contexts/ThemeContext";
 import * as chatApi from "@/api/chat.api";
@@ -7,9 +7,37 @@ import type { ChatMessage } from "@/types/api.types";
 import { ChatMessageList } from "./ChatMessageList";
 import { ChatInput } from "./ChatInput";
 
+// 최대/최소 크기
+const MAX_W = 560;
+const MAX_H = 420;
+const MIN_W = 280;
+const MIN_H = 260;
+
+function getResponsiveSize() {
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+
+  // 모바일 (<640): 화면 거의 꽉 채움
+  if (vw < 640) {
+    return {
+      w: Math.min(MAX_W, vw - 32),
+      h: Math.min(MAX_H, vh * 0.5),
+    };
+  }
+  // 태블릿 (640~1024): 중간 크기
+  if (vw < 1024) {
+    return {
+      w: Math.min(MAX_W, vw * 0.55),
+      h: Math.min(MAX_H, vh * 0.45),
+    };
+  }
+  // 데스크톱: 최대
+  return { w: MAX_W, h: MAX_H };
+}
+
 export function ChatWidget() {
   const { isDark } = useTheme();
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(true); // 처음에 열린 상태
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [nextCursor, setNextCursor] = useState<number | null>(null);
@@ -18,7 +46,29 @@ export function ChatWidget() {
   const [sendError, setSendError] = useState<string | null>(null);
   const isOpenRef = useRef(isOpen);
 
-  // isOpenRef를 동기화
+  // 반응형 기본 크기
+  const [size, setSize] = useState(getResponsiveSize);
+
+  // 리사이즈 상태
+  const isResizingRef = useRef(false);
+  const resizeStartRef = useRef({ x: 0, y: 0, w: 0, h: 0 });
+
+  // 화면 리사이즈 시 최대 크기 재계산
+  useEffect(() => {
+    const handleResize = () => {
+      setSize((prev) => {
+        const resp = getResponsiveSize();
+        return {
+          w: Math.min(prev.w, resp.w),
+          h: Math.min(prev.h, resp.h),
+        };
+      });
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  // isOpenRef 동기화
   useEffect(() => {
     isOpenRef.current = isOpen;
   }, [isOpen]);
@@ -41,23 +91,18 @@ export function ChatWidget() {
   useEffect(() => {
     const subscription = chatApi.subscribeToChatStream((newMessage) => {
       setMessages((prev) => {
-        // 중복 방지
         if (prev.some((m) => m.id === newMessage.id)) return prev;
         return [...prev, newMessage];
       });
-
-      // 닫혀있으면 unread 증가
       if (!isOpenRef.current) {
         setUnreadCount((c) => c + 1);
       }
     });
-
     return () => {
       subscription.close();
     };
   }, []);
 
-  // 열면 unread 초기화
   const handleOpen = useCallback(() => {
     setIsOpen(true);
     setUnreadCount(0);
@@ -93,7 +138,9 @@ export function ChatWidget() {
         return [...prev, sent];
       });
     } catch (err) {
-      const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message || "전송에 실패했습니다";
+      const msg =
+        (err as { response?: { data?: { message?: string } } })?.response?.data
+          ?.message || "전송에 실패했습니다";
       setSendError(msg);
       setTimeout(() => setSendError(null), 3000);
     } finally {
@@ -101,12 +148,59 @@ export function ChatWidget() {
     }
   }, []);
 
+  // 리사이즈 드래그 핸들러 (좌상단 코너에서 드래그)
+  const handleResizeStart = useCallback(
+    (e: React.MouseEvent | React.TouchEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      isResizingRef.current = true;
+
+      const clientX = "touches" in e ? e.touches[0].clientX : e.clientX;
+      const clientY = "touches" in e ? e.touches[0].clientY : e.clientY;
+      resizeStartRef.current = {
+        x: clientX,
+        y: clientY,
+        w: size.w,
+        h: size.h,
+      };
+
+      const handleMove = (ev: MouseEvent | TouchEvent) => {
+        if (!isResizingRef.current) return;
+        const cx = "touches" in ev ? ev.touches[0].clientX : ev.clientX;
+        const cy = "touches" in ev ? ev.touches[0].clientY : ev.clientY;
+
+        const dx = resizeStartRef.current.x - cx; // 왼쪽으로 갈수록 커짐
+        const dy = resizeStartRef.current.y - cy; // 위로 갈수록 커짐
+
+        const resp = getResponsiveSize();
+        const newW = Math.max(MIN_W, Math.min(resp.w, resizeStartRef.current.w + dx));
+        const newH = Math.max(MIN_H, Math.min(resp.h, resizeStartRef.current.h + dy));
+
+        setSize({ w: newW, h: newH });
+      };
+
+      const handleEnd = () => {
+        isResizingRef.current = false;
+        document.removeEventListener("mousemove", handleMove);
+        document.removeEventListener("mouseup", handleEnd);
+        document.removeEventListener("touchmove", handleMove);
+        document.removeEventListener("touchend", handleEnd);
+      };
+
+      document.addEventListener("mousemove", handleMove);
+      document.addEventListener("mouseup", handleEnd);
+      document.addEventListener("touchmove", handleMove, { passive: false });
+      document.addEventListener("touchend", handleEnd);
+    },
+    [size],
+  );
+
   return (
     <div
       style={{
         position: "fixed",
-        bottom: 24,
-        left: 24,
+        bottom: 16,
+        left: 16,
         zIndex: 50,
       }}
     >
@@ -118,41 +212,76 @@ export function ChatWidget() {
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             transition={{ duration: 0.2 }}
             style={{
-              width: 420,
-              height: 480,
-              maxWidth: "calc(100vw - 48px)",
-              maxHeight: "60vh",
+              width: size.w,
+              height: size.h,
               borderRadius: 16,
               overflow: "hidden",
               display: "flex",
               flexDirection: "column",
               marginBottom: 12,
-              backgroundColor: isDark
-                ? "var(--color-surface)"
-                : "var(--color-surface)",
-              border: `1px solid var(--color-border)`,
+              backgroundColor: "var(--color-surface)",
+              border: "1px solid var(--color-border)",
               boxShadow: isDark
                 ? "0 8px 32px rgba(0,0,0,0.5)"
                 : "0 8px 32px rgba(0,0,0,0.12)",
+              position: "relative",
             }}
           >
+            {/* 리사이즈 핸들 (좌상단) */}
+            <div
+              onMouseDown={handleResizeStart}
+              onTouchStart={handleResizeStart}
+              style={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                width: 24,
+                height: 24,
+                cursor: "nw-resize",
+                zIndex: 10,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                opacity: 0.3,
+                transition: "opacity 0.15s",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.opacity = "0.7";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.opacity = "0.3";
+              }}
+            >
+              <GripVertical
+                size={12}
+                style={{
+                  color: "var(--color-foreground-muted)",
+                  transform: "rotate(-45deg)",
+                }}
+              />
+            </div>
+
             {/* 헤더 */}
             <div
               className="flex items-center justify-between"
               style={{
-                padding: "12px 16px",
-                borderBottom: `1px solid var(--color-border)`,
+                padding: "10px 16px",
+                borderBottom: "1px solid var(--color-border)",
                 backgroundColor: isDark
                   ? "rgba(255,255,255,0.03)"
                   : "rgba(0,0,0,0.02)",
+                flexShrink: 0,
               }}
             >
               <div className="flex items-center" style={{ gap: 8 }}>
-                <MessageCircle size={18} style={{ color: "var(--color-foreground)" }} />
+                <MessageCircle
+                  size={18}
+                  style={{ color: "var(--color-foreground)" }}
+                />
                 <span
                   className="font-bold"
                   style={{
-                    fontSize: 15,
+                    fontSize: 14,
                     color: "var(--color-foreground)",
                   }}
                 >
@@ -197,12 +326,17 @@ export function ChatWidget() {
 
             {/* 에러 메시지 */}
             {sendError && (
-              <div style={{
-                padding: "6px 16px",
-                fontSize: 12,
-                color: "var(--color-error)",
-                backgroundColor: isDark ? "rgba(255,50,50,0.1)" : "rgba(255,50,50,0.06)",
-              }}>
+              <div
+                style={{
+                  padding: "6px 16px",
+                  fontSize: 12,
+                  color: "var(--color-error)",
+                  backgroundColor: isDark
+                    ? "rgba(255,50,50,0.1)"
+                    : "rgba(255,50,50,0.06)",
+                  flexShrink: 0,
+                }}
+              >
                 {sendError}
               </div>
             )}
@@ -239,7 +373,6 @@ export function ChatWidget() {
         >
           <MessageCircle size={22} />
 
-          {/* 읽지 않은 메시지 뱃지 */}
           {unreadCount > 0 && (
             <motion.span
               initial={{ scale: 0 }}
