@@ -163,6 +163,7 @@ export function BalanceDetail() {
           agreePercentBar={agreePercentBar}
           disagreePercentBar={disagreePercentBar}
           onVote={handleVote}
+          openLoginModal={openLoginModal}
         />
 
         <AdBanner className="my-6" />
