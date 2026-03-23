@@ -73,12 +73,10 @@ export function AuthSidePanel() {
           <div
             className="flex items-center justify-center shadow-smooth overflow-hidden"
             style={{
-              background: "#0b0b0b",
               width: 48,
               height: 48,
               minWidth: 48,
               minHeight: 48,
-              borderRadius: 14,
             }}
           >
             <img
