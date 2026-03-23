@@ -366,6 +366,9 @@ export const SupportRateSection = memo(function SupportRateSection({
       <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-12">
         {/* 헤더 */}
         <div className="text-center mb-6 sm:mb-8">
+          <p className="text-gray-500 text-xs sm:text-sm mb-2">
+            본 투표는 오픈폴 회원들의 자발적 참여로 집계된 비공식 여론입니다
+          </p>
           <div className="flex items-center justify-center gap-2 mb-2 sm:mb-3">
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold">
               실시간 지지율
