@@ -17,5 +17,11 @@ CLAUDE.md
 .mcp.json
 *.mcp.json
 
+# Docs
+docs/
+
+# Playwright MCP
+.playwright-mcp/
+
 # OS
 .DS_Store
