@@ -5,7 +5,7 @@ import { useTheme } from "@/contexts/ThemeContext";
 export function LoadingState() {
   const { isDark } = useTheme();
   return (
-    <div className={`h-screen flex items-center justify-center ${isDark ? 'bg-black text-white' : 'bg-white text-black'}`}>
+    <div className={`h-screen flex items-center justify-center bg-background text-foreground`}>
       <div className="text-center">
         <div className={`inline-block w-12 h-12 border-4 rounded-full animate-spin mb-4 ${isDark ? 'border-white/20 border-t-white' : 'border-black/20 border-t-black'}`} />
         <p className={`text-lg ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>질문을 불러오는 중...</p>
@@ -163,7 +163,7 @@ export function NavigationButtons({
           </button>
         </div>
 
-        <div className={`text-center text-xs sm:text-sm md:text-base ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+        <div className={`text-center text-xs sm:text-sm md:text-base hidden sm:block ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
           <p>키보드 1-7 입력 답안 선택 · ←, → 다음 질문 이전 질문 이동</p>
         </div>
       </div>

@@ -235,7 +235,6 @@ export function DosIntro() {
   const { isAuthenticated } = useUser();
   const [showToast, setShowToast] = useState(false);
 
-  const { isDark } = useTheme();
   useScrollToTop();
 
   const redirectTimer = useRef<number | null>(null);
@@ -255,7 +254,7 @@ export function DosIntro() {
   const handleCloseToast = useCallback(() => setShowToast(false), []);
 
   return (
-    <div className={`pt-16 min-h-screen ${isDark ? 'bg-black text-white' : 'bg-white text-black'}`}>
+    <div className={`pt-16 min-h-screen bg-background text-foreground`}>
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
         <HeroSection />
         <InfoCardsGrid />

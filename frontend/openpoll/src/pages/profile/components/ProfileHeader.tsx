@@ -39,7 +39,7 @@ export function ProfileHeader({ onBack }: ProfileHeaderProps) {
 export function LoadingState() {
   const { isDark } = useTheme();
   return (
-    <div className={`min-h-screen flex items-center justify-center ${isDark ? 'bg-black' : 'bg-white'}`}>
+    <div className={`min-h-screen flex items-center justify-center bg-background`}>
       <div className={`animate-spin rounded-full h-12 w-12 border-b-2 ${isDark ? 'border-white' : 'border-black'}`} />
     </div>
   );

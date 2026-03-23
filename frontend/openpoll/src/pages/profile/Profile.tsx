@@ -4,7 +4,7 @@ import { WithdrawModal } from "@/components/molecules/withdrawModal";
 import { useProfile } from "./hooks";
 import { usePageMeta } from "@/hooks/usePageMeta";
 import { useUser } from "@/contexts/UserContext";
-import { useTheme } from "@/contexts/ThemeContext";
+
 import { ROUTES } from "@/shared/constants";
 import {
   ProfileHeader,
@@ -21,7 +21,6 @@ export function Profile() {
   usePageMeta("내 프로필");
   const navigate = useNavigate();
   const { logout } = useUser();
-  const { isDark } = useTheme();
   const {
     user,
     pointHistory,
@@ -39,7 +38,7 @@ export function Profile() {
   }
 
   return (
-    <div className={`pt-16 min-h-screen ${isDark ? 'bg-black' : 'bg-white'}`}>
+    <div className={`pt-16 min-h-screen bg-background`}>
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
         <ProfileHeader onBack={handleBack} />
         <ProfileCard user={user} />

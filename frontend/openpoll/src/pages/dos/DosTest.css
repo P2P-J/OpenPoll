@@ -10,12 +10,12 @@
 
 /* 다크 모드 카드 변수 */
 .dark, [data-theme="dark"] {
-    --card-bg: rgba(255, 255, 255, 0.05);
-    --card-border: rgba(255, 255, 255, 0.05);
-    --card-hover: rgba(255, 255, 255, 0.1);
+    --card-bg: rgba(255, 255, 255, 0.06);
+    --card-border: rgba(255, 255, 255, 0.08);
+    --card-hover: rgba(255, 255, 255, 0.12);
     --card-active-border: rgba(255, 255, 255, 0.3);
-    --card-shadow: rgba(255, 255, 255, 0.25);
-    --card-bg-dim: rgba(255, 255, 255, 0.03);
+    --card-shadow: rgba(255, 255, 255, 0.2);
+    --card-bg-dim: rgba(255, 255, 255, 0.04);
 }
 
 /* 전역 배경색 설정 - 하단 흰색 빈 공간 방지 */
@@ -128,7 +128,7 @@ body {
     .question-card {
         width: 95%;
         max-width: 500px;
-        min-height: 450px;
+        min-height: min(450px, calc(100vh - 180px));
     }
 }
 
@@ -186,7 +186,7 @@ body {
 /* 답변 버튼 */
 .answer-button {
     width: 100%;
-    padding: 0.625rem 0.75rem;
+    padding: 0.75rem 0.75rem;
     border-radius: 0.75rem;
     transition: background-color 0.2s, border-color 0.2s, color 0.2s, box-shadow 0.2s;
 }
@@ -209,7 +209,7 @@ body {
 /* 답변 라벨 */
 .answer-label {
     font-weight: 600;
-    font-size: 0.75rem;
+    font-size: 0.8125rem;
 }
 
 /* 라디오 버튼 */

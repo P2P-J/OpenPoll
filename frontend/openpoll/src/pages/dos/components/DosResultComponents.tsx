@@ -60,7 +60,7 @@ function getMarkdownComponents(isDark: boolean): Components {
 export function LoadingState() {
   const { isDark } = useTheme();
   return (
-    <div className={`min-h-screen ${isDark ? 'bg-black text-white' : 'bg-white text-black'} pt-16 flex items-center justify-center`}>
+    <div className={`min-h-screen bg-background text-foreground pt-16 flex items-center justify-center`}>
       <div className="text-center">
         <div className={`inline-block w-12 h-12 border-4 ${isDark ? 'border-white/20 border-t-white' : 'border-black/20 border-t-black'} rounded-full animate-spin mb-4`} />
         <p className={`text-lg ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>결과를 불러오는 중...</p>
@@ -72,7 +72,7 @@ export function LoadingState() {
 export function ErrorState() {
   const { isDark } = useTheme();
   return (
-    <div className={`min-h-screen ${isDark ? 'bg-black text-white' : 'bg-white text-black'} pt-16 flex items-center justify-center`}>
+    <div className={`min-h-screen bg-background text-foreground pt-16 flex items-center justify-center`}>
       <div className="text-center">
         <p className={`text-lg ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>결과를 찾을 수 없습니다.</p>
         <Link

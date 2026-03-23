@@ -81,7 +81,7 @@ export function BalanceDetail() {
     vm.handleVote(option);
   };
 
-  const rootClass = `pt-16 min-h-screen pb-24 ${isDark ? 'bg-black text-white' : 'bg-white text-black'}`;
+  const rootClass = `pt-16 min-h-screen pb-24 bg-background text-foreground`;
   const backLinkClass = `inline-flex items-center space-x-2 mb-8 transition-colors ${isDark ? 'text-gray-400 hover:text-white' : 'text-gray-500 hover:text-black'}`;
 
   if (vm.isLoading) {

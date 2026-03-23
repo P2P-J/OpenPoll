@@ -165,7 +165,7 @@ export function OAuthCallbackPage() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white flex items-center justify-center px-4">
+    <div className="min-h-screen text-white flex items-center justify-center px-4" style={{ backgroundColor: '#0D1117' }}>
       <div
         className="w-[min(520px,calc(100vw-32px))] origin-center rounded-2xl border border-white/10 bg-white/5 p-6 space-y-4"
         style={{ transform: "scale(1.45)" }}

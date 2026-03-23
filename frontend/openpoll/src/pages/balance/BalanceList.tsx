@@ -75,7 +75,7 @@ export function BalanceList() {
   }, [isLoggedIn]);
 
   return (
-    <div className={`pt-16 min-h-screen ${isDark ? 'bg-black text-white' : 'bg-white text-black'}`}>
+    <div className={`pt-16 min-h-screen bg-background text-foreground`}>
       <BalanceFormModal
         key={`${modalMode}-${editingId ?? "new"}-${isModalOpen ? "open" : "close"}`}
         isOpen={isModalOpen}

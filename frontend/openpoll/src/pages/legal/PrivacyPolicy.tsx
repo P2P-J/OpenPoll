@@ -12,7 +12,7 @@ export function PrivacyPolicy() {
   const listClass = "list-disc list-inside space-y-1 ml-2";
 
   return (
-    <div className={`pt-16 min-h-screen pb-12 ${isDark ? "bg-black" : "bg-gray-50"}`}>
+    <div className={`pt-16 min-h-screen pb-12 bg-background`}>
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         <Link
           to="/"
