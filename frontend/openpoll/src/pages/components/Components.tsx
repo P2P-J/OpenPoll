@@ -83,7 +83,7 @@ export function Components() {
 
   return (
     <div
-      className={`pt-16 pb-24 sm:pb-0 min-h-screen ${isDark ? "bg-black" : "bg-gray-50"}`}
+      className={`pt-16 pb-24 sm:pb-0 min-h-screen bg-background`}
     >
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         {/* Page Title */}

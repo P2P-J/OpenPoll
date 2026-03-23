@@ -221,3 +221,12 @@ export interface NewsArticle {
   press: string;
   createdAt: string;
 }
+
+// ============ Chat Types ============
+
+export interface ChatMessage {
+  id: number;
+  nickname: string;
+  content: string;
+  createdAt: string;
+}

@@ -18,6 +18,7 @@ import dosRouter from './modules/dos/dos.route.js';
 import balanceRouter from './modules/balance/balance.route.js';
 import newsRouter from './modules/news/news.route.js';
 import contactRouter from './modules/contact/contact.route.js';
+import chatRouter from './modules/chat/chat.route.js';
 
 const app = express();
 
@@ -58,6 +59,7 @@ app.use('/api/dos', dosRouter);
 app.use('/api/balance', balanceRouter);
 app.use('/api/news', newsRouter);
 app.use('/api/contact', contactRouter);
+app.use('/api/chat', chatRouter);
 
 app.all('*', (req, res, next) => {
   next(AppError.notFound(`Cannot find ${req.originalUrl} on this server`));

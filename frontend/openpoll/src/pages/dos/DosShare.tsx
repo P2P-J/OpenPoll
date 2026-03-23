@@ -13,7 +13,7 @@ import {
 
 function NotFoundView() {
     return (
-        <div className="min-h-screen bg-black text-white flex items-center justify-center">
+        <div className="min-h-screen text-white flex items-center justify-center" style={{ backgroundColor: '#0D1117' }}>
             <div className="text-center">
                 <p className="text-lg text-gray-400 mb-4">
                     존재하지 않는 결과 유형입니다.
@@ -75,7 +75,7 @@ export function DosShare() {
     const { detail = [], features = [], tag: tags = [] } = resultData;
 
     return (
-        <div className="min-h-screen bg-black text-white pt-8 sm:pt-12">
+        <div className="min-h-screen text-white pt-8 sm:pt-12" style={{ backgroundColor: '#0D1117' }}>
             <div className="max-w-4xl mx-auto px-4 py-8 sm:py-12">
                 <motion.div
                     initial={{ opacity: 0, y: -10 }}

@@ -22,8 +22,6 @@ import {
   CarouselArrows,
   NavigationButtons,
 } from "./components";
-import { useTheme } from "@/contexts/ThemeContext";
-
 import "swiper/swiper-bundle.css";
 import "./DosTest.css";
 
@@ -50,7 +48,6 @@ export function DosTest() {
     setToast
   );
 
-  const { isDark } = useTheme();
   useScrollLock();
   useAutoFocus(isLoading, questions.length > 0);
 
@@ -126,7 +123,7 @@ export function DosTest() {
     <div
       id="dos-test-container"
       tabIndex={0}
-      className={`h-screen flex flex-col overflow-hidden outline-none ${isDark ? 'bg-black text-white' : 'bg-white text-black'}`}
+      className="h-screen flex flex-col overflow-hidden outline-none bg-background text-foreground"
     >
       <ProgressBar progress={progress} />
       <Header
@@ -152,7 +149,7 @@ export function DosTest() {
               onSwiper={(swiper) => (swiperRef.current = swiper)}
               onSlideChange={handleSlideChange}
               effect="coverflow"
-              grabCursor={false}
+              grabCursor={true}
               centeredSlides={true}
               slidesPerView={1.4}
               coverflowEffect={{
@@ -163,7 +160,7 @@ export function DosTest() {
                 slideShadows: false,
               }}
               speed={600}
-              allowTouchMove={false}
+              allowTouchMove={true}
               className="dos-swiper"
               breakpoints={SWIPER_BREAKPOINTS}
             >

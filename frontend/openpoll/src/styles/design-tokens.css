@@ -219,11 +219,11 @@
 
   .dark,
   [data-theme="dark"] {
-    /* Background Colors */
-    --color-background: oklch(0.12 0.01 270);
-    --color-surface: oklch(0.15 0.01 270);
-    --color-surface-elevated: oklch(0.18 0.01 270);
-    --color-surface-overlay: oklch(0.20 0.01 270);
+    /* Background Colors - GitHub Dark Navy */
+    --color-background: #0D1117;
+    --color-surface: #161B22;
+    --color-surface-elevated: #1C2128;
+    --color-surface-overlay: #21262D;
 
     /* Foreground Colors */
     --color-foreground: oklch(0.95 0.005 270);

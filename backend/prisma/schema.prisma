@@ -29,6 +29,7 @@ model User {
   balanceCommentLikes BalanceCommentLike[]
 
   oauthAccounts OAuthAccount[]
+  chatMessages  ChatMessage[]
 
   @@map("users")
 }
@@ -206,6 +207,18 @@ model BalanceCommentLike {
   @@unique([userId, commentId])
   @@index([commentId])       // 댓글별 좋아요 수 집계
   @@map("balance_comment_likes")
+}
+
+model ChatMessage {
+  id        Int      @id @default(autoincrement())
+  userId    String
+  content   String   @db.VarChar(300)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([createdAt])
+  @@map("chat_messages")
 }
 
 model Article {

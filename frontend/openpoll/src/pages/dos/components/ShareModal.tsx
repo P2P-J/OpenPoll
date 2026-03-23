@@ -175,7 +175,7 @@ export function ShareModal({ isOpen, onClose, type }: ShareModalProps) {
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.2 }}
-                    className="fixed inset-0 z-50 flex items-center justify-center px-8"
+                    className="fixed inset-0 z-50 flex items-center justify-center px-4 sm:px-8"
                     role="dialog"
                     aria-modal="true"
                     aria-label="결과 공유하기"
@@ -254,6 +254,7 @@ export function ShareModal({ isOpen, onClose, type }: ShareModalProps) {
                                         readOnly
                                         value={shareUrl}
                                         className={`flex-1 px-4 py-3 ${isDark ? 'bg-white/5 border-white/10 text-white' : 'bg-black/5 border-black/10 text-black'} border rounded-xl text-sm focus:outline-none`}
+                                        style={{ textOverflow: 'ellipsis', overflow: 'hidden' }}
                                     />
                                     <button
                                         onClick={handleCopy}

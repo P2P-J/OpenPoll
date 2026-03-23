@@ -7,7 +7,7 @@ import { useTheme } from "@/contexts/ThemeContext";
 export function DetailLoadingState() {
   const { isDark } = useTheme();
   return (
-    <div className={`pt-16 min-h-screen flex items-center justify-center ${isDark ? 'bg-black' : 'bg-gray-50'}`}>
+    <div className={`pt-16 min-h-screen flex items-center justify-center bg-background`}>
       <div className="text-center">
         <Sparkles className={`w-12 h-12 mx-auto mb-4 animate-pulse ${isDark ? 'text-white' : 'text-black'}`} />
         <p className={isDark ? 'text-gray-400' : 'text-gray-600'}>뉴스를 불러오는 중...</p>
@@ -25,7 +25,7 @@ export function DetailErrorState({
 }) {
   const { isDark } = useTheme();
   return (
-    <div className={`pt-16 min-h-screen flex items-center justify-center ${isDark ? 'bg-black' : 'bg-gray-50'}`}>
+    <div className={`pt-16 min-h-screen flex items-center justify-center bg-background`}>
       <div className="text-center">
         <p className={`mb-4 ${isDark ? 'text-red-400' : 'text-red-600'}`}>{message}</p>
         <button
