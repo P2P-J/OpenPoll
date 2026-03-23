@@ -136,46 +136,54 @@ export function ChatMessageList({
         </div>
       )}
 
-      {messages.map((msg) => (
-        <div
-          key={msg.id}
-          style={{
-            padding: "6px 10px",
-            borderRadius: 8,
-            backgroundColor: isDark
-              ? "rgba(255,255,255,0.04)"
-              : "rgba(0,0,0,0.02)",
-            transition: "background-color 0.15s",
-          }}
-        >
+      {messages.map((msg) => {
+        const isAdmin = msg.role === "ADMIN";
+        return (
           <div
+            key={msg.id}
             style={{
-              fontSize: 11,
-              color: "var(--color-foreground-subtle)",
-              marginBottom: 2,
+              padding: "6px 10px",
+              borderRadius: 8,
+              backgroundColor: isAdmin
+                ? isDark
+                  ? "rgba(34,197,94,0.08)"
+                  : "rgba(34,197,94,0.06)"
+                : isDark
+                  ? "rgba(255,255,255,0.04)"
+                  : "rgba(0,0,0,0.02)",
+              borderLeft: isAdmin ? "3px solid #22c55e" : "none",
+              transition: "background-color 0.15s",
             }}
           >
-            {formatRelativeTime(msg.createdAt)}
-          </div>
-          <div
-            style={{
-              fontSize: 14,
-              color: "var(--color-foreground)",
-              lineHeight: 1.5,
-              wordBreak: "break-word",
-            }}
-          >
-            <span
-              className="font-bold"
-              style={{ color: "var(--color-foreground)" }}
+            <div
+              style={{
+                fontSize: 11,
+                color: "var(--color-foreground-subtle)",
+                marginBottom: 2,
+              }}
             >
-              [{msg.nickname}]
-            </span>
-            {" : "}
-            {msg.content}
+              {formatRelativeTime(msg.createdAt)}
+            </div>
+            <div
+              style={{
+                fontSize: 14,
+                color: "var(--color-foreground)",
+                lineHeight: 1.5,
+                wordBreak: "break-word",
+              }}
+            >
+              <span
+                className="font-bold"
+                style={{ color: isAdmin ? "#22c55e" : "var(--color-foreground)" }}
+              >
+                {isAdmin && "🛡️ "}[{msg.nickname}]
+              </span>
+              {" : "}
+              {msg.content}
+            </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }

@@ -72,6 +72,7 @@ export const getMessages = async (cursor, limit = 50) => {
         select: {
           id: true,
           nickname: true,
+          role: true,
         },
       },
     },
@@ -82,10 +83,11 @@ export const getMessages = async (cursor, limit = 50) => {
 
   const nextCursor = hasMore ? messages[messages.length - 1].id : null;
 
-  // 프론트엔드 타입에 맞게 평탄화 (user.nickname → nickname)
+  // 프론트엔드 타입에 맞게 평탄화
   const formatted = messages.reverse().map((m) => ({
     id: m.id,
     nickname: m.user?.nickname || '익명',
+    role: m.user?.role || 'USER',
     content: m.content,
     createdAt: m.createdAt,
   }));
@@ -128,6 +130,7 @@ export const sendMessage = async (userId, content) => {
         select: {
           id: true,
           nickname: true,
+          role: true,
         },
       },
     },
@@ -140,6 +143,7 @@ export const sendMessage = async (userId, content) => {
   const formatted = {
     id: message.id,
     nickname: message.user?.nickname || '익명',
+    role: message.user?.role || 'USER',
     content: message.content,
     createdAt: message.createdAt,
   };
