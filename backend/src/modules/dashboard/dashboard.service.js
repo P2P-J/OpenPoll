@@ -37,26 +37,14 @@ export const getOverallStats = async (skipCache = false) => {
     }
   }
 
-  const voteCounts = await prisma.vote.groupBy({
-    by: ['partyId'],
-    _count: { id: true },
-  });
-
   const parties = await prisma.party.findMany({
     orderBy: { order: 'asc' },
   });
 
-  // Party.voteCount(초기 베이스) + 실제 Vote 레코드 수를 합산
-  const totalVotes = parties.reduce((sum, party) => {
-    const voteData = voteCounts.find((v) => v.partyId === party.id);
-    const realVotes = voteData ? voteData._count.id : 0;
-    return sum + (party.voteCount || 0) + realVotes;
-  }, 0);
+  const totalVotes = parties.reduce((sum, party) => sum + (party.voteCount || 0), 0);
 
   const stats = parties.map((party) => {
-    const voteData = voteCounts.find((v) => v.partyId === party.id);
-    const realVotes = voteData ? voteData._count.id : 0;
-    const count = (party.voteCount || 0) + realVotes;
+    const count = party.voteCount || 0;
     const percentage = totalVotes > 0 ? ((count / totalVotes) * 100).toFixed(2) : '0.00';
 
     return {
