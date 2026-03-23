@@ -1,43 +1,43 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://openpoll.co.kr/</loc>
+    <loc>https://www.openpoll.co.kr/</loc>
     <lastmod>2026-03-10</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://openpoll.co.kr/dos</loc>
+    <loc>https://www.openpoll.co.kr/dos</loc>
     <lastmod>2026-03-10</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://openpoll.co.kr/balance</loc>
+    <loc>https://www.openpoll.co.kr/balance</loc>
     <lastmod>2026-03-10</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://openpoll.co.kr/news</loc>
+    <loc>https://www.openpoll.co.kr/news</loc>
     <lastmod>2026-03-10</lastmod>
     <changefreq>hourly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://openpoll.co.kr/login</loc>
+    <loc>https://www.openpoll.co.kr/login</loc>
     <lastmod>2026-03-10</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.4</priority>
   </url>
   <url>
-    <loc>https://openpoll.co.kr/privacy</loc>
+    <loc>https://www.openpoll.co.kr/privacy</loc>
     <lastmod>2026-03-10</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
   <url>
-    <loc>https://openpoll.co.kr/terms</loc>
+    <loc>https://www.openpoll.co.kr/terms</loc>
     <lastmod>2026-03-10</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
