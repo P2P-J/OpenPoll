@@ -13,6 +13,7 @@ interface BalanceVoteSectionProps {
   agreePercentBar: number;
   disagreePercentBar: number;
   onVote: (option: VoteOption) => void;
+  openLoginModal?: () => void;
 }
 
 export function BalanceVoteSection({
@@ -25,6 +26,7 @@ export function BalanceVoteSection({
   agreePercentBar,
   disagreePercentBar,
   onVote,
+  openLoginModal,
 }: BalanceVoteSectionProps) {
   const { isDark } = useTheme();
   return (
@@ -126,7 +128,13 @@ export function BalanceVoteSection({
 
           <div className="grid grid-cols-2 gap-4">
             <button
-              onClick={() => onVote("agree")}
+              onClick={() => {
+                if (!isLoggedIn && openLoginModal) {
+                  openLoginModal();
+                  return;
+                }
+                onVote("agree");
+              }}
               disabled={isVoting}
               aria-pressed={selectedOption === "agree"}
               className={`relative p-6 rounded-xl transition-all disabled:opacity-60 disabled:cursor-not-allowed ${
@@ -148,7 +156,13 @@ export function BalanceVoteSection({
             </button>
 
             <button
-              onClick={() => onVote("disagree")}
+              onClick={() => {
+                if (!isLoggedIn && openLoginModal) {
+                  openLoginModal();
+                  return;
+                }
+                onVote("disagree");
+              }}
               disabled={isVoting}
               aria-pressed={selectedOption === "disagree"}
               className={`relative p-6 rounded-xl transition-all disabled:opacity-60 disabled:cursor-not-allowed ${

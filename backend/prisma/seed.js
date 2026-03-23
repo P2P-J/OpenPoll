@@ -7,11 +7,11 @@ async function main() {
   console.log('Seeding database...');
 
   const parties = [
-    { name: '더불어민주당', color: '#004EA2', order: 1 },
-    { name: '국민의힘', color: '#E61E2B', order: 2 },
-    { name: '조국혁신당', color: '#0033A0', order: 3 },
-    { name: '개혁신당', color: '#FF7210', order: 4 },
-    { name: '기타/무당층', color: '#808080', order: 5 },
+    { name: '더불어민주당', color: '#004EA2', order: 1, voteCount: 475 },
+    { name: '국민의힘', color: '#E61E2B', order: 2, voteCount: 400 },
+    { name: '조국혁신당', color: '#0033A0', order: 3, voteCount: 100 },
+    { name: '개혁신당', color: '#FF7210', order: 4, voteCount: 88 },
+    { name: '기타/무당층', color: '#808080', order: 5, voteCount: 187 },
   ];
 
   for (const party of parties) {
