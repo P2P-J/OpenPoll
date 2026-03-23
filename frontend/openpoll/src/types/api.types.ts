@@ -227,6 +227,7 @@ export interface NewsArticle {
 export interface ChatMessage {
   id: number;
   nickname: string;
+  role: string;
   content: string;
   createdAt: string;
 }
