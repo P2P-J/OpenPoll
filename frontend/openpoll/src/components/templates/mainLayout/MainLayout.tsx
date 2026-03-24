@@ -54,7 +54,7 @@ export function MainLayout() {
     location.pathname === '/login' || location.pathname === '/register';
 
   return (
-    <div className={`min-h-screen ${isAuthPage ? 'bg-black' : 'bg-background'}`}>
+    <div className={`min-h-screen bg-background`}>
       {!isAuthPage && (
         <a
           href="#main-content"

@@ -34,7 +34,7 @@ export function NewsList() {
   if (error) return <NewsListErrorState message={error} />;
 
   return (
-    <div className={`pt-16 pb-24 sm:pb-0 min-h-screen ${isDark ? 'bg-black' : 'bg-gray-50'}`}>
+    <div className={`pt-16 pb-24 sm:pb-0 min-h-screen bg-background`}>
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         <motion.div
           initial={{ opacity: 0, y: -20 }}

@@ -14,6 +14,7 @@ import { Toast } from "@/components/molecules/toast/Toast";
 import { LoginModal } from "@/components/molecules/loginModal";
 import { useVoting } from "@/contexts/VotingContext";
 import { useUser } from "@/contexts/UserContext";
+import { ChatWidget } from "@/components/organisms/chatWidget";
 
 const PARTY_LOGOS: Record<string, string> = {
   더불어민주당: "/parties/더불어민주당_원형(200).png",
@@ -201,6 +202,8 @@ export function Home() {
 
         <CTASection />
       </div>
+
+      <ChatWidget />
     </>
   );
 }

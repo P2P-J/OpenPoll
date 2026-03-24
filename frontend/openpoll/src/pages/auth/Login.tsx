@@ -73,7 +73,7 @@ export function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen text-white" style={{ backgroundColor: '#0D1117' }}>
       <div
         className="relative grid min-h-screen"
         style={{ gridTemplateColumns: '50% 50%' }}

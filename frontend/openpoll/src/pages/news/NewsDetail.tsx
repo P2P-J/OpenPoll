@@ -68,7 +68,7 @@ export function NewsDetail() {
   }
 
   return (
-    <div className={`pt-16 min-h-screen pb-12 ${isDark ? 'bg-black' : 'bg-gray-50'}`}>
+    <div className={`pt-16 min-h-screen pb-12 bg-background`}>
       <div className="max-w-3xl mx-auto">
         <BackButton />
 
