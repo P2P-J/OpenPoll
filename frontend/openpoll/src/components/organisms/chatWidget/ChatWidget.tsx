@@ -12,6 +12,45 @@ const MAX_H = 420;
 const MIN_W = 280;
 const MIN_H = 220;
 const STORAGE_KEY = "openpoll-chat-size";
+const OPEN_KEY = "openpoll-chat-open";
+const UNREAD_KEY = "openpoll-chat-unread";
+
+function loadSavedOpen(): boolean {
+  try {
+    const saved = localStorage.getItem(OPEN_KEY);
+    if (saved === null) return true; // 최초 방문은 열림
+    return saved === "true";
+  } catch {
+    return true;
+  }
+}
+
+function saveOpen(open: boolean) {
+  try {
+    localStorage.setItem(OPEN_KEY, String(open));
+  } catch {
+    // ignore
+  }
+}
+
+function loadSavedUnread(): number {
+  try {
+    const saved = localStorage.getItem(UNREAD_KEY);
+    if (!saved) return 0;
+    const n = parseInt(saved, 10);
+    return isNaN(n) ? 0 : n;
+  } catch {
+    return 0;
+  }
+}
+
+function saveUnread(count: number) {
+  try {
+    localStorage.setItem(UNREAD_KEY, String(count));
+  } catch {
+    // ignore
+  }
+}
 
 function getMaxSize() {
   const vw = window.innerWidth;
@@ -76,9 +115,9 @@ function clampSize(size: { w: number; h: number }) {
 
 export function ChatWidget() {
   const { isDark } = useTheme();
-  const [isOpen, setIsOpen] = useState(true);
+  const [isOpen, setIsOpen] = useState(loadSavedOpen);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [unreadCount, setUnreadCount] = useState(0);
+  const [unreadCount, setUnreadCount] = useState(loadSavedUnread);
   const [nextCursor, setNextCursor] = useState<number | null>(null);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [isSending, setIsSending] = useState(false);
@@ -92,11 +131,13 @@ export function ChatWidget() {
 
   const isResizingRef = useRef(false);
   const resizeStartRef = useRef({ x: 0, y: 0, w: 0, h: 0 });
+  const [isMobile, setIsMobile] = useState(() => window.innerWidth < 640);
 
-  // 화면 리사이즈 시 크기 제한
+  // 화면 리사이즈 시 크기 제한 + 모바일 감지
   useEffect(() => {
     const handleResize = () => {
       setSize((prev) => clampSize(prev));
+      setIsMobile(window.innerWidth < 640);
     };
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
@@ -126,7 +167,11 @@ export function ChatWidget() {
         return [...prev, newMessage];
       });
       if (!isOpenRef.current) {
-        setUnreadCount((c) => c + 1);
+        setUnreadCount((c) => {
+          const next = c + 1;
+          saveUnread(next);
+          return next;
+        });
       }
     });
     return () => {
@@ -137,10 +182,13 @@ export function ChatWidget() {
   const handleOpen = useCallback(() => {
     setIsOpen(true);
     setUnreadCount(0);
+    saveOpen(true);
+    saveUnread(0);
   }, []);
 
   const handleClose = useCallback(() => {
     setIsOpen(false);
+    saveOpen(false);
   }, []);
 
   const handleLoadMore = useCallback(async () => {
@@ -226,7 +274,7 @@ export function ChatWidget() {
   );
 
   return (
-    <div style={{ position: "fixed", bottom: 16, left: 16, zIndex: 50 }}>
+    <div style={{ position: "fixed", bottom: isMobile ? 72 : 16, left: 16, zIndex: 50 }}>
       <AnimatePresence>
         {isOpen && (
           <motion.div
