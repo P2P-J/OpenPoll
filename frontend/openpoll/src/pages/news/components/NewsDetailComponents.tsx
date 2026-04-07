@@ -120,10 +120,9 @@ export function AINotice() {
 interface NeutralityAnalysisProps {
   originalTitle: string | null;
   refinedTitle: string;
-  press: string;
 }
 
-export function NeutralityAnalysis({ originalTitle, refinedTitle, press }: NeutralityAnalysisProps) {
+export function NeutralityAnalysis({ originalTitle, refinedTitle }: NeutralityAnalysisProps) {
   const { isDark } = useTheme();
 
   return (

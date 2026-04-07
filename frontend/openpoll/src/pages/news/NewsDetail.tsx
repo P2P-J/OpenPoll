@@ -18,7 +18,6 @@ import {
   SourceAttribution,
   SummarySection,
   TagList,
-  Timestamp,
   OriginalLinkButton,
 } from "./components";
 
@@ -105,7 +104,6 @@ export function NewsDetail() {
             <NeutralityAnalysis
               originalTitle={article.originalTitle}
               refinedTitle={article.refinedTitle}
-              press={article.press}
             />
 
             <SourceAttribution
