@@ -14,9 +14,10 @@ import {
   BackButton,
   ArticleHeader,
   AINotice,
+  NeutralityAnalysis,
+  SourceAttribution,
   SummarySection,
   TagList,
-  Timestamp,
   OriginalLinkButton,
 } from "./components";
 
@@ -99,8 +100,20 @@ export function NewsDetail() {
             </article>
 
             <SummarySection shortSummary={article.shortSummary} />
+
+            <NeutralityAnalysis
+              originalTitle={article.originalTitle}
+              refinedTitle={article.refinedTitle}
+            />
+
+            <SourceAttribution
+              press={article.press}
+              originalUrl={article.originalUrl}
+              naverUrl={article.naverUrl}
+              createdAt={article.createdAt}
+            />
+
             <TagList tags={article.relatedTags} />
-            <Timestamp createdAt={article.createdAt} />
             <OriginalLinkButton url={article.originalUrl} />
           </div>
         </motion.div>

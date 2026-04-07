@@ -214,6 +214,7 @@ export interface NewsArticle {
   id: number;
   naverUrl: string;
   originalUrl: string;
+  originalTitle: string | null;
   refinedTitle: string;
   refinedSummary: string;
   shortSummary: string;
