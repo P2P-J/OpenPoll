@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { Link } from "react-router-dom";
-import { ChevronLeft, ExternalLink, Sparkles, Clock, ArrowRight, Shield, Newspaper } from "lucide-react";
+import { ChevronLeft, ExternalLink, Sparkles, Clock, ArrowDown, Shield, Newspaper } from "lucide-react";
 import { getTimeAgo, formatPublishedDate } from "@/shared/utils/newsHelpers";
 import { useTheme } from "@/contexts/ThemeContext";
 
@@ -150,7 +150,7 @@ export function NeutralityAnalysis({ originalTitle, refinedTitle }: NeutralityAn
               </p>
             </div>
             <div className="flex justify-center">
-              <ArrowRight className={`w-5 h-5 ${isDark ? 'text-gray-600' : 'text-gray-400'}`} style={{ transform: 'rotate(90deg)' }} />
+              <ArrowDown className={`w-5 h-5 ${isDark ? 'text-gray-600' : 'text-gray-400'}`} />
             </div>
             <div className={`rounded-xl p-4 border ${isDark ? 'bg-green-950/20 border-green-900/30' : 'bg-green-50 border-green-100'}`}>
               <p className={`text-xs font-bold mb-1.5 ${isDark ? 'text-green-400' : 'text-green-600'}`}>중립화된 제목</p>

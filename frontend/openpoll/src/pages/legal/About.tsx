@@ -185,7 +185,7 @@ export function About() {
               웹사이트:{" "}
               <a
                 href="https://www.openpoll.co.kr"
-                className="underline text-blue-400 hover:text-blue-300"
+                className={`underline ${isDark ? "text-blue-400 hover:text-blue-300" : "text-blue-600 hover:text-blue-500"}`}
               >
                 www.openpoll.co.kr
               </a>
