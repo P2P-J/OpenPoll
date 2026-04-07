@@ -69,6 +69,18 @@ const PrivacyPolicy = lazy(() =>
 const TermsOfService = lazy(() =>
   import("@/pages/legal").then((m) => ({ default: m.TermsOfService })),
 );
+const About = lazy(() =>
+  import("@/pages/legal").then((m) => ({ default: m.About })),
+);
+const Disclaimer = lazy(() =>
+  import("@/pages/legal").then((m) => ({ default: m.Disclaimer })),
+);
+const BlogList = lazy(() =>
+  import("@/pages/blog").then((m) => ({ default: m.BlogList })),
+);
+const BlogDetail = lazy(() =>
+  import("@/pages/blog").then((m) => ({ default: m.BlogDetail })),
+);
 const Components = lazy(() =>
   import("@/pages/components").then((m) => ({ default: m.Components })),
 );
@@ -146,6 +158,10 @@ export default function App() {
                     <Route path="/profile" element={<Profile />} />
                     <Route path="/privacy" element={<PrivacyPolicy />} />
                     <Route path="/terms" element={<TermsOfService />} />
+                    <Route path="/about" element={<About />} />
+                    <Route path="/disclaimer" element={<Disclaimer />} />
+                    <Route path="/blog" element={<BlogList />} />
+                    <Route path="/blog/:slug" element={<BlogDetail />} />
                     <Route path="/components" element={<Components />} />
                   </Route>
                   {/* 404 catch-all */}

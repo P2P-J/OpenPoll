@@ -36,6 +36,18 @@ export function Footer() {
             aria-label="푸터 링크"
           >
             <Link
+              to="/about"
+              className="transition-colors text-foreground-muted hover:text-foreground"
+            >
+              소개
+            </Link>
+            <Link
+              to="/blog"
+              className="transition-colors text-foreground-muted hover:text-foreground"
+            >
+              블로그
+            </Link>
+            <Link
               to="/privacy"
               className="transition-colors text-foreground-muted hover:text-foreground"
             >
@@ -46,6 +58,12 @@ export function Footer() {
               className="transition-colors text-foreground-muted hover:text-foreground"
             >
               이용약관
+            </Link>
+            <Link
+              to="/disclaimer"
+              className="transition-colors text-foreground-muted hover:text-foreground"
+            >
+              면책조항
             </Link>
             <button
               type="button"

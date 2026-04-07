@@ -11,6 +11,8 @@ export {
   BackButton,
   ArticleHeader,
   AINotice,
+  NeutralityAnalysis,
+  SourceAttribution,
   SummarySection,
   TagList,
   Timestamp,

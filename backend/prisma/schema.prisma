@@ -224,11 +224,12 @@ model ChatMessage {
 model Article {
   id            Int      @id @default(autoincrement())
   naverUrl      String   @unique
-  originalUrl   String  
+  originalUrl   String
 
-  refinedTitle   String  
-  refinedSummary String  
-  shortSummary   String  
+  originalTitle  String?
+  refinedTitle   String
+  refinedSummary String
+  shortSummary   String
   relatedTags    String[]
   press String?
 

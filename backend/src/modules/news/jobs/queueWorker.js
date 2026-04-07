@@ -68,6 +68,7 @@ function startWorkerOnce() {
                 create: {
                     naverUrl,
                     originalUrl,
+                    originalTitle: title,
                     refinedTitle: summarizeAi.refinedTitle,
                     refinedSummary: summarizeAi.refinedSummary,
                     shortSummary: summarizeAi.shortSummary,
@@ -76,6 +77,7 @@ function startWorkerOnce() {
                 },
                 update: {
                     originalUrl,
+                    originalTitle: title,
                     refinedTitle: summarizeAi.refinedTitle,
                     refinedSummary: summarizeAi.refinedSummary,
                     shortSummary: summarizeAi.shortSummary,
