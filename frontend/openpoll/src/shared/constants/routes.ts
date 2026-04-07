@@ -27,6 +27,12 @@ export const ROUTES = {
   // Legal
   PRIVACY: '/privacy',
   TERMS: '/terms',
+  ABOUT: '/about',
+  DISCLAIMER: '/disclaimer',
+
+  // Blog
+  BLOG: '/blog',
+  BLOG_DETAIL: '/blog/:slug',
 } as const;
 
 export type RouteKey = keyof typeof ROUTES;
