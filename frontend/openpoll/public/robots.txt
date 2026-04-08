@@ -5,6 +5,5 @@ Disallow: /signup
 Disallow: /register
 Disallow: /profile
 Disallow: /dos/test
-Disallow: /dos/result/
 
 Sitemap: https://www.openpoll.co.kr/sitemap.xml
