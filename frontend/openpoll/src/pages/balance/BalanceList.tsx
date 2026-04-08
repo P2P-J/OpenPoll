@@ -22,7 +22,7 @@ type MeLike = {
 };
 
 export function BalanceList() {
-  usePageMeta("밸런스 게임", "정치 이슈에 대한 찬반 투표로 당신의 생각을 표현하세요.");
+  usePageMeta("정치 밸런스 게임 - 이슈 투표", "정치 이슈에 대한 찬반 투표로 당신의 생각을 표현하세요. 다른 사람들의 의견도 확인해보세요.");
   const hasToken = !!localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
   const isLoggedIn = !!getSession() || hasToken;
   const [isAdmin, setIsAdmin] = useState(false);

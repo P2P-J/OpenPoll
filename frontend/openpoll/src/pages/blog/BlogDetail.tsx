@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { usePageMeta } from "@/hooks/usePageMeta";
+import { useStructuredData } from "@/hooks/useStructuredData";
 import { useTheme } from "@/contexts/ThemeContext";
 import { motion } from "motion/react";
 import ReactMarkdown from "react-markdown";
@@ -19,6 +20,20 @@ export function BlogDetail() {
     post ? `${post.title} - OpenPoll 블로그` : "블로그 - OpenPoll",
     post?.description,
   );
+  useStructuredData(post ? {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    headline: post.title,
+    description: post.description,
+    datePublished: post.date,
+    author: { "@type": "Organization", name: "OpenPoll" },
+    publisher: {
+      "@type": "Organization",
+      name: "OpenPoll",
+      logo: { "@type": "ImageObject", url: "https://www.openpoll.co.kr/OPENPOLL-LARGE.png" },
+    },
+    mainEntityOfPage: `https://www.openpoll.co.kr/blog/${post.slug}`,
+  } : null);
 
   const MARKDOWN_COMPONENTS: Components = useMemo(
     () => ({
