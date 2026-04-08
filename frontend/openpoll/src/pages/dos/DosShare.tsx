@@ -3,6 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import { motion } from "motion/react";
 import { Brain, Home } from "lucide-react";
 import { usePageMeta } from "@/hooks/usePageMeta";
+import { useStructuredData } from "@/hooks/useStructuredData";
 import { dosResultTypes } from "@/shared/constants/dosResultTypes";
 import {
     ResultHeader,
@@ -69,6 +70,13 @@ export function DosShare() {
             : "DOS 결과 공유",
         resultData?.description || "DOS 테스트 결과를 확인하세요."
     );
+    useStructuredData(resultData ? {
+        "@context": "https://schema.org",
+        "@type": "Quiz",
+        name: `DOS 정치 성향 테스트 결과: ${resultData.name} (${type})`,
+        description: resultData.description,
+        provider: { "@type": "Organization", name: "OpenPoll", url: "https://www.openpoll.co.kr" },
+    } : null);
 
     if (!resultData) return <NotFoundView />;
 
