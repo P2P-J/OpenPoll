@@ -19,6 +19,7 @@ const BASE_URL = 'https://www.openpoll.co.kr';
 
 // ---------------------------------------------------------------------------
 // DOS type data
+// IMPORTANT: Keep in sync with src/shared/constants/dosResultTypes.ts
 // ---------------------------------------------------------------------------
 const DOS_TYPES = {
   CMFD: { name: '진보적 자유주의자', desc: '변화를 추구하며 개인의 자유와 경쟁을 중시하고, 발전을 위한 개발에 긍정적인 유형입니다.' },
@@ -92,7 +93,8 @@ const ROUTES = [
     description: DEFAULT_DESC,
   },
 
-  // ── Blog posts ──────────────────────────────────────────────────────
+  // ── Blog posts ─────────────────────────────────────────────────────
+  // IMPORTANT: Keep in sync with src/pages/blog/blogData.ts
   {
     path: '/blog/political-orientation-test-guide',
     title: '정치 성향 테스트란? DOS 테스트로 나의 정치적 좌표 찾기 | OpenPoll 블로그',
@@ -271,7 +273,11 @@ function blogPostingSchema(route) {
 // HTML template manipulation
 // ---------------------------------------------------------------------------
 function replaceTag(html, regex, replacement) {
-  return html.replace(regex, replacement);
+  const result = html.replace(regex, replacement);
+  if (result === html) {
+    console.warn(`[seo-prerender] WARNING: regex did not match: ${regex}`);
+  }
+  return result;
 }
 
 function generateHTML(template, route) {
