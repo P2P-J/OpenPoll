@@ -14,7 +14,7 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { AdBanner } from "@/components/atoms/adBanner/AdBanner";
 
 export function NewsList() {
-  usePageMeta("중립 뉴스", "AI가 순화한 중립적이고 객관적인 정치 뉴스를 읽어보세요.");
+  usePageMeta("AI 중립 뉴스 - 편향 없는 정치 뉴스", "AI가 편향과 자극적 표현을 제거한 중립적 정치 뉴스를 읽어보세요. 사실 중심의 객관적 뉴스.");
   const { isDark } = useTheme();
   const {
     selectedCategory,
