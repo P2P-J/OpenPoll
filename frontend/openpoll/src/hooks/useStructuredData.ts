@@ -1,14 +1,15 @@
 import { useEffect, useRef } from "react";
 
 export function useStructuredData(schema: Record<string, unknown> | null) {
+  const serialized = schema ? JSON.stringify(schema) : null;
   const scriptRef = useRef<HTMLScriptElement | null>(null);
 
   useEffect(() => {
-    if (!schema) return;
+    if (!serialized) return;
 
     const script = document.createElement("script");
     script.type = "application/ld+json";
-    script.textContent = JSON.stringify(schema);
+    script.textContent = serialized;
     script.dataset.dynamic = "true";
     document.head.appendChild(script);
     scriptRef.current = script;
@@ -19,5 +20,5 @@ export function useStructuredData(schema: Record<string, unknown> | null) {
         scriptRef.current = null;
       }
     };
-  }, [JSON.stringify(schema)]);
+  }, [serialized]);
 }
