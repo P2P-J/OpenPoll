@@ -75,6 +75,11 @@ log "빌드 파일 복사..."
 sudo rm -rf /var/www/html/*
 sudo cp -r dist/* /var/www/html/
 
+# Nginx 설정 동기화
+log "Nginx 설정 동기화..."
+sudo cp "$APP_DIR/nginx/openpoll-frontend.conf" /etc/nginx/conf.d/openpoll.conf
+sudo nginx -t || { log "Nginx 설정 오류!"; exit 1; }
+
 # Nginx 설정 리로드
 log "Nginx 리로드..."
 sudo nginx -s reload

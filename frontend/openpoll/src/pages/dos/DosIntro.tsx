@@ -6,6 +6,7 @@ import type { LucideIcon } from "lucide-react";
 import { useUser } from "@/contexts/UserContext";
 import { Toast } from "@/components/molecules/toast/Toast";
 import { usePageMeta } from "@/hooks/usePageMeta";
+import { useStructuredData } from "@/hooks/useStructuredData";
 import { useTheme } from "@/contexts/ThemeContext";
 import { AdBanner } from "@/components/atoms/adBanner/AdBanner";
 
@@ -230,7 +231,14 @@ const useScrollToTop = () => {
 };
 
 export function DosIntro() {
-  usePageMeta("정치 DOS 테스트", "8values 기반 정치 성향 테스트로 나의 정치적 좌표를 찾아보세요. 4가지 축으로 분석합니다.");
+  usePageMeta("정치 성향 테스트 - 나의 정치 좌표 찾기", "32개 질문으로 나의 정치 성향을 분석하세요. 4가지 축 기반 16유형 정치 성향 테스트. 무료로 지금 바로 시작하세요.");
+  useStructuredData({
+    "@context": "https://schema.org",
+    "@type": "Quiz",
+    name: "정치 성향 테스트 (DOS)",
+    description: "32개 질문으로 4가지 축(변화-안정, 경쟁-평등, 자유-규율, 개발-환경)을 분석하여 16가지 정치 성향 유형을 알려주는 테스트",
+    provider: { "@type": "Organization", name: "OpenPoll", url: "https://www.openpoll.co.kr" },
+  });
   const navigate = useNavigate();
   const { isAuthenticated } = useUser();
   const [showToast, setShowToast] = useState(false);

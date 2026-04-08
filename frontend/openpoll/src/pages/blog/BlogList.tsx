@@ -9,10 +9,7 @@ import { blogPosts } from "./blogData";
 const CATEGORIES = ["전체", "가이드", "정치 교양", "기술"];
 
 export function BlogList() {
-  usePageMeta(
-    "블로그 - OpenPoll 가이드",
-    "정치 성향, 여론조사, 미디어 리터러시 등 정치 참여에 도움이 되는 가이드와 교양 콘텐츠를 제공합니다.",
-  );
+  usePageMeta("정치 교양 블로그", "정치 성향 테스트 가이드, 좌우 정치 스펙트럼 이해, 미디어 리터러시 등 정치 교양 콘텐츠.");
   const { isDark } = useTheme();
   const [selectedCategory, setSelectedCategory] = useState("전체");
 
