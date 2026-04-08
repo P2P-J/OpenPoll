@@ -273,8 +273,12 @@ function blogPostingSchema(route) {
 // HTML template manipulation
 // ---------------------------------------------------------------------------
 function replaceTag(html, regex, replacement) {
-  const result = html.replace(regex, replacement);
-  if (result === html) {
+  let matched = false;
+  const result = html.replace(regex, () => {
+    matched = true;
+    return replacement;
+  });
+  if (!matched) {
     console.warn(`[seo-prerender] WARNING: regex did not match: ${regex}`);
   }
   return result;
