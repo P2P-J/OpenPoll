@@ -337,6 +337,32 @@ function generateHTML(template, route) {
     `<meta name="twitter:description" content="${route.description}" />`,
   );
 
+  // og:image & twitter:image 유형별 분기 (DOS 공유 페이지만)
+  if (route.dosType) {
+    const ogImageUrl = `${BASE_URL}/og/dos/${route.dosType.code}-og.png`;
+    const ogImageAlt = `${route.dosType.name} (${route.dosType.code}) - OpenPoll DOS 정치 성향 테스트 결과`;
+    html = replaceTag(
+      html,
+      /<meta property="og:image" content="[^"]*" \/>/,
+      `<meta property="og:image" content="${ogImageUrl}" />`,
+    );
+    html = replaceTag(
+      html,
+      /<meta property="og:image:alt" content="[^"]*" \/>/,
+      `<meta property="og:image:alt" content="${ogImageAlt}" />`,
+    );
+    html = replaceTag(
+      html,
+      /<meta name="twitter:image" content="[^"]*" \/>/,
+      `<meta name="twitter:image" content="${ogImageUrl}" />`,
+    );
+    html = replaceTag(
+      html,
+      /<meta name="twitter:image:alt" content="[^"]*" \/>/,
+      `<meta name="twitter:image:alt" content="${ogImageAlt}" />`,
+    );
+  }
+
   // ── JSON-LD: remove ALL existing blocks + their HTML comment labels ──
   html = html.replace(
     /\s*<!--\s*Structured Data:[^>]*-->\s*<script type="application\/ld\+json">[\s\S]*?<\/script>/g,
