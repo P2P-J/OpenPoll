@@ -17,6 +17,7 @@ import { DosResultCard, type DosCardScores } from "./components/DosResultCard";
 import { ShareModal } from "./components/ShareModal";
 import { Toast } from "@/components/molecules/toast/Toast";
 import { AdBanner } from "@/components/atoms/adBanner/AdBanner";
+import { useDosCardDownload } from "./hooks/useDosCardDownload";
 
 interface DetailsToggleProps {
   detail: string[];
@@ -63,10 +64,9 @@ export function DosResult() {
   const navigate = useNavigate();
   const [showShareModal, setShowShareModal] = useState(false);
   const [showToast, setShowToast] = useState(false);
-
-  const handleImageSave = useCallback(() => {
-    setShowToast(true);
-  }, []);
+  const [saveState, setSaveState] = useState<'idle' | 'success' | 'error'>('idle');
+  const captureRef = useRef<HTMLDivElement>(null);
+  const download = useDosCardDownload();
 
   const { resultTypeInfo, isLoading } = useResultData(type, navigate);
 
@@ -76,6 +76,18 @@ export function DosResult() {
     () => dosResultTypes.find((rt) => rt.id === type),
     [type]
   );
+
+  const handleImageSave = useCallback(async () => {
+    if (!localResultData) return;
+    try {
+      await download(captureRef.current, localResultData.id);
+      setSaveState('success');
+    } catch {
+      setSaveState('error');
+    }
+    setShowToast(true);
+    setTimeout(() => setSaveState('idle'), 2500);
+  }, [download, localResultData]);
 
   const { detail, features, tags } = useMemo(
     () => ({
@@ -161,12 +173,30 @@ export function DosResult() {
       />
 
       <Toast
-        message="추후 구현될 기능입니다!"
-        type="info"
+        message={
+          saveState === 'success'
+            ? '결과 카드가 저장됐어요'
+            : saveState === 'error'
+              ? '저장에 실패했어요. 잠시 후 다시 시도해주세요.'
+              : '추후 구현될 기능입니다!'
+        }
+        type={saveState === 'error' ? 'error' : saveState === 'success' ? 'success' : 'info'}
         isVisible={showToast}
         onClose={() => setShowToast(false)}
         contentStyle={{ backgroundColor: "#ffffff", color: "#1a1a1a" }}
       />
+
+      {/* 오프스크린 캡처 타깃: 1080x1080 원본 크기 */}
+      {localResultData && (
+        <div
+          style={{ position: 'fixed', left: -99999, top: 0, pointerEvents: 'none' }}
+          aria-hidden
+        >
+          <div ref={captureRef}>
+            <DosResultCard type={localResultData} scores={cardScores} variant="square" />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
