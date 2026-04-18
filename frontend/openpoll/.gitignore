@@ -41,3 +41,8 @@ dist-ssr
 .gemini/
 .opencode/
 .windsurf/
+
+# OG 이미지 생성 캐시 및 빌드 산출물
+scripts/fonts/
+scripts/twemoji/
+dist/og/
