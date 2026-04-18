@@ -5,6 +5,9 @@ export interface DosResultTypeData {
   detail: string[];
   features: string[];
   tag: string[];
+  animal: { emoji: string; name: string };
+  color: string;
+  tagline: string;
 }
 
 export const dosResultTypes: DosResultTypeData[] = [
@@ -22,7 +25,10 @@ export const dosResultTypes: DosResultTypeData[] = [
       '기술/산업 혁신에 낙관적',
       '빠른 변화와 도전을 두려워하지 않음'
     ],
-    tag: ['자유시장', '규제완화', '스타트업', '기술혁신', '기업가정신', '성과주의']
+    tag: ['자유시장', '규제완화', '스타트업', '기술혁신', '기업가정신', '성과주의'],
+    animal: { emoji: '🦁', name: '사자' },
+    color: '#FF7A59',
+    tagline: '변화 속에서 기회를 포착하는 불꽃',
   },
   {
     id: 'CMFN',
@@ -38,7 +44,10 @@ export const dosResultTypes: DosResultTypeData[] = [
       '윤리적 비즈니스와 기술에 관심',
       '극단적 성장 모델에 회의적'
     ],
-    tag: ['지속가능성', 'ESG', '윤리적기술', '그린테크', '장기성장', '책임있는 자유']
+    tag: ['지속가능성', 'ESG', '윤리적기술', '그린테크', '장기성장', '책임있는 자유'],
+    animal: { emoji: '🦋', name: '나비' },
+    color: '#4ADE80',
+    tagline: '자유롭게 변화하는 생태의 수호자',
   },
   {
     id: 'CMOD',
@@ -54,7 +63,10 @@ export const dosResultTypes: DosResultTypeData[] = [
       '불안정한 변화에 대한 경계',
       '조직적/전략적 접근 선호'
     ],
-    tag: ['제도개혁', '국가전략', '성과관리', '산업정책', '규제설계', '거버넌스']
+    tag: ['제도개혁', '국가전략', '성과관리', '산업정책', '규제설계', '거버넌스'],
+    animal: { emoji: '🐺', name: '늑대' },
+    color: '#8B5CF6',
+    tagline: '조직된 힘으로 세상을 바꾸는 전략가',
   },
   {
     id: 'CMON',
@@ -70,7 +82,10 @@ export const dosResultTypes: DosResultTypeData[] = [
       '장기 리스크를 신중히 검토',
       '급진적 실험에 회의적'
     ],
-    tag: ['점진적개혁', '사회안정', '중장기전략', '제도보완', '리스크관리']
+    tag: ['점진적개혁', '사회안정', '중장기전략', '제도보완', '리스크관리'],
+    animal: { emoji: '🦉', name: '올빼미' },
+    color: '#0EA5E9',
+    tagline: '변화 속에서 균형을 찾는 현자',
   },
   {
     id: 'CEFD',
@@ -86,7 +101,10 @@ export const dosResultTypes: DosResultTypeData[] = [
       '사회 운동/공공 담론에 적극적',
       '도덕적 분노가 행동으로 이어짐'
     ],
-    tag: ['사회정의', '불평등해소', '재분배', '기본소득', '노동권', '인권']
+    tag: ['사회정의', '불평등해소', '재분배', '기본소득', '노동권', '인권'],
+    animal: { emoji: '🐝', name: '벌' },
+    color: '#F59E0B',
+    tagline: '연대로 움직이는 진보의 일꾼',
   },
   {
     id: 'CEFN',
@@ -102,7 +120,10 @@ export const dosResultTypes: DosResultTypeData[] = [
       '강요보다 공감과 설득 선호',
       '온건하지만 일관된 가치관'
     ],
-    tag: ['공정경제', '지속가능사회', '윤리적 소비', '사회적 책임', '공동체']
+    tag: ['공정경제', '지속가능사회', '윤리적 소비', '사회적 책임', '공동체'],
+    animal: { emoji: '🦦', name: '수달' },
+    color: '#65A30D',
+    tagline: '함께 살아가는 자연의 친구',
   },
   {
     id: 'CEOD',
@@ -118,7 +139,10 @@ export const dosResultTypes: DosResultTypeData[] = [
       '조직적 문제 해결 능력',
       '국가 역할을 중요하게 인식'
     ],
-    tag: ['복지국가', '공공정책', '제도개혁', '사회안정망', '교육개혁', '의료공공성']
+    tag: ['복지국가', '공공정책', '제도개혁', '사회안정망', '교육개혁', '의료공공성'],
+    animal: { emoji: '🐘', name: '코끼리' },
+    color: '#EC4899',
+    tagline: '공동체를 이끄는 든든한 기둥',
   },
   {
     id: 'CEON',
@@ -134,7 +158,10 @@ export const dosResultTypes: DosResultTypeData[] = [
       '공동체 책임 의식 강함',
       '가치 간 충돌에 민감'
     ],
-    tag: ['장기복지 전략', '구조개혁', '사회통합', '공공채임', '세대정의']
+    tag: ['장기복지 전략', '구조개혁', '사회통합', '공공채임', '세대정의'],
+    animal: { emoji: '🐳', name: '고래' },
+    color: '#0D9488',
+    tagline: '깊고 넓은 연대의 바다',
   },
   {
     id: 'SMFD',
@@ -150,7 +177,10 @@ export const dosResultTypes: DosResultTypeData[] = [
       '실질적 성과를 중시',
       '급격한 변화에 회의적'
     ],
-    tag: ['자기책임', '시장경제', '세금효율', '경제안정']
+    tag: ['자기책임', '시장경제', '세금효율', '경제안정'],
+    animal: { emoji: '🦅', name: '독수리' },
+    color: '#D97706',
+    tagline: '높은 곳에서 기회를 노리는 개척자',
   },
   {
     id: 'SMFN',
@@ -166,7 +196,10 @@ export const dosResultTypes: DosResultTypeData[] = [
       '이념보다 실용 중시',
       '중도적 성향'
     ],
-    tag: ['지속가능성', '기술해결책', '중도정치', '생활정책', '현실개혁']
+    tag: ['지속가능성', '기술해결책', '중도정치', '생활정책', '현실개혁'],
+    animal: { emoji: '🦌', name: '사슴' },
+    color: '#16A34A',
+    tagline: '숲을 지키는 조용한 수호자',
   },
   {
     id: 'SMOD',
@@ -182,7 +215,10 @@ export const dosResultTypes: DosResultTypeData[] = [
       '조직과 국가 안정 중시',
       '리더십 지향적'
     ],
-    tag: ['법과 질서', '국가안정', '경제성장', '조직관리', '전통가치']
+    tag: ['법과 질서', '국가안정', '경제성장', '조직관리', '전통가치'],
+    animal: { emoji: '🐅', name: '호랑이' },
+    color: '#6366F1',
+    tagline: '당당한 원칙의 수호자',
   },
   {
     id: 'SMON',
@@ -198,7 +234,10 @@ export const dosResultTypes: DosResultTypeData[] = [
       '점진적 변화 선호',
       '조정자/중재자 성향'
     ],
-    tag: ['중도', '사회안정', '점진개혁', '합리적 정책', '리스크 회피']
+    tag: ['중도', '사회안정', '점진개혁', '합리적 정책', '리스크 회피'],
+    animal: { emoji: '🐢', name: '거북이' },
+    color: '#64748B',
+    tagline: '신중하게 지켜내는 균형의 달인',
   },
   {
     id: 'SEFD',
@@ -214,7 +253,10 @@ export const dosResultTypes: DosResultTypeData[] = [
       '공감 능력과 실천성 겸비',
       '개혁적이지만 온건함'
     ],
-    tag: ['사회안전망', '공정기회', '교육평등', '보건의료', '현실복지']
+    tag: ['사회안전망', '공정기회', '교육평등', '보건의료', '현실복지'],
+    animal: { emoji: '🐬', name: '돌고래' },
+    color: '#DC2626',
+    tagline: '따뜻한 연대의 항해자',
   },
   {
     id: 'SEFN',
@@ -230,7 +272,10 @@ export const dosResultTypes: DosResultTypeData[] = [
       '극단 회피 성향',
       '중재자 역할 수행'
     ],
-    tag: ['포용사회', '사회적합의', '지속가능정책', '공존', '갈등조정']
+    tag: ['포용사회', '사회적합의', '지속가능정책', '공존', '갈등조정'],
+    animal: { emoji: '🐑', name: '양' },
+    color: '#059669',
+    tagline: '평화로운 공동체의 일원',
   },
   {
     id: 'SEOD',
@@ -246,7 +291,10 @@ export const dosResultTypes: DosResultTypeData[] = [
       '정책 중심 문제 해결',
       '정책 설계/추진에 강점'
     ],
-    tag: ['복지정책', '제도설계', '공공시스템', '사회통합', '정책리더십']
+    tag: ['복지정책', '제도설계', '공공시스템', '사회통합', '정책리더십'],
+    animal: { emoji: '🐻', name: '곰' },
+    color: '#A855F7',
+    tagline: '든든하게 함께 걷는 동반자',
   },
   {
     id: 'SEON',
@@ -262,6 +310,9 @@ export const dosResultTypes: DosResultTypeData[] = [
       '취약 계층 보호 인식 강함',
       '실행보단 검토 우선'
     ],
-    tag: ['장기사회전략', '사회안정망', '지속가능복지', '공공책임', '점진적 개혁']
+    tag: ['장기사회전략', '사회안정망', '지속가능복지', '공공책임', '점진적 개혁'],
+    animal: { emoji: '🐼', name: '판다' },
+    color: '#78716C',
+    tagline: '자연과 함께하는 평온의 상징',
   }
 ];
