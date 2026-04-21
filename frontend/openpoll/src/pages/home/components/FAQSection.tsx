@@ -171,7 +171,8 @@ export const FAQSection = memo(function FAQSection() {
 
   return (
     <section
-      className="pt-28 sm:pt-40 pb-16 sm:pb-20 bg-background"
+      className="pb-16 sm:pb-20 bg-background"
+      style={{ paddingTop: "clamp(112px, 13vw, 200px)" }}
       aria-labelledby="faq-heading"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
