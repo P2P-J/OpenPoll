@@ -7,8 +7,9 @@ import { motion } from "motion/react";
 import ReactMarkdown from "react-markdown";
 import type { Components } from "react-markdown";
 import { ChevronLeft, Clock, Calendar } from "lucide-react";
-import { getBlogPost } from "./blogData";
+import { getBlogPost, blogPosts } from "./blogData";
 import { AdBanner } from "@/components/atoms/adBanner/AdBanner";
+import { Breadcrumb } from "@/components/molecules/breadcrumb";
 
 export function BlogDetail() {
   const { slug } = useParams<{ slug: string }>();
@@ -26,14 +27,28 @@ export function BlogDetail() {
     headline: post.title,
     description: post.description,
     datePublished: post.date,
-    author: { "@type": "Organization", name: "OpenPoll" },
+    dateModified: post.date,
+    author: {
+      "@type": "Organization",
+      name: "OpenPoll 편집팀",
+      url: "https://www.openpoll.co.kr/about",
+    },
     publisher: {
       "@type": "Organization",
       name: "OpenPoll",
       logo: { "@type": "ImageObject", url: "https://www.openpoll.co.kr/OPENPOLL-LARGE.png" },
     },
     mainEntityOfPage: `https://www.openpoll.co.kr/blog/${post.slug}`,
+    inLanguage: "ko-KR",
+    articleSection: post.category,
   } : null);
+
+  const relatedPosts = useMemo(() => {
+    if (!post) return [];
+    return blogPosts
+      .filter((p) => p.slug !== post.slug && p.category === post.category)
+      .slice(0, 3);
+  }, [post]);
 
   const MARKDOWN_COMPONENTS: Components = useMemo(
     () => ({
@@ -89,6 +104,15 @@ export function BlogDetail() {
   return (
     <div className="pt-16 min-h-screen pb-12 bg-background">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+        <Breadcrumb
+          className="mb-4"
+          items={[
+            { label: "홈", href: "/" },
+            { label: "블로그", href: "/blog" },
+            { label: post.title },
+          ]}
+        />
+
         <Link
           to="/blog"
           className={`inline-flex items-center space-x-2 mb-8 transition-colors ${
@@ -138,6 +162,95 @@ export function BlogDetail() {
           </div>
 
           <AdBanner className="mt-8" />
+
+          {/* 저자 박스 */}
+          <aside
+            className={`mt-10 p-5 sm:p-6 rounded-2xl border ${
+              isDark ? "border-gray-800 bg-gray-900/40" : "border-gray-200 bg-gray-50"
+            }`}
+            aria-label="작성자 정보"
+          >
+            <div className="flex items-start gap-4">
+              <img
+                src={isDark ? "/OPENPOLL-LARGE.png" : "/openpoll-black.png"}
+                alt="OpenPoll 로고"
+                className="w-12 h-12 rounded-lg object-contain flex-shrink-0"
+                loading="lazy"
+              />
+              <div className="min-w-0">
+                <p className={`font-bold text-base ${isDark ? "text-white" : "text-black"}`}>
+                  OpenPoll 편집팀
+                </p>
+                <p className={`mt-1 text-sm leading-relaxed ${isDark ? "text-gray-400" : "text-gray-600"}`}>
+                  정치·선거·민주주의를 쉽게 풀어 쓰는 OpenPoll 편집팀입니다.
+                  어떤 정당이나 입장도 지지하지 않으며, 공개된 자료와 제도를 근거로 중립적인 관점에서 글을 작성합니다.
+                </p>
+                <div className={`mt-2 text-xs ${isDark ? "text-gray-500" : "text-gray-500"}`}>
+                  <span>발행일 {post.date}</span>
+                  <span className="mx-2">·</span>
+                  <Link
+                    to="/about"
+                    className={`underline-offset-2 hover:underline ${isDark ? "text-gray-400" : "text-gray-600"}`}
+                  >
+                    OpenPoll 소개
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </aside>
+
+          {/* 관련 글 */}
+          {relatedPosts.length > 0 && (
+            <section
+              className="mt-10"
+              aria-labelledby="related-posts-heading"
+            >
+              <h2
+                id="related-posts-heading"
+                className={`text-lg sm:text-xl font-bold mb-4 ${isDark ? "text-white" : "text-black"}`}
+              >
+                관련 글
+              </h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                {relatedPosts.map((p) => (
+                  <Link
+                    key={p.slug}
+                    to={`/blog/${p.slug}`}
+                    className={`group flex flex-col p-4 rounded-xl border transition-colors ${
+                      isDark
+                        ? "border-gray-800 hover:border-gray-600 bg-gray-900/30"
+                        : "border-gray-200 hover:border-gray-400 bg-white"
+                    }`}
+                  >
+                    <span
+                      className={`self-start text-[11px] font-bold tracking-widest uppercase mb-2 ${
+                        isDark ? "text-gray-500" : "text-gray-500"
+                      }`}
+                    >
+                      {p.category}
+                    </span>
+                    <span
+                      className={`text-sm sm:text-base font-semibold leading-snug line-clamp-2 mb-2 ${
+                        isDark ? "text-white" : "text-black"
+                      }`}
+                    >
+                      {p.title}
+                    </span>
+                    <span
+                      className={`text-xs leading-relaxed line-clamp-2 mb-3 flex-1 ${
+                        isDark ? "text-gray-400" : "text-gray-600"
+                      }`}
+                    >
+                      {p.description}
+                    </span>
+                    <span className={`text-xs ${isDark ? "text-gray-500" : "text-gray-500"}`}>
+                      {p.date} · {p.readTime}
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            </section>
+          )}
 
           <div className={`mt-10 pt-6 border-t ${isDark ? "border-gray-800" : "border-gray-200"}`}>
             <p className={`text-sm mb-4 ${isDark ? "text-gray-500" : "text-gray-400"}`}>

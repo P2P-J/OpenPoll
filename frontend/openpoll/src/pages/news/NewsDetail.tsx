@@ -8,6 +8,7 @@ import { getCategoryFromTags } from "@/shared/utils/newsHelpers";
 import { useArticleDetail } from "./hooks";
 import { useTheme } from "@/contexts/ThemeContext";
 import { AdBanner } from "@/components/atoms/adBanner/AdBanner";
+import { Breadcrumb } from "@/components/molecules/breadcrumb";
 import {
   NewsDetailLoadingState,
   NewsDetailErrorState,
@@ -71,6 +72,14 @@ export function NewsDetail() {
   return (
     <div className={`pt-16 min-h-screen pb-12 bg-background`}>
       <div className="max-w-3xl mx-auto">
+        <Breadcrumb
+          className="px-4 sm:px-0 pt-4"
+          items={[
+            { label: "홈", href: "/" },
+            { label: "뉴스", href: "/news" },
+            { label: article.refinedTitle },
+          ]}
+        />
         <BackButton />
 
         <motion.div
