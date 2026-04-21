@@ -98,6 +98,14 @@ export function BalanceList() {
           <p className={`text-base sm:text-lg lg:text-xl ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
             정치 이슈에 대한 당신의 생각을 투표로 표현하세요
           </p>
+          <div className={`mt-5 max-w-3xl mx-auto text-sm sm:text-base leading-relaxed text-left ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+            <p>
+              밸런스 게임은 찬반으로 나뉘는 정치·사회 이슈에 대해 가볍게 자신의 의견을 표현하는 참여형 투표입니다. 매일 새로운 주제가 올라오며, 선택 후에는 다양한 관점의 토론 댓글을 통해 서로 다른 생각을 접하고 자신의 입장을 정리해 볼 수 있습니다.
+            </p>
+            <p className="mt-3">
+              OpenPoll은 표본 추출 기반의 공식 여론조사가 아니라, 참여자들의 의견을 투명하게 집계하는 열린 플랫폼입니다. 어떤 정당이나 특정 입장도 지지하지 않으며, 결과는 참고 자료로만 활용해 주세요.
+            </p>
+          </div>
 
           {isAdmin && (
             <div className="mt-6 flex justify-center">

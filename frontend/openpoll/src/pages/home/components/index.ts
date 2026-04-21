@@ -5,3 +5,4 @@ export { StatsSection } from './StatsSection';
 export { CTAButtons } from './CTAButtons';
 export { CTASection } from './CTASection';
 export { FAQSection } from './FAQSection';
+export { BlogPreviewSection } from './BlogPreviewSection';

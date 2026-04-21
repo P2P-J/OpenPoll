@@ -1,17 +1,18 @@
 import { NavLink } from 'react-router-dom';
-import { Brain, Newspaper, Scale, Home } from 'lucide-react';
+import { Brain, Newspaper, Scale, Home, BookOpen } from 'lucide-react';
 
 const navItems = [
   { icon: Home, label: '홈', path: '/' },
   { icon: Brain, label: '정치 DOS', path: '/dos' },
   { icon: Scale, label: '밸런스 게임', path: '/balance' },
   { icon: Newspaper, label: '뉴스', path: '/news' },
+  { icon: BookOpen, label: '블로그', path: '/blog' },
 ];
 
 export function Navigation() {
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 bg-surface border-t border-default sm:hidden" aria-label="주요 메뉴">
-      <div className="grid grid-cols-4">
+      <div className="grid" style={{ gridTemplateColumns: `repeat(${navItems.length}, minmax(0, 1fr))` }}>
         {navItems.map((item) => (
           <NavLink
             key={item.path}
