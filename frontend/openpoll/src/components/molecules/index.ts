@@ -4,3 +4,4 @@ export * from './loginModal';
 export * from './passwordChangeModal';
 export * from './toast';
 export * from './attendanceModal';
+export * from './breadcrumb';

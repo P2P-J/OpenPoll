@@ -153,6 +153,46 @@ export function About() {
           </p>
         </div>
 
+        {/* 편집팀과 편집 원칙 */}
+        <div className={sectionClass}>
+          <h2 className={headingClass}>편집팀과 편집 원칙</h2>
+          <p className="mb-4 leading-relaxed">
+            OpenPoll의 블로그 글과 DOS 테스트 문항, 밸런스 게임 주제는 <strong>OpenPoll 편집팀</strong>이
+            작성·검토합니다. 편집팀은 특정 정당이나 이익 집단과 관계없이 독립적으로 운영되며,
+            공개 자료·통계·법령을 근거로 중립적 관점의 콘텐츠를 제작합니다.
+          </p>
+
+          <h3 className={subHeadingClass}>편집 원칙</h3>
+          <ul className="list-disc list-inside space-y-2 ml-2 mb-4">
+            <li>
+              <strong>사실 기반:</strong> 모든 글은 공개된 법령·통계청 자료·공신력 있는 매체 보도를
+              근거로 작성합니다. 확인되지 않은 주장은 명시적 출처와 함께 인용 형식으로만 다룹니다.
+            </li>
+            <li>
+              <strong>중립성:</strong> 특정 정당·후보·정책을 지지하거나 반대하는 표현을 쓰지 않습니다.
+              찬반이 갈리는 이슈는 양쪽 입장을 균형 있게 정리합니다.
+            </li>
+            <li>
+              <strong>투명성:</strong> AI 도구를 활용한 경우 그 사실을 명시하고, 최종 검토는 편집팀이
+              책임집니다. 공유하는 이미지·통계는 원본 출처를 유지합니다.
+            </li>
+            <li>
+              <strong>수정·정정:</strong> 사실 오류가 확인되면 빠르게 수정하고, 중요한 변경은 업데이트
+              일자와 함께 표시합니다. 독자 제보는 이메일로 언제든 받습니다.
+            </li>
+            <li>
+              <strong>개인정보 보호:</strong> 사용자 개별 답변·투표 기록은 집계 목적으로만 활용되며,
+              개인을 식별할 수 없는 형태로 처리합니다.
+            </li>
+          </ul>
+
+          <h3 className={subHeadingClass}>교정·수정 요청</h3>
+          <p className="leading-relaxed">
+            사실 관계 오류, 용어 사용 문제, 누락된 관점 등에 대한 지적은 운영팀 이메일로 제보해 주세요.
+            검토 후 수정 사항은 해당 페이지 하단에 업데이트 이력으로 기록됩니다.
+          </p>
+        </div>
+
         {/* 포인트 시스템 */}
         <div className={sectionClass}>
           <h2 className={headingClass}>포인트 시스템</h2>

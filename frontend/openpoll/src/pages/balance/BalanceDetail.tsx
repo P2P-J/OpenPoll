@@ -25,6 +25,7 @@ import {
 } from "@/shared/utils/balanceHelpers";
 import type { BalanceComment } from "@/types/balance.types";
 import { AdBanner } from "@/components/atoms/adBanner/AdBanner";
+import { Breadcrumb } from "@/components/molecules/breadcrumb";
 
 export function BalanceDetail() {
   const { id } = useParams();
@@ -146,6 +147,15 @@ export function BalanceDetail() {
       />
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+        <Breadcrumb
+          className="mb-4"
+          items={[
+            { label: "홈", href: "/" },
+            { label: "밸런스 게임", href: "/balance" },
+            { label: vm.issue.title },
+          ]}
+        />
+
         <Link to="/balance" className={backLinkClass}>
           <ChevronLeft className="w-5 h-5" />
           <span className="font-medium">목록으로</span>

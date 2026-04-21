@@ -188,7 +188,9 @@ export function BalanceList() {
             </section>
           ))}
 
-        <AdBanner className="mt-8" />
+        {!isLoading && !errorMessage && filteredIssues.length > 0 && (
+          <AdBanner className="mt-8" />
+        )}
 
         <motion.div
           initial={{ opacity: 0 }}

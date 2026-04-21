@@ -58,7 +58,9 @@ export function ShareModal({ isOpen, onClose, type }: ShareModalProps) {
     const [hoverClose, setHoverClose] = useState(false);
     const inputRef = useRef<HTMLInputElement>(null);
 
-    const shareUrl = `${window.location.origin}/dos/share/${type}`;
+    // trailing slash 필수: 서버가 slash 없는 경로를 HTTPS→HTTP+slash 로 301 리다이렉트 하는데
+    // SNS 크롤러(카카오·페이스북·X)가 이 scheme 다운그레이드 리다이렉트를 따라가지 못해 OG 메타를 못 읽음.
+    const shareUrl = `${window.location.origin}/dos/share/${type}/`;
 
     useEffect(() => {
         if (!isOpen) {
