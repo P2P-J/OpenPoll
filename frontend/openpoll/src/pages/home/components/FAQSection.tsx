@@ -91,7 +91,7 @@ function FAQCard({ item, isOpen, onToggle, index }: FAQCardProps) {
       transition={{ duration: 0.3, delay: Math.min(index * 0.04, 0.2) }}
       style={{
         border: `2px solid ${borderColor}`,
-        borderRadius: 16,
+        borderRadius: 14,
         background: bgColor,
         overflow: "hidden",
         transition: "border-color 0.18s ease, background-color 0.18s ease",
@@ -101,10 +101,10 @@ function FAQCard({ item, isOpen, onToggle, index }: FAQCardProps) {
         type="button"
         onClick={onToggle}
         aria-expanded={isOpen}
-        className="w-full flex items-center justify-between gap-4 p-5 sm:p-6 text-left"
+        className="w-full flex items-center justify-between gap-4 p-4 sm:p-5 text-left"
       >
         <span
-          className="text-base sm:text-lg font-bold leading-snug"
+          className="text-sm sm:text-base font-bold leading-snug"
           style={{ color: questionColor }}
         >
           {item.question}
@@ -116,8 +116,8 @@ function FAQCard({ item, isOpen, onToggle, index }: FAQCardProps) {
             display: "inline-flex",
             alignItems: "center",
             justifyContent: "center",
-            width: 32,
-            height: 32,
+            width: 28,
+            height: 28,
             borderRadius: 9999,
             background: iconBg,
             color: iconColor,
@@ -139,17 +139,17 @@ function FAQCard({ item, isOpen, onToggle, index }: FAQCardProps) {
             transition={{ duration: 0.22, ease: [0.4, 0, 0.2, 1] }}
             style={{ overflow: "hidden" }}
           >
-            <div className="px-5 sm:px-6 pb-5 sm:pb-6">
+            <div className="px-4 sm:px-5 pb-4 sm:pb-5">
               <div
                 style={{
                   height: 1,
                   width: "100%",
                   background: isDark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.08)",
-                  marginBottom: 16,
+                  marginBottom: 12,
                 }}
               />
               <p
-                className="text-sm sm:text-base leading-relaxed"
+                className="text-sm leading-relaxed"
                 style={{ color: answerColor }}
               >
                 {item.answer}
@@ -171,11 +171,11 @@ export const FAQSection = memo(function FAQSection() {
 
   return (
     <section
-      className="py-16 sm:py-20 bg-background"
+      className="pt-20 sm:pt-28 pb-16 sm:pb-20 bg-background"
       aria-labelledby="faq-heading"
     >
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="mb-8 sm:mb-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="mb-6 sm:mb-8">
           <div className="flex items-center gap-2 mb-2 text-foreground-muted">
             <HelpCircle className="w-4 h-4" aria-hidden="true" />
             <span className="text-xs font-bold tracking-[0.3em] uppercase">
@@ -193,7 +193,7 @@ export const FAQSection = memo(function FAQSection() {
           </p>
         </div>
 
-        <div className="flex flex-col gap-3 sm:gap-4">
+        <div className="flex flex-col gap-2 sm:gap-3">
           {FAQ_ITEMS.map((item, index) => (
             <FAQCard
               key={item.question}
