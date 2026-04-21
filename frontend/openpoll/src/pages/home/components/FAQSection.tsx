@@ -1,5 +1,6 @@
 import { memo, useState, useCallback } from "react";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, HelpCircle } from "lucide-react";
+import { motion, AnimatePresence } from "motion/react";
 import { useTheme } from "@/contexts/ThemeContext";
 
 interface FAQItem {
@@ -40,59 +41,128 @@ const FAQ_ITEMS: FAQItem[] = [
   },
 ];
 
-function FAQItemComponent({
-  item,
-  isOpen,
-  onToggle,
-}: {
+interface FAQCardProps {
   item: FAQItem;
   isOpen: boolean;
   onToggle: () => void;
-}) {
+  index: number;
+}
+
+function FAQCard({ item, isOpen, onToggle, index }: FAQCardProps) {
   const { isDark } = useTheme();
 
+  const borderColor = isDark
+    ? isOpen
+      ? "rgba(255, 255, 255, 0.85)"
+      : "rgba(255, 255, 255, 0.18)"
+    : isOpen
+      ? "#1a1a1a"
+      : "rgba(0, 0, 0, 0.14)";
+  const bgColor = isOpen
+    ? isDark
+      ? "rgba(255, 249, 230, 0.05)"
+      : "#FFF9E6"
+    : isDark
+      ? "rgba(255, 255, 255, 0.02)"
+      : "#ffffff";
+  const questionColor = isDark ? "#fafafa" : "#1a1a1a";
+  const answerColor = isDark ? "#cbd5e1" : "#475569";
+  const iconBg = isOpen
+    ? isDark
+      ? "#ffffff"
+      : "#1a1a1a"
+    : isDark
+      ? "rgba(255, 255, 255, 0.08)"
+      : "rgba(0, 0, 0, 0.06)";
+  const iconColor = isOpen
+    ? isDark
+      ? "#1a1a1a"
+      : "#ffffff"
+    : isDark
+      ? "#fafafa"
+      : "#1a1a1a";
+
   return (
-    <div
-      className={`border-b ${isDark ? "border-gray-800" : "border-gray-200"}`}
+    <motion.div
+      layout
+      initial={{ opacity: 0, y: 10 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.2 }}
+      transition={{ duration: 0.3, delay: Math.min(index * 0.04, 0.2) }}
+      style={{
+        border: `2px solid ${borderColor}`,
+        borderRadius: 16,
+        background: bgColor,
+        overflow: "hidden",
+        transition: "border-color 0.18s ease, background-color 0.18s ease",
+      }}
     >
       <button
         type="button"
         onClick={onToggle}
-        className={`w-full flex items-center justify-between py-5 text-left transition-colors ${
-          isDark ? "hover:text-white" : "hover:text-black"
-        }`}
+        aria-expanded={isOpen}
+        className="w-full flex items-center justify-between gap-4 p-5 sm:p-6 text-left"
       >
         <span
-          className={`text-base sm:text-lg font-semibold pr-4 ${
-            isDark ? "text-gray-200" : "text-gray-800"
-          }`}
+          className="text-base sm:text-lg font-bold leading-snug"
+          style={{ color: questionColor }}
         >
           {item.question}
         </span>
-        <ChevronDown
-          className={`w-5 h-5 flex-shrink-0 transition-transform ${
-            isDark ? "text-gray-400" : "text-gray-500"
-          } ${isOpen ? "rotate-180" : ""}`}
-          style={{ transitionDuration: "200ms" }}
-        />
+        <motion.span
+          animate={{ rotate: isOpen ? 180 : 0 }}
+          transition={{ duration: 0.2, ease: "easeOut" }}
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            width: 32,
+            height: 32,
+            borderRadius: 9999,
+            background: iconBg,
+            color: iconColor,
+            flexShrink: 0,
+            transition: "background-color 0.18s ease, color 0.18s ease",
+          }}
+        >
+          <ChevronDown className="w-4 h-4" aria-hidden="true" />
+        </motion.span>
       </button>
-      {isOpen && (
-        <div className="pb-5">
-          <p
-            className={`text-sm sm:text-base leading-relaxed ${
-              isDark ? "text-gray-400" : "text-gray-600"
-            }`}
+
+      <AnimatePresence initial={false}>
+        {isOpen && (
+          <motion.div
+            key="content"
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.22, ease: [0.4, 0, 0.2, 1] }}
+            style={{ overflow: "hidden" }}
           >
-            {item.answer}
-          </p>
-        </div>
-      )}
-    </div>
+            <div className="px-5 sm:px-6 pb-5 sm:pb-6">
+              <div
+                style={{
+                  height: 1,
+                  width: "100%",
+                  background: isDark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.08)",
+                  marginBottom: 16,
+                }}
+              />
+              <p
+                className="text-sm sm:text-base leading-relaxed"
+                style={{ color: answerColor }}
+              >
+                {item.answer}
+              </p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
   );
 }
 
 export const FAQSection = memo(function FAQSection() {
-  const { isDark } = useTheme();
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   const handleToggle = useCallback((index: number) => {
@@ -100,31 +170,40 @@ export const FAQSection = memo(function FAQSection() {
   }, []);
 
   return (
-    <section className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
-      <h2
-        className={`text-2xl sm:text-3xl font-bold text-center mb-3 ${
-          isDark ? "text-white" : "text-black"
-        }`}
-      >
-        자주 묻는 질문
-      </h2>
-      <p
-        className={`text-center mb-8 ${
-          isDark ? "text-gray-400" : "text-gray-600"
-        }`}
-      >
-        OpenPoll에 대해 궁금한 것들을 확인해 보세요
-      </p>
+    <section
+      className="py-16 sm:py-20 bg-background"
+      aria-labelledby="faq-heading"
+    >
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="mb-8 sm:mb-10">
+          <div className="flex items-center gap-2 mb-2 text-foreground-muted">
+            <HelpCircle className="w-4 h-4" aria-hidden="true" />
+            <span className="text-xs font-bold tracking-[0.3em] uppercase">
+              FAQ
+            </span>
+          </div>
+          <h2
+            id="faq-heading"
+            className="text-2xl sm:text-3xl font-bold text-foreground"
+          >
+            자주 묻는 질문
+          </h2>
+          <p className="mt-2 text-sm sm:text-base text-foreground-muted">
+            OpenPoll에 대해 자주 궁금해하시는 내용을 정리했어요.
+          </p>
+        </div>
 
-      <div>
-        {FAQ_ITEMS.map((item, index) => (
-          <FAQItemComponent
-            key={index}
-            item={item}
-            isOpen={openIndex === index}
-            onToggle={() => handleToggle(index)}
-          />
-        ))}
+        <div className="flex flex-col gap-3 sm:gap-4">
+          {FAQ_ITEMS.map((item, index) => (
+            <FAQCard
+              key={item.question}
+              item={item}
+              isOpen={openIndex === index}
+              onToggle={() => handleToggle(index)}
+              index={index}
+            />
+          ))}
+        </div>
       </div>
     </section>
   );
