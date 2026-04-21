@@ -50,6 +50,14 @@ export function NewsList() {
           <p className={`text-base sm:text-lg ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
             AI가 순화한 중립적이고 객관적인 정치 뉴스
           </p>
+          <div className={`mt-5 max-w-2xl mx-auto text-sm sm:text-base leading-relaxed text-left ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+            <p>
+              OpenPoll의 AI 중립 뉴스는 국내 주요 언론의 정치 기사에서 편향적 수식어와 자극적 표현을 자동으로 감지해 제거하고, 사실 중심으로 기사를 재구성합니다. 원본 기사 출처를 항상 명시하며, 어떤 정당이나 입장도 지지하지 않습니다.
+            </p>
+            <p className="mt-3">
+              정당, 국회, 대선·총선, 외교·안보, 경제 정책 등 주요 정치 이슈를 균형 있게 다루며, 독자가 스스로 판단할 수 있는 정보 환경을 지향합니다.
+            </p>
+          </div>
         </motion.div>
 
         <motion.nav
