@@ -25,26 +25,26 @@ const EMOJI_MAP = {
 // 주의: 이 매핑은 src/shared/constants/dosResultTypes.ts의 animal/color/tagline과 동일하게 유지해야 한다.
 // 스펙 문서 docs/superpowers/specs/2026-04-18-dos-result-card-design.md가 단일 진실 원천.
 const TYPES = [
-  { id: 'CMFD', name: '진보적 자유주의자', emoji: '🦁', animal: '사자',   color: '#FF7A59', tagline: '변화 속에서 기회를 포착하는 불꽃' },
-  { id: 'CMFN', name: '녹색 진보주의자',   emoji: '🦋', animal: '나비',   color: '#4ADE80', tagline: '자유롭게 변화하는 생태의 수호자' },
-  { id: 'CMOD', name: '진보적 권위주의자', emoji: '🐺', animal: '늑대',   color: '#8B5CF6', tagline: '조직된 힘으로 세상을 바꾸는 전략가' },
-  { id: 'CMON', name: '진보적 보존주의자', emoji: '🦉', animal: '올빼미', color: '#0EA5E9', tagline: '변화 속에서 균형을 찾는 현자' },
-  { id: 'CEFD', name: '진보적 평등주의자', emoji: '🐝', animal: '벌',     color: '#F59E0B', tagline: '연대로 움직이는 진보의 일꾼' },
-  { id: 'CEFN', name: '녹색 평등주의자',   emoji: '🦦', animal: '수달',   color: '#65A30D', tagline: '함께 살아가는 자연의 친구' },
-  { id: 'CEOD', name: '진보적 사회주의자', emoji: '🐘', animal: '코끼리', color: '#EC4899', tagline: '공동체를 이끄는 든든한 기둥' },
-  { id: 'CEON', name: '생태 사회주의자',   emoji: '🐳', animal: '고래',   color: '#0D9488', tagline: '깊고 넓은 연대의 바다' },
-  { id: 'SMFD', name: '자유주의적 보수',   emoji: '🦅', animal: '독수리', color: '#D97706', tagline: '높은 곳에서 기회를 노리는 개척자' },
-  { id: 'SMFN', name: '녹색 보수주의자',   emoji: '🦌', animal: '사슴',   color: '#16A34A', tagline: '숲을 지키는 조용한 수호자' },
-  { id: 'SMOD', name: '전통적 보수주의자', emoji: '🐅', animal: '호랑이', color: '#6366F1', tagline: '당당한 원칙의 수호자' },
-  { id: 'SMON', name: '온건 보수주의자',   emoji: '🐢', animal: '거북이', color: '#64748B', tagline: '신중하게 지켜내는 균형의 달인' },
-  { id: 'SEFD', name: '사회민주주의자',    emoji: '🐬', animal: '돌고래', color: '#DC2626', tagline: '따뜻한 연대의 항해자' },
-  { id: 'SEFN', name: '녹색 사민주의자',   emoji: '🐑', animal: '양',     color: '#059669', tagline: '평화로운 공동체의 일원' },
-  { id: 'SEOD', name: '온건 사회주의자',   emoji: '🐻', animal: '곰',     color: '#A855F7', tagline: '든든하게 함께 걷는 동반자' },
-  { id: 'SEON', name: '생태 보수주의자',   emoji: '🐼', animal: '판다',   color: '#78716C', tagline: '자연과 함께하는 평온의 상징' },
+  { id: 'CMFD', name: '진보적 자유주의자', emoji: '🦁', animal: '사자',   color: '#FF7A59', tagline: '변화 속에서 기회를 포착하는 불꽃', keywords: ['자유시장', '규제완화', '스타트업'] },
+  { id: 'CMFN', name: '녹색 진보주의자',   emoji: '🦋', animal: '나비',   color: '#4ADE80', tagline: '자유롭게 변화하는 생태의 수호자', keywords: ['지속가능성', '친환경혁신', '그린뉴딜'] },
+  { id: 'CMOD', name: '진보적 권위주의자', emoji: '🐺', animal: '늑대',   color: '#8B5CF6', tagline: '조직된 힘으로 세상을 바꾸는 전략가', keywords: ['국가주도', '강력한리더', '체제개혁'] },
+  { id: 'CMON', name: '진보적 보존주의자', emoji: '🦉', animal: '올빼미', color: '#0EA5E9', tagline: '변화 속에서 균형을 찾는 현자', keywords: ['온건개혁', '사회질서', '친환경'] },
+  { id: 'CEFD', name: '진보적 평등주의자', emoji: '🐝', animal: '벌',     color: '#F59E0B', tagline: '연대로 움직이는 진보의 일꾼', keywords: ['사회연대', '평등분배', '공동체'] },
+  { id: 'CEFN', name: '녹색 평등주의자',   emoji: '🦦', animal: '수달',   color: '#65A30D', tagline: '함께 살아가는 자연의 친구', keywords: ['생태공존', '평등분배', '지역공동체'] },
+  { id: 'CEOD', name: '진보적 사회주의자', emoji: '🐘', animal: '코끼리', color: '#EC4899', tagline: '공동체를 이끄는 든든한 기둥', keywords: ['사회주의', '국가복지', '산업재편'] },
+  { id: 'CEON', name: '생태 사회주의자',   emoji: '🐳', animal: '고래',   color: '#0D9488', tagline: '깊고 넓은 연대의 바다', keywords: ['생태사회', '연대경제', '탈성장'] },
+  { id: 'SMFD', name: '자유주의적 보수',   emoji: '🦅', animal: '독수리', color: '#D97706', tagline: '높은 곳에서 기회를 노리는 개척자', keywords: ['자유시장', '개인책임', '기업가정신'] },
+  { id: 'SMFN', name: '녹색 보수주의자',   emoji: '🦌', animal: '사슴',   color: '#16A34A', tagline: '숲을 지키는 조용한 수호자', keywords: ['전통보전', '친환경', '지역주의'] },
+  { id: 'SMOD', name: '전통적 보수주의자', emoji: '🐅', animal: '호랑이', color: '#6366F1', tagline: '당당한 원칙의 수호자', keywords: ['전통가치', '질서존중', '강한국가'] },
+  { id: 'SMON', name: '온건 보수주의자',   emoji: '🐢', animal: '거북이', color: '#64748B', tagline: '신중하게 지켜내는 균형의 달인', keywords: ['안정우선', '점진적변화', '환경보호'] },
+  { id: 'SEFD', name: '사회민주주의자',    emoji: '🐬', animal: '돌고래', color: '#DC2626', tagline: '따뜻한 연대의 항해자',           keywords: ['사회복지', '개인자유', '포용사회'] },
+  { id: 'SEFN', name: '녹색 사민주의자',   emoji: '🐑', animal: '양',     color: '#059669', tagline: '평화로운 공동체의 일원',         keywords: ['평화연대', '공공복지', '환경우선'] },
+  { id: 'SEOD', name: '온건 사회주의자',   emoji: '🐻', animal: '곰',     color: '#A855F7', tagline: '든든하게 함께 걷는 동반자',       keywords: ['공공주도', '안정복지', '공정분배'] },
+  { id: 'SEON', name: '생태 보수주의자',   emoji: '🐼', animal: '판다',   color: '#78716C', tagline: '자연과 함께하는 평온의 상징',     keywords: ['자연보전', '공동체', '지속가능'] },
 ]
 
-const CFG_OG = { w: 1200, h: 630,  leftRatio: 40, pad: 48, gap: 16, emoji: 240, code: 80,  animal: 22, label: 16, name: 48, tagline: 20, logo: 14 }
-const CFG_SQ = { w: 1080, h: 1080, leftRatio: 45, pad: 60, gap: 24, emoji: 360, code: 100, animal: 28, label: 20, name: 56, tagline: 24, logo: 16 }
+const CFG_OG = { w: 1200, h: 630,  leftRatio: 40, pad: 40, gap: 14, emoji: 220, code: 72, animal: 22, label: 14, name: 38, tagline: 18, logo: 13, kw: 13 }
+const CFG_SQ = { w: 1080, h: 1080, leftRatio: 45, pad: 60, gap: 24, emoji: 360, code: 100, animal: 28, label: 20, name: 56, tagline: 24, logo: 16, kw: 16 }
 
 async function ensureFont() {
   await mkdir(FONT_DIR, { recursive: true })
@@ -116,9 +116,30 @@ async function buildNode(type, cfg) {
                   style: {
                     display: 'flex',
                     fontSize: cfg.tagline, padding: '12px 16px', background: 'white',
-                    border: '2px solid #1a1a1a', borderRadius: 10, color: '#333',
+                    border: '2px solid #1a1a1a', borderRadius: 12, color: '#333',
                   },
                   children: `"${type.tagline}"`,
+                },
+              },
+              {
+                type: 'div',
+                props: {
+                  style: {
+                    display: 'flex', flexWrap: 'wrap',
+                    gap: 8,
+                  },
+                  children: type.keywords.map((kw) => ({
+                    type: 'div',
+                    props: {
+                      style: {
+                        display: 'flex',
+                        fontSize: cfg.kw, fontWeight: 700, color: type.color,
+                        background: 'white', border: `1.5px solid ${type.color}`,
+                        padding: '4px 12px', borderRadius: 100,
+                      },
+                      children: `#${kw}`,
+                    },
+                  })),
                 },
               },
               {

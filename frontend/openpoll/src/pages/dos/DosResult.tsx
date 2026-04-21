@@ -19,43 +19,8 @@ import { Toast } from "@/components/molecules/toast/Toast";
 import { AdBanner } from "@/components/atoms/adBanner/AdBanner";
 import { useDosCardDownload } from "./hooks/useDosCardDownload";
 
-interface DetailsToggleProps {
-  detail: string[];
-  features: string[];
-  tags: string[];
-}
-
-function DetailsToggle({ detail, features, tags }: DetailsToggleProps) {
-  const [open, setOpen] = useState(false);
-  return (
-    <div style={{ marginTop: 32 }}>
-      <button
-        type="button"
-        onClick={() => setOpen((v) => !v)}
-        style={{
-          width: "100%",
-          padding: "16px 20px",
-          background: "var(--color-surface)",
-          border: "1px solid var(--color-border)",
-          borderRadius: 12,
-          fontSize: 16,
-          fontWeight: 700,
-          color: "var(--color-foreground)",
-          cursor: "pointer",
-        }}
-      >
-        {open ? "접기" : "상세 설명 더 보기 ↓"}
-      </button>
-      {open && (
-        <div style={{ marginTop: 16 }}>
-          <DescriptionSection detail={detail} />
-          <CharacteristicsSection features={features} tags={tags} />
-          <NoticeSection />
-        </div>
-      )}
-    </div>
-  );
-}
+const OG_W = 1200;
+const OG_H = 630;
 
 export function DosResult() {
   usePageMeta("DOS 테스트 결과", "나의 정치 성향 분석 결과를 확인하세요.");
@@ -104,10 +69,12 @@ export function DosResult() {
   useEffect(() => {
     const el = cardWrapperRef.current;
     if (!el) return;
-    const observer = new ResizeObserver((entries) => {
-      const width = entries[0]?.contentRect.width;
-      if (width) setCardScale(width / 1080);
-    });
+    const update = () => {
+      const w = el.clientWidth;
+      if (w > 0) setCardScale(w / OG_W);
+    };
+    update();
+    const observer = new ResizeObserver(update);
     observer.observe(el);
     return () => observer.disconnect();
   }, []);
@@ -135,10 +102,9 @@ export function DosResult() {
             style={{
               position: "relative",
               width: "100%",
-              maxWidth: 640,
-              margin: "0 auto",
-              height: 1080 * cardScale,
+              paddingTop: `${(OG_H / OG_W) * 100}%`,
               overflow: "hidden",
+              borderRadius: 24,
             }}
           >
             <div
@@ -146,8 +112,8 @@ export function DosResult() {
                 position: "absolute",
                 top: 0,
                 left: 0,
-                width: 1080,
-                height: 1080,
+                width: OG_W,
+                height: OG_H,
                 transform: `scale(${cardScale})`,
                 transformOrigin: "top left",
               }}
@@ -155,12 +121,18 @@ export function DosResult() {
               <DosResultCard
                 type={localResultData}
                 scores={cardScores}
-                variant="square"
+                variant="og"
               />
             </div>
           </div>
         )}
-        <DetailsToggle detail={detail} features={features} tags={tags} />
+
+        <div style={{ marginTop: 32 }}>
+          <DescriptionSection detail={detail} />
+          <CharacteristicsSection features={features} tags={tags} />
+          <NoticeSection />
+        </div>
+
         <AdBanner className="mb-8" />
         <ActionButtons onShare={() => setShowShareModal(true)} onImageSave={handleImageSave} />
         <NavigationLinks />
@@ -176,17 +148,15 @@ export function DosResult() {
         message={
           saveState === 'success'
             ? '결과 카드가 저장됐어요'
-            : saveState === 'error'
-              ? '저장에 실패했어요. 잠시 후 다시 시도해주세요.'
-              : '추후 구현될 기능입니다!'
+            : '저장에 실패했어요. 잠시 후 다시 시도해주세요.'
         }
-        type={saveState === 'error' ? 'error' : saveState === 'success' ? 'success' : 'info'}
+        type={saveState === 'error' ? 'error' : 'success'}
         isVisible={showToast}
         onClose={() => setShowToast(false)}
         contentStyle={{ backgroundColor: "#ffffff", color: "#1a1a1a" }}
       />
 
-      {/* 오프스크린 캡처 타깃: 1080x1080 원본 크기 */}
+      {/* 오프스크린 캡처 타깃: 1080x1080 원본 크기 (저장용) */}
       {localResultData && (
         <div
           style={{ position: 'fixed', left: -99999, top: 0, pointerEvents: 'none' }}
