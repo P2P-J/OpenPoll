@@ -10,6 +10,7 @@ import {
   CTAButtons,
   CTASection,
   FAQSection,
+  BlogPreviewSection,
 } from "./components";
 import { Toast } from "@/components/molecules/toast/Toast";
 import { LoginModal } from "@/components/molecules/loginModal";
@@ -200,6 +201,7 @@ export function Home() {
 
         <FeaturesGrid features={FEATURES} />
         <StatsSection stats={homeStats} />
+        <BlogPreviewSection />
         <FAQSection />
 
         <CTASection />
