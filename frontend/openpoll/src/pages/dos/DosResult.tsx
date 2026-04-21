@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo, useRef, useEffect } from "react";
+import { useState, useCallback, useMemo, useRef } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { usePageMeta } from "@/hooks/usePageMeta";
 import type { DosResult as DosResultData } from "@/types/api.types";
@@ -63,11 +63,10 @@ export function DosResult() {
     [localResultData]
   );
 
-  const cardWrapperRef = useRef<HTMLDivElement>(null);
   const [cardScale, setCardScale] = useState(1);
 
-  useEffect(() => {
-    const el = cardWrapperRef.current;
+  // 콜백 ref: isLoading 플립 후 실제로 DOM이 붙는 시점에 실행됨 (useRef+useEffect는 초기 렌더에 ref가 null이라 observer가 안 붙었음)
+  const cardWrapperRef = useCallback((el: HTMLDivElement | null) => {
     if (!el) return;
     const update = () => {
       const w = el.clientWidth;
@@ -102,7 +101,7 @@ export function DosResult() {
             style={{
               position: "relative",
               width: "100%",
-              paddingTop: `${(OG_H / OG_W) * 100}%`,
+              height: OG_H * cardScale,
               overflow: "hidden",
               borderRadius: 24,
             }}

@@ -21,6 +21,7 @@ const SIZE = {
 
 export function DosResultCard({ type, scores, variant, showCTA }: Props) {
   const { w, h } = SIZE[variant]
+  const isOg = variant === 'og'
   return (
     <div
       style={{
@@ -30,7 +31,7 @@ export function DosResultCard({ type, scores, variant, showCTA }: Props) {
         fontFamily: "'Pretendard Variable', Pretendard, sans-serif",
         background: '#FFF9E6',
         color: '#1a1a1a',
-        borderRadius: 24,
+        borderRadius: isOg ? 24 : 0,
         overflow: 'hidden',
       }}
     >
@@ -50,20 +51,39 @@ function renderLeft(type: DosResultTypeData, variant: 'square' | 'og') {
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        justifyContent: 'center',
-        padding: isOg ? 40 : 60,
+        padding: isOg ? '32px 24px' : '48px 40px',
         color: 'white',
-        gap: isOg ? 12 : 24,
       }}
     >
-      <div style={{ fontSize: isOg ? 220 : 360, lineHeight: 1 }}>
+      {/* 이모지: 상단~중앙 영역을 flex:1 로 차지해 시각적으로 중앙 정렬 */}
+      <div
+        style={{
+          flex: 1,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          width: '100%',
+          fontSize: isOg ? 240 : 380,
+          lineHeight: 1,
+        }}
+      >
         {type.animal.emoji}
       </div>
-      <div style={{ fontSize: isOg ? 72 : 100, fontWeight: 900, letterSpacing: -4, lineHeight: 1 }}>
-        {type.id}
-      </div>
-      <div style={{ fontSize: isOg ? 22 : 28, opacity: 0.9, fontWeight: 700 }}>
-        {type.animal.name}
+      {/* CMFD + 사자: 하단 */}
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: isOg ? 4 : 10,
+        }}
+      >
+        <div style={{ fontSize: isOg ? 56 : 88, fontWeight: 900, letterSpacing: -3, lineHeight: 1 }}>
+          {type.id}
+        </div>
+        <div style={{ fontSize: isOg ? 18 : 26, opacity: 0.9, fontWeight: 700 }}>
+          {type.animal.name}
+        </div>
       </div>
     </div>
   )
@@ -81,19 +101,20 @@ function renderRight(
     <div
       style={{
         flex: 1,
+        minWidth: 0,
         display: 'flex',
         flexDirection: 'column',
-        padding: isOg ? 40 : 60,
-        gap: isOg ? 14 : 24,
+        padding: isOg ? '48px 52px' : '64px 60px',
+        gap: isOg ? 26 : 34,
         background: '#FFF9E6',
       }}
     >
-      <div style={{ fontSize: isOg ? 14 : 20, fontWeight: 700, letterSpacing: 4, color: '#666' }}>
+      <div style={{ fontSize: isOg ? 16 : 22, fontWeight: 700, letterSpacing: 4, color: '#666' }}>
         나의 DOS 유형
       </div>
       <div
         style={{
-          fontSize: isOg ? 38 : 56,
+          fontSize: isOg ? 44 : 60,
           fontWeight: 900,
           lineHeight: 1.1,
           letterSpacing: -2,
@@ -103,12 +124,14 @@ function renderRight(
       </div>
       <div
         style={{
-          fontSize: isOg ? 18 : 24,
+          alignSelf: 'flex-start',
+          maxWidth: '100%',
+          fontSize: isOg ? 20 : 26,
           fontWeight: 600,
-          padding: isOg ? '10px 14px' : '16px 20px',
+          padding: isOg ? '11px 18px' : '14px 20px',
           background: 'white',
           border: '2px solid #1a1a1a',
-          borderRadius: 12,
+          borderRadius: 14,
           color: '#333',
         }}
       >
@@ -116,6 +139,19 @@ function renderRight(
       </div>
       {scores && renderAxes(scores, type.color, isOg)}
       {keywords.length > 0 && renderKeywords(keywords, type.color, isOg)}
+      {!isOg && type.description && (
+        <div
+          style={{
+            fontSize: 22,
+            lineHeight: 1.55,
+            color: '#444',
+            fontWeight: 500,
+            wordBreak: 'keep-all',
+          }}
+        >
+          {type.description}
+        </div>
+      )}
       <div
         style={{
           marginTop: 'auto',
@@ -124,17 +160,17 @@ function renderRight(
           alignItems: 'center',
         }}
       >
-        <span style={{ fontSize: isOg ? 13 : 16, fontWeight: 800, letterSpacing: 3, color: '#666' }}>
+        <span style={{ fontSize: isOg ? 15 : 18, fontWeight: 800, letterSpacing: 3, color: '#666' }}>
           OPENPOLL.CO.KR
         </span>
         {showCTA && (
           <span
             style={{
-              fontSize: isOg ? 14 : 18,
+              fontSize: isOg ? 16 : 20,
               fontWeight: 800,
               background: '#1a1a1a',
               color: 'white',
-              padding: isOg ? '6px 12px' : '8px 16px',
+              padding: isOg ? '8px 14px' : '8px 16px',
               borderRadius: 100,
             }}
           >
@@ -154,27 +190,28 @@ function renderAxes(scores: DosCardScores, accent: string, isOg: boolean) {
     { label: '개발', value: scores.development },
   ]
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: isOg ? 6 : 12 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: isOg ? 12 : 14 }}>
       {items.map((it) => (
         <div
           key={it.label}
           style={{
             display: 'grid',
-            gridTemplateColumns: isOg ? '46px 1fr 46px' : '60px 1fr 60px',
-            gap: isOg ? 10 : 12,
+            gridTemplateColumns: isOg ? '52px minmax(0, 1fr) 56px' : '60px minmax(0, 1fr) 60px',
+            gap: isOg ? 14 : 14,
             alignItems: 'center',
           }}
         >
-          <span style={{ fontSize: isOg ? 14 : 18, fontWeight: 700, color: '#1a1a1a' }}>{it.label}</span>
-          <div style={{ height: isOg ? 8 : 12, background: '#E5E1D6', borderRadius: 100, overflow: 'hidden' }}>
+          <span style={{ fontSize: isOg ? 18 : 20, fontWeight: 700, color: '#1a1a1a' }}>{it.label}</span>
+          <div style={{ height: isOg ? 14 : 16, background: '#E5E1D6', borderRadius: 100, overflow: 'hidden' }}>
             <div style={{ height: '100%', width: `${it.value}%`, background: accent, borderRadius: 100 }} />
           </div>
           <span
             style={{
-              fontSize: isOg ? 14 : 18,
+              fontSize: isOg ? 16 : 18,
               fontWeight: 700,
               color: '#666',
               textAlign: 'right',
+              whiteSpace: 'nowrap',
             }}
           >
             {Math.round(it.value)}%
@@ -187,17 +224,17 @@ function renderAxes(scores: DosCardScores, accent: string, isOg: boolean) {
 
 function renderKeywords(keywords: string[], accent: string, isOg: boolean) {
   return (
-    <div style={{ display: 'flex', flexWrap: 'wrap', gap: isOg ? 6 : 8 }}>
+    <div style={{ display: 'flex', flexWrap: 'wrap', gap: isOg ? 10 : 8 }}>
       {keywords.map((kw) => (
         <span
           key={kw}
           style={{
-            fontSize: isOg ? 13 : 16,
+            fontSize: isOg ? 16 : 18,
             fontWeight: 700,
             color: accent,
             background: 'white',
-            border: `1.5px solid ${accent}`,
-            padding: isOg ? '4px 10px' : '6px 14px',
+            border: `2px solid ${accent}`,
+            padding: isOg ? '7px 14px' : '6px 14px',
             borderRadius: 100,
           }}
         >
