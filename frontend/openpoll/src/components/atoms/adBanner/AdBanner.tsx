@@ -26,7 +26,25 @@ export function AdBanner({ format = "auto", className = "" }: AdBannerProps) {
   }, []);
 
   return (
-    <div className={`ad-container overflow-hidden ${className}`}>
+    <div
+      className={`ad-container overflow-hidden ${className}`}
+      role="complementary"
+      aria-label="광고"
+    >
+      <span
+        aria-hidden="true"
+        style={{
+          display: "block",
+          fontSize: 11,
+          fontWeight: 600,
+          letterSpacing: 1.5,
+          color: "var(--color-foreground-subtle)",
+          marginBottom: 4,
+          textTransform: "uppercase",
+        }}
+      >
+        광고 · Ad
+      </span>
       <ins
         className="adsbygoogle"
         style={{ display: "block" }}

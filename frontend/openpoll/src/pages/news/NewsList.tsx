@@ -92,7 +92,7 @@ export function NewsList() {
           </p>
         )}
 
-        <AdBanner className="mb-6" />
+        {currentNews.length > 0 && <AdBanner className="mb-6" />}
 
         {currentNews.length > 0 ? (
           <>
