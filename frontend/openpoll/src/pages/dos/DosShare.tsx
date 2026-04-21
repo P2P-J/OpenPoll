@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useRef, useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { motion } from "motion/react";
 import { Brain, Home } from "lucide-react";
@@ -6,11 +6,11 @@ import { usePageMeta } from "@/hooks/usePageMeta";
 import { useStructuredData } from "@/hooks/useStructuredData";
 import { dosResultTypes } from "@/shared/constants/dosResultTypes";
 import {
-    ResultHeader,
     DescriptionSection,
     CharacteristicsSection,
     NoticeSection,
 } from "./components";
+import { DosResultCard } from "./components/DosResultCard";
 
 function NotFoundView() {
     return (
@@ -78,6 +78,20 @@ export function DosShare() {
         provider: { "@type": "Organization", name: "OpenPoll", url: "https://www.openpoll.co.kr" },
     } : null);
 
+    const cardWrapperRef = useRef<HTMLDivElement>(null);
+    const [cardScale, setCardScale] = useState(1);
+
+    useEffect(() => {
+        const el = cardWrapperRef.current;
+        if (!el) return;
+        const observer = new ResizeObserver((entries) => {
+            const width = entries[0]?.contentRect.width;
+            if (width) setCardScale(width / 1080);
+        });
+        observer.observe(el);
+        return () => observer.disconnect();
+    }, []);
+
     if (!resultData) return <NotFoundView />;
 
     const { detail = [], features = [], tag: tags = [] } = resultData;
@@ -98,11 +112,31 @@ export function DosShare() {
                     </div>
                 </motion.div>
 
-                <ResultHeader
-                    type={type || ""}
-                    name={resultData.name}
-                    description={resultData.description}
-                />
+                <div
+                    ref={cardWrapperRef}
+                    style={{
+                        position: "relative",
+                        width: "100%",
+                        maxWidth: 640,
+                        margin: "0 auto 32px",
+                        height: 1080 * cardScale,
+                        overflow: "hidden",
+                    }}
+                >
+                    <div
+                        style={{
+                            position: "absolute",
+                            top: 0,
+                            left: 0,
+                            width: 1080,
+                            height: 1080,
+                            transform: `scale(${cardScale})`,
+                            transformOrigin: "top left",
+                        }}
+                    >
+                        <DosResultCard type={resultData} variant="square" showCTA />
+                    </div>
+                </div>
 
                 <DescriptionSection detail={detail} />
                 <CharacteristicsSection features={features} tags={tags} />
