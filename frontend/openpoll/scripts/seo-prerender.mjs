@@ -149,6 +149,66 @@ const ROUTES = [
     description: '정치적 의견이 다른 사람과 감정 싸움 없이 건설적으로 대화하는 방법을 알아봅니다.',
     blog: { date: '2026-04-07' },
   },
+  {
+    path: '/blog/korean-election-system-complete',
+    title: '한국의 선거 제도 완전 정복: 대선·총선·지방선거 한눈에 보기 | OpenPoll 블로그',
+    description: '대통령 선거, 국회의원 선거, 지방선거의 차이와 구조를 한 번에 정리합니다. 사전투표, 재외국민 투표까지 유권자라면 꼭 알아야 할 핵심 내용.',
+    blog: { date: '2026-04-01' },
+  },
+  {
+    path: '/blog/presidential-vs-parliamentary',
+    title: '대통령제 vs 의원내각제: 정부 형태의 차이 쉽게 이해하기 | OpenPoll 블로그',
+    description: '한국의 대통령제와 영국·일본의 의원내각제는 어떻게 다를까요? 각 제도의 구조, 장단점, 한국에서의 개헌 논의까지 한 번에 정리합니다.',
+    blog: { date: '2026-04-03' },
+  },
+  {
+    path: '/blog/political-centrism-explained',
+    title: '정치적 중도·중도층이란 무엇인가? 기계적 균형과의 차이 | OpenPoll 블로그',
+    description: "선거 승부를 결정짓는 '중도층'의 정체를 세 가지 유형으로 나누어 설명합니다. 스스로 중도인지 확인하는 질문까지 함께 담았습니다.",
+    blog: { date: '2026-04-05' },
+  },
+  {
+    path: '/blog/korean-party-nomination-system',
+    title: '한국 정당의 공천 시스템 이해하기: 누가 후보가 되는가 | OpenPoll 블로그',
+    description: "경선, 전략공천, 추천형 공천 등 한국 주요 정당의 공천 방식과 심사 기준을 정리합니다. 공천이 왜 '선거 결과의 절반'이라 불리는지 알아봅니다.",
+    blog: { date: '2026-04-07' },
+  },
+  {
+    path: '/blog/populism-left-right',
+    title: '포퓰리즘의 뜻과 좌우 포퓰리즘의 차이 | OpenPoll 블로그',
+    description: "'대중주의'에서 출발한 포퓰리즘이 어떻게 비판의 대상이 되었는지, 좌파·우파 포퓰리즘이 어떤 특성을 공유하는지 살펴봅니다.",
+    blog: { date: '2026-04-09' },
+  },
+  {
+    path: '/blog/separation-of-powers-korea',
+    title: '삼권분립과 견제와 균형: 민주주의를 지탱하는 기본 골격 | OpenPoll 블로그',
+    description: '입법·행정·사법의 3권이 어떻게 나뉘고 서로를 견제하는지, 한국에서 제왕적 대통령제가 문제시되는 이유와 함께 정리합니다.',
+    blog: { date: '2026-04-12' },
+  },
+  {
+    path: '/blog/political-apathy-causes',
+    title: '유권자 피로감과 정치 무관심의 원인: 왜 우리는 지치는가 | OpenPoll 블로그',
+    description: '반복되는 정쟁, 정보 과부하, 진영 논리 속에서 정치에 지치는 이유와, 감당 가능한 수준의 참여를 위한 작은 실천법을 제안합니다.',
+    blog: { date: '2026-04-14' },
+  },
+  {
+    path: '/blog/referendum-initiative-recall',
+    title: '국민투표·국민발안·국민소환 제도 완전 정리 | OpenPoll 블로그',
+    description: '대의 민주주의를 보완하는 세 가지 직접 민주주의 제도를 정리합니다. 한국의 현재 법제화 상황과 스위스·영국 사례까지 비교합니다.',
+    blog: { date: '2026-04-16' },
+  },
+  {
+    path: '/blog/voting-age-18-debate',
+    title: '선거 연령 만 18세 하향의 쟁점과 그 후 | OpenPoll 블로그',
+    description: '2020년 선거 연령 하향 이후 청소년 유권자의 참여 양상과 남은 과제를 정리합니다. 피선거권 하향 논의도 함께 살펴봅니다.',
+    blog: { date: '2026-04-18' },
+  },
+  {
+    path: '/blog/youth-political-participation',
+    title: "청년 정치 참여의 현황과 과제: '미래'가 아닌 '현재'로서의 청년 | OpenPoll 블로그",
+    description: '청년 정치 참여의 진입 장벽과 해외 사례, 한국의 변화 조짐을 살펴봅니다. 출마가 아니어도 가능한 다양한 참여 방식을 제안합니다.',
+    blog: { date: '2026-04-21' },
+  },
 
   // ── DOS share pages ─────────────────────────────────────────────────
   ...Object.entries(DOS_TYPES).map(([code, { name, desc }]) => ({
