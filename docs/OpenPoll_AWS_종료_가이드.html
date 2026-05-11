@@ -1,0 +1,1074 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>OpenPoll AWS 종료 및 재배포 가이드</title>
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css" />
+<style>
+  :root {
+    --fg: #1a1a1a;
+    --muted: #555;
+    --subtle: #777;
+    --border: #e4e4e7;
+    --bg-soft: #fafafa;
+    --accent: #FF9900;
+    --danger: #DC2626;
+    --warn: #D97706;
+    --ok: #16A34A;
+    --info: #2563EB;
+  }
+
+  @page {
+    size: A4;
+    margin: 18mm 16mm 20mm 16mm;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    color: var(--fg);
+    font-family: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    font-size: 10.5pt;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+    word-break: keep-all;
+  }
+
+  .page-break { page-break-after: always; }
+  .avoid-break { page-break-inside: avoid; }
+
+  /* 표지 */
+  .cover {
+    height: 257mm;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 12mm 4mm;
+    page-break-after: always;
+  }
+  .cover-top { display: flex; align-items: center; gap: 12px; }
+  .cover-logo {
+    width: 44px; height: 44px; border-radius: 12px;
+    background: linear-gradient(135deg, #2563EB, #7C3AED);
+    color: white; font-weight: 900; font-size: 22px;
+    display: flex; align-items: center; justify-content: center;
+    letter-spacing: -1px;
+  }
+  .cover-brand { font-size: 14pt; font-weight: 700; letter-spacing: -0.5px; }
+  .cover-tag { color: var(--subtle); font-size: 10pt; margin-top: 2px; }
+  .cover-mid h1 {
+    font-size: 36pt;
+    font-weight: 900;
+    letter-spacing: -2px;
+    line-height: 1.15;
+    margin: 0 0 16px 0;
+  }
+  .cover-mid h2 {
+    font-size: 16pt;
+    font-weight: 500;
+    color: var(--muted);
+    margin: 0;
+    letter-spacing: -0.5px;
+    line-height: 1.45;
+  }
+  .cover-bottom {
+    border-top: 1px solid var(--border);
+    padding-top: 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    font-size: 9.5pt;
+    color: var(--subtle);
+  }
+  .cover-bottom .meta strong { color: var(--fg); font-weight: 700; }
+  .cover-band {
+    height: 6px;
+    background: linear-gradient(90deg, var(--accent), #FF6F00);
+    border-radius: 100px;
+    margin: 28px 0 36px 0;
+  }
+
+  /* 목차 */
+  .toc {
+    page-break-after: always;
+  }
+  .toc h2 {
+    font-size: 22pt;
+    letter-spacing: -1.5px;
+    margin: 0 0 6mm 0;
+  }
+  .toc ol {
+    counter-reset: section;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .toc > ol > li {
+    counter-increment: section;
+    padding: 10px 0;
+    border-bottom: 1px dashed var(--border);
+    font-size: 11.5pt;
+    font-weight: 600;
+  }
+  .toc > ol > li::before {
+    content: counter(section, decimal-leading-zero) "  ";
+    color: var(--accent);
+    font-weight: 800;
+    margin-right: 8px;
+  }
+  .toc ul {
+    list-style: none;
+    padding: 6px 0 0 32px;
+    font-size: 10pt;
+    color: var(--muted);
+    font-weight: 400;
+  }
+  .toc ul li { padding: 2px 0; }
+
+  /* 헤딩 */
+  h1.section {
+    font-size: 24pt;
+    font-weight: 900;
+    letter-spacing: -1.5px;
+    margin: 0 0 4mm 0;
+    padding-bottom: 4mm;
+    border-bottom: 3px solid var(--fg);
+  }
+  h1.section .num {
+    color: var(--accent);
+    margin-right: 12px;
+  }
+  h2.sub {
+    font-size: 15pt;
+    font-weight: 800;
+    letter-spacing: -0.8px;
+    margin: 10mm 0 3mm 0;
+    padding-left: 10px;
+    border-left: 4px solid var(--accent);
+  }
+  h3.sub2 {
+    font-size: 12pt;
+    font-weight: 700;
+    margin: 6mm 0 2mm 0;
+    color: var(--fg);
+  }
+  p { margin: 0 0 8px 0; }
+  ul, ol { margin: 0 0 10px 0; padding-left: 22px; }
+  li { margin: 3px 0; }
+
+  /* 박스 */
+  .box {
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin: 8px 0 12px 0;
+    border: 1px solid var(--border);
+    background: var(--bg-soft);
+    page-break-inside: avoid;
+  }
+  .box.danger { border-color: #FCA5A5; background: #FEF2F2; }
+  .box.warn { border-color: #FCD34D; background: #FFFBEB; }
+  .box.info { border-color: #93C5FD; background: #EFF6FF; }
+  .box.ok { border-color: #86EFAC; background: #F0FDF4; }
+  .box .label {
+    display: inline-block;
+    font-size: 9pt;
+    font-weight: 800;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .box.danger .label { color: var(--danger); }
+  .box.warn .label { color: var(--warn); }
+  .box.info .label { color: var(--info); }
+  .box.ok .label { color: var(--ok); }
+  .box p:last-child { margin-bottom: 0; }
+
+  /* 표 */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 6px 0 14px 0;
+    font-size: 9.8pt;
+    page-break-inside: avoid;
+  }
+  th, td {
+    border: 1px solid var(--border);
+    padding: 7px 9px;
+    text-align: left;
+    vertical-align: top;
+  }
+  thead th {
+    background: #18181B;
+    color: white;
+    font-weight: 700;
+    font-size: 9.5pt;
+    letter-spacing: -0.2px;
+  }
+  tbody tr:nth-child(even) td { background: var(--bg-soft); }
+  td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  td.center { text-align: center; }
+
+  /* 칩 */
+  .chip {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 100px;
+    font-size: 8.5pt;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    vertical-align: middle;
+  }
+  .chip.del { background: #FEE2E2; color: var(--danger); }
+  .chip.keep { background: #DCFCE7; color: var(--ok); }
+  .chip.opt { background: #FEF3C7; color: var(--warn); }
+  .chip.bill { background: #DBEAFE; color: var(--info); }
+
+  /* 코드 */
+  code {
+    font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Consolas, monospace;
+    font-size: 9pt;
+    background: #F4F4F5;
+    padding: 1px 5px;
+    border-radius: 4px;
+  }
+  pre {
+    background: #18181B;
+    color: #F4F4F5;
+    padding: 12px 14px;
+    border-radius: 8px;
+    font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Consolas, monospace;
+    font-size: 8.8pt;
+    line-height: 1.55;
+    overflow-x: auto;
+    margin: 6px 0 12px 0;
+    page-break-inside: avoid;
+  }
+  pre code { background: transparent; color: inherit; padding: 0; }
+
+  /* 단계 */
+  .step {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    padding: 10px 0;
+    border-top: 1px solid var(--border);
+    page-break-inside: avoid;
+  }
+  .step:first-child { border-top: none; }
+  .step-num {
+    flex: 0 0 30px;
+    height: 30px;
+    border-radius: 8px;
+    background: #18181B;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 11pt;
+  }
+  .step-body { flex: 1; }
+  .step-title { font-weight: 700; font-size: 11pt; margin-bottom: 4px; }
+
+  /* 비용 카드 */
+  .cost-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    margin: 6px 0 12px 0;
+  }
+  .cost-card {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 12px;
+    background: white;
+  }
+  .cost-card .name { font-weight: 700; font-size: 10pt; margin-bottom: 2px; }
+  .cost-card .price {
+    font-variant-numeric: tabular-nums;
+    font-weight: 800;
+    color: var(--danger);
+    font-size: 12pt;
+    letter-spacing: -0.5px;
+  }
+  .cost-card .note { color: var(--subtle); font-size: 8.8pt; margin-top: 2px; }
+
+  hr.thin { border: none; border-top: 1px solid var(--border); margin: 14px 0; }
+
+  .footer-note {
+    margin-top: 16mm;
+    padding-top: 6mm;
+    border-top: 1px solid var(--border);
+    font-size: 9pt;
+    color: var(--subtle);
+  }
+
+  .pill {
+    display: inline-block;
+    background: #18181B;
+    color: white;
+    padding: 4px 10px;
+    border-radius: 100px;
+    font-size: 9pt;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== 표지 ===== -->
+<section class="cover">
+  <div>
+    <div class="cover-top">
+      <div class="cover-logo">OP</div>
+      <div>
+        <div class="cover-brand">OpenPoll</div>
+        <div class="cover-tag">www.openpoll.co.kr</div>
+      </div>
+    </div>
+    <div class="cover-band"></div>
+  </div>
+
+  <div class="cover-mid">
+    <h1>AWS 종료 &<br/>재배포 가이드</h1>
+    <h2>지금 어떤 리소스를 쓰고 있고,<br/>무엇을 왜 삭제해야 하며,<br/>다시 올릴 때 어떻게 해야 하는가</h2>
+  </div>
+
+  <div class="cover-bottom">
+    <div class="meta">
+      <div><strong>발행일</strong> &nbsp; 2026-05-11</div>
+      <div><strong>대상</strong> &nbsp; 프로젝트 소유자 (조보근)</div>
+    </div>
+    <div>
+      <span class="pill">v1.0</span>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 목차 ===== -->
+<section class="toc">
+  <h2>목차</h2>
+  <ol>
+    <li>
+      한눈에 보기 — 비용 구조와 결정 트리
+      <ul>
+        <li>왜 $200/월 이 나왔는가</li>
+        <li>"Stop" vs "Delete" 의 차이</li>
+      </ul>
+    </li>
+    <li>
+      현재 OpenPoll 의 AWS 인프라
+      <ul>
+        <li>전체 아키텍처</li>
+        <li>리소스별 상세 (EC2 · RDS · ALB · NAT · 기타)</li>
+        <li>외부 연동: GitHub Actions, Route 53, Parameter Store</li>
+      </ul>
+    </li>
+    <li>
+      종료 절차 — 삭제할 것, 남길 것, 그리고 그 이유
+      <ul>
+        <li>삭제 / 유지 / 선택 분류표</li>
+        <li>의존성을 고려한 삭제 순서</li>
+        <li>리소스별 삭제 사유와 방법</li>
+      </ul>
+    </li>
+    <li>
+      종료 전에 반드시 백업할 데이터
+      <ul>
+        <li>RDS 덤프 또는 최종 스냅샷</li>
+        <li>Parameter Store / 환경변수</li>
+        <li>nginx 설정, PM2 ecosystem, 배포 스크립트</li>
+      </ul>
+    </li>
+    <li>
+      다시 올릴 때 — 재배포 가이드
+      <ul>
+        <li>사전 준비물 체크리스트</li>
+        <li>인프라 재구성 순서</li>
+        <li>코드 배포와 환경변수 주입</li>
+        <li>DNS / 도메인 / SSL</li>
+        <li>흔한 함정과 회복 방법</li>
+      </ul>
+    </li>
+    <li>
+      부록
+      <ul>
+        <li>비용 알람 설정 (AWS Budgets)</li>
+        <li>최종 점검 체크리스트</li>
+        <li>한 줄 요약</li>
+      </ul>
+    </li>
+  </ol>
+</section>
+
+<!-- ===== 1장 ===== -->
+<section>
+  <h1 class="section"><span class="num">01</span>한눈에 보기</h1>
+
+  <p>OpenPoll 은 단일 EC2 백엔드 + 단일 EC2 프론트엔드 + RDS PostgreSQL + ALB + NAT Gateway 라는, 사이드 프로젝트치고는 정직한 프로덕션 구성이다. 정직한 구성은 곧 정직한 청구서로 이어진다. 이번 달 약 $200 가 청구된 이유는 단일 비싼 서비스 때문이 아니라, "프로덕션 표준 부품" 들이 24시간 동시에 돌아간 결과다.</p>
+
+  <h2 class="sub">왜 $200/월 인가</h2>
+  <p>서울 리전(ap-northeast-2) 기준 사이드 프로젝트의 일반적인 분해는 다음과 같다. 정확한 금액은 EC2 인스턴스 타입과 RDS 클래스에 따라 달라지지만, 큰 그림은 거의 항상 비슷하다.</p>
+
+  <div class="cost-grid">
+    <div class="cost-card">
+      <div class="name">NAT Gateway</div>
+      <div class="price">~ $32 / 월</div>
+      <div class="note">시간당 $0.045 × 720h + 데이터 처리비. Private subnet 의 외부 통신 게이트.</div>
+    </div>
+    <div class="cost-card">
+      <div class="name">Application Load Balancer</div>
+      <div class="price">~ $22 / 월</div>
+      <div class="note">시간당 $0.0225 + LCU. 한 대만 있어도 항상 켜져있음.</div>
+    </div>
+    <div class="cost-card">
+      <div class="name">EC2 × 2 (FE + BE)</div>
+      <div class="price">~ $60–80 / 월</div>
+      <div class="note">t3.medium 기준 추정. 인스턴스 타입에 따라 가장 큰 변동폭.</div>
+    </div>
+    <div class="cost-card">
+      <div class="name">RDS PostgreSQL</div>
+      <div class="price">~ $30–50 / 월</div>
+      <div class="note">db.t3.small + 스토리지 + 자동 백업 기준 추정.</div>
+    </div>
+    <div class="cost-card">
+      <div class="name">EBS 볼륨 + 스냅샷</div>
+      <div class="price">~ $6–12 / 월</div>
+      <div class="note">EC2 종료해도 detached 로 남으면 계속 과금.</div>
+    </div>
+    <div class="cost-card">
+      <div class="name">Route 53 + 데이터 전송</div>
+      <div class="price">~ $1–5 / 월</div>
+      <div class="note">호스팅존 $0.5 + 쿼리 + 아웃바운드 트래픽.</div>
+    </div>
+  </div>
+
+  <div class="box info">
+    <div class="label">핵심 통찰</div>
+    <p>위 표에서 <strong>ALB 와 NAT Gateway 두 줄만으로 매월 약 $54 가 고정</strong>으로 빠진다. 트래픽이 0 이어도, 사용자가 0 명이어도, 24시간 켜져있다는 사실만으로 청구된다. 사이드 프로젝트의 "보이지 않는 출혈" 의 정체는 거의 항상 이 두 서비스다.</p>
+  </div>
+
+  <h2 class="sub">"Stop" 과 "Delete" 의 차이</h2>
+  <p>AWS 리소스를 멈추는 방법은 둘 다 같다고 착각하기 쉽지만, 실제로는 전혀 다르다.</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th style="width:24%">방식</th>
+        <th style="width:38%">의미</th>
+        <th>주의점</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Stop</strong></td>
+        <td>인스턴스 컴퓨팅만 멈춤. 디스크/네트워크 리소스는 그대로 유지.</td>
+        <td>EBS, Elastic IP(Detached), RDS 스토리지 등이 계속 과금된다. 일부 리소스는 "Stop" 자체가 없다 (ALB, NAT).</td>
+      </tr>
+      <tr>
+        <td><strong>Delete / Terminate</strong></td>
+        <td>리소스를 완전히 제거. 의존성이 있으면 거절될 수 있음.</td>
+        <td>되돌릴 수 없다. 데이터가 있는 리소스(RDS, EBS)는 반드시 <strong>스냅샷 후</strong> 삭제.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="box warn">
+    <div class="label">함정</div>
+    <p>"RDS 를 Stop 해놨다" 는 안심은 위험하다. <strong>RDS Stop 은 7일 후 자동으로 재시작</strong>되며, 그 후엔 다시 매시간 과금된다. 영구 정지를 원한다면 스냅샷 후 삭제가 정답이다.</p>
+  </div>
+</section>
+
+<div class="page-break"></div>
+
+<!-- ===== 2장 ===== -->
+<section>
+  <h1 class="section"><span class="num">02</span>현재 OpenPoll 의 AWS 인프라</h1>
+
+  <h2 class="sub">전체 아키텍처</h2>
+  <p>OpenPoll 은 단일 VPC 안에 public / private 서브넷을 분리해 운영한다. 외부에서 들어오는 트래픽은 ALB 가 받고, 백엔드와 프론트 EC2 는 private 에 격납돼 SSM 으로만 접속할 수 있는 구조다.</p>
+
+  <pre><code>[사용자]
+   ↓ HTTPS
+[Route 53 — openpoll.co.kr / www.openpoll.co.kr]
+   ↓
+[ALB (public subnet, 80/443)]
+   ↓ 포워딩
+[EC2 FE — nginx + SPA 정적파일]  ←  [EC2 BE — Node/Express + PM2 + Redis6 local]
+                                           ↓
+                                        [RDS PostgreSQL (private subnet)]
+                                           ↑
+[Parameter Store: /openpoll/prod/*]  ←   런타임 환경변수 읽기 (IAM Role)
+
+[GitHub Actions]  → SSM →  EC2 (main 브랜치 push 시 자동 배포)</code></pre>
+
+  <h2 class="sub">리소스별 상세</h2>
+
+  <table>
+    <thead>
+      <tr>
+        <th style="width:22%">리소스</th>
+        <th style="width:14%">분류</th>
+        <th>설명</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>EC2 — BE</strong></td>
+        <td><span class="chip bill">시간 과금</span></td>
+        <td>Node.js + Express + Prisma + PM2 + BullMQ Worker + 로컬 Redis6 (AOF). <code>/home/ec2-user/OpenPoll/backend</code></td>
+      </tr>
+      <tr>
+        <td><strong>EC2 — FE</strong></td>
+        <td><span class="chip bill">시간 과금</span></td>
+        <td>nginx 로 빌드된 SPA 정적 파일 서빙. <code>try_files</code> 로 React Router 대응.</td>
+      </tr>
+      <tr>
+        <td><strong>RDS PostgreSQL</strong></td>
+        <td><span class="chip bill">시간 과금</span></td>
+        <td>Prisma 마이그레이션 운영. 사용자/투표/DOS/채팅 등 모든 영속 데이터 저장.</td>
+      </tr>
+      <tr>
+        <td><strong>ALB</strong></td>
+        <td><span class="chip bill">시간 과금</span></td>
+        <td>80/443 수신, 헬스체크 <code>/api/health</code>. 80 → 443 리다이렉트, 443 → EC2 포워딩.</td>
+      </tr>
+      <tr>
+        <td><strong>NAT Gateway</strong></td>
+        <td><span class="chip bill">시간 과금</span></td>
+        <td>Private subnet 의 EC2 가 외부 API(뉴스 크롤링 등) 호출 및 패키지 업데이트 시 사용.</td>
+      </tr>
+      <tr>
+        <td><strong>EBS 볼륨</strong></td>
+        <td><span class="chip bill">용량 과금</span></td>
+        <td>EC2 루트 디스크. EC2 terminate 시 함께 삭제되도록 설정돼 있다면 별도 조치 불필요.</td>
+      </tr>
+      <tr>
+        <td><strong>Elastic IP</strong></td>
+        <td><span class="chip bill">조건부</span></td>
+        <td>EC2 에 붙어있을 때는 무료. <strong>EC2 종료 후 Detached 상태로 남으면 시간당 과금 시작.</strong></td>
+      </tr>
+      <tr>
+        <td><strong>Route 53 호스팅 영역</strong></td>
+        <td><span class="chip bill">소액</span></td>
+        <td>$0.5/월 + 쿼리. <code>openpoll.co.kr</code> 과 <code>www</code> 모두 ALB A 레코드로 연결.</td>
+      </tr>
+      <tr>
+        <td><strong>SSM Parameter Store</strong></td>
+        <td><span class="chip keep">무료</span></td>
+        <td>Standard 등급은 무료. <code>/openpoll/prod/*</code> 경로에 DB URL, REDIS_URL, JWT_SECRET 등 보관.</td>
+      </tr>
+      <tr>
+        <td><strong>VPC · Subnet · SG · Route Table</strong></td>
+        <td><span class="chip keep">무료</span></td>
+        <td>네트워크 골격. 안에 과금 리소스가 사라지면 두고 가도 문제 없음.</td>
+      </tr>
+      <tr>
+        <td><strong>IAM Role / Policy</strong></td>
+        <td><span class="chip keep">무료</span></td>
+        <td>EC2 에 부착된 <code>OpenPoll-EC2-Role</code> 등. 잘 만들어둔 권한 설계는 자산이므로 유지 가치 있음.</td>
+      </tr>
+      <tr>
+        <td><strong>CloudWatch Logs</strong></td>
+        <td><span class="chip bill">용량 과금</span></td>
+        <td>수집량 + 보관량에 따라 과금. 사이드 프로젝트 규모에선 보통 월 $1 미만이지만, 보존기간을 길게 잡았다면 누적 가능.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2 class="sub">외부 연동</h2>
+
+  <table>
+    <thead>
+      <tr>
+        <th style="width:22%">대상</th>
+        <th>역할</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>GitHub Actions</strong></td>
+        <td><code>main</code> 브랜치 push 시 SSM → EC2 로 배포 스크립트 트리거. 서버 내린 뒤에도 워크플로우는 계속 트리거될 수 있으므로 비활성화 필요.</td>
+      </tr>
+      <tr>
+        <td><strong>외부 분석 도구</strong></td>
+        <td>GTM, GA4, MS Clarity, AdSense (거절). 모두 클라이언트 사이드 스크립트로 OpenPoll 도메인과 무관하게 동작. AWS 와는 직접 연결 없음.</td>
+      </tr>
+      <tr>
+        <td><strong>도메인 등록기관</strong></td>
+        <td><code>openpoll.co.kr</code> 의 소유권 (.kr 은 보통 후이즈/가비아 등). Route 53 호스팅 영역과는 별개로 도메인 자체의 갱신비가 있다.</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<div class="page-break"></div>
+
+<!-- ===== 3장 ===== -->
+<section>
+  <h1 class="section"><span class="num">03</span>종료 절차</h1>
+
+  <h2 class="sub">삭제 · 유지 · 선택 분류</h2>
+
+  <table>
+    <thead>
+      <tr>
+        <th style="width:26%">리소스</th>
+        <th style="width:14%">결정</th>
+        <th>이유</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>NAT Gateway</td>
+        <td><span class="chip del">삭제</span></td>
+        <td>Stop 불가. 시간당 과금이 사이드 프로젝트 비용의 가장 큰 비중. 트래픽이 0 이어도 청구된다.</td>
+      </tr>
+      <tr>
+        <td>ALB</td>
+        <td><span class="chip del">삭제</span></td>
+        <td>Stop 불가. 시간당 + LCU 과금. 서버를 안 띄울 거면 입구를 닫는 게 맞다.</td>
+      </tr>
+      <tr>
+        <td>RDS 인스턴스</td>
+        <td><span class="chip del">스냅샷 후 삭제</span></td>
+        <td>Stop 은 7일 한도. 영구 종료는 삭제가 정답. 데이터는 최종 스냅샷으로 보존.</td>
+      </tr>
+      <tr>
+        <td>EC2 (BE/FE)</td>
+        <td><span class="chip del">Terminate</span></td>
+        <td>Stop 시 EBS 가 계속 과금. terminate 하면 루트 EBS 도 함께 정리 (DeleteOnTermination 기본값).</td>
+      </tr>
+      <tr>
+        <td>Elastic IP</td>
+        <td><span class="chip del">Release</span></td>
+        <td>EC2 가 사라지면 Detached 상태가 되어 시간당 과금이 시작된다. 반드시 release.</td>
+      </tr>
+      <tr>
+        <td>Detached EBS 볼륨 · 오래된 스냅샷</td>
+        <td><span class="chip del">정리</span></td>
+        <td>EC2 terminate 후 EBS 콘솔에서 남은 볼륨이 없는지 한 번 더 확인.</td>
+      </tr>
+      <tr>
+        <td>CloudWatch 로그 그룹</td>
+        <td><span class="chip opt">선택</span></td>
+        <td>보관기간을 7일 등으로 줄이면 자연히 비용 0 에 수렴. 추억으로 둘 거면 보존기간만 단축.</td>
+      </tr>
+      <tr>
+        <td>Route 53 호스팅 영역</td>
+        <td><span class="chip opt">선택</span></td>
+        <td>도메인을 유지하면서 추후 재오픈/리디렉트 계획이 있다면 둔다 ($0.5/월). 완전히 손 뗀다면 삭제.</td>
+      </tr>
+      <tr>
+        <td>SSM Parameter Store</td>
+        <td><span class="chip opt">선택</span></td>
+        <td>무료. <strong>재배포 시 그대로 다시 쓸 수 있는 자산</strong>이므로 가능하면 둔다. 단, 값들을 로컬에도 한 번 백업.</td>
+      </tr>
+      <tr>
+        <td>VPC, 서브넷, 라우팅, SG, IAM</td>
+        <td><span class="chip keep">유지</span></td>
+        <td>전부 무료. 다음번 재구축의 골격이 된다.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2 class="sub">의존성을 고려한 삭제 순서</h2>
+  <p>AWS 의 많은 삭제 동작은 "다른 리소스가 의존하고 있으면 거절" 된다. 아래 순서로 진행하면 의존성 충돌 없이 흘러간다.</p>
+
+  <div class="step">
+    <div class="step-num">1</div>
+    <div class="step-body">
+      <div class="step-title">GitHub Actions 비활성화</div>
+      <p>Repository → Settings → Actions → Disable, 또는 워크플로우 파일에 <code>on: workflow_dispatch</code> 만 남기기. 인프라가 내려간 뒤에도 트리거되면 실패 알림만 쌓인다.</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">2</div>
+    <div class="step-body">
+      <div class="step-title">RDS 최종 스냅샷 생성 + 인스턴스 삭제</div>
+      <p>RDS 콘솔 → 인스턴스 선택 → Actions → Delete. <strong>"Create final snapshot" 체크박스를 반드시 켠다.</strong> 이름은 <code>openpoll-final-2026-05-11</code> 처럼 날짜를 명시. 스냅샷 자체는 GB 당 월 $0.05 수준이라 거의 무시 가능.</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">3</div>
+    <div class="step-body">
+      <div class="step-title">EC2 두 대 모두 Terminate</div>
+      <p>BE → FE 순서. terminate 시 "Delete on termination" 이 켜진 EBS 는 자동 정리된다.</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">4</div>
+    <div class="step-body">
+      <div class="step-title">Elastic IP Release</div>
+      <p>EC2 콘솔 → Elastic IPs → 각 EIP 선택 → Actions → Release. EC2 가 사라진 직후 가장 빨리 처리해야 할 단계.</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">5</div>
+    <div class="step-body">
+      <div class="step-title">ALB 삭제 (대상 그룹 포함)</div>
+      <p>EC2 콘솔 → Load Balancers → Delete. 그 다음 Target Groups 에서 사용 안 하는 TG 도 함께 삭제.</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">6</div>
+    <div class="step-body">
+      <div class="step-title">NAT Gateway 삭제</div>
+      <p>VPC 콘솔 → NAT Gateways → Delete. 삭제 후 NAT 가 쓰던 EIP 가 Detached 로 남으면 다시 release.</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">7</div>
+    <div class="step-body">
+      <div class="step-title">남은 EBS 볼륨 / 스냅샷 점검</div>
+      <p>EC2 콘솔 → Volumes 에서 "Available" 상태인 볼륨이 있는지 확인. 있다면 모두 삭제.</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">8</div>
+    <div class="step-body">
+      <div class="step-title">CloudWatch 로그 그룹 보존기간 단축 또는 삭제</div>
+      <p>CloudWatch → Log groups → 각 그룹의 보존기간을 7일 등으로 변경하거나, 필요 없다면 삭제.</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">9</div>
+    <div class="step-body">
+      <div class="step-title">Route 53 호스팅 영역 처리</div>
+      <p>도메인 자체를 그대로 둘 거면 호스팅 영역도 유지 가능 ($0.5/월). 완전히 정리할 거면 ALB A 레코드 삭제 후 호스팅 영역 삭제.</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">10</div>
+    <div class="step-body">
+      <div class="step-title">AWS Cost Explorer 로 다음날 확인</div>
+      <p>24시간 정도 지난 뒤 Cost Explorer 에서 "어제" 의 일일 비용이 거의 0 인지 확인. 만약 여전히 비용이 잡히면 남은 리소스가 있다는 뜻이다.</p>
+    </div>
+  </div>
+
+  <div class="box danger">
+    <div class="label">정말 조심할 것</div>
+    <p>RDS 삭제 단계에서 <strong>"Create final snapshot" 체크박스</strong>를 빼먹으면 사용자/투표 데이터가 영구 소실된다. 이 한 줄을 위해 이 문서가 만들어졌다고 봐도 무방하다.</p>
+  </div>
+</section>
+
+<div class="page-break"></div>
+
+<!-- ===== 4장 ===== -->
+<section>
+  <h1 class="section"><span class="num">04</span>종료 전 백업할 데이터</h1>
+
+  <p>"AWS 안의 데이터" 만 백업하면 부족하다. <strong>다시 올릴 때 필요한 모든 것</strong>을 백업해두는 게 핵심이다.</p>
+
+  <h2 class="sub">RDS — 데이터베이스</h2>
+  <p>가장 안전한 방법은 두 가지 백업을 모두 갖는 것이다.</p>
+  <ul>
+    <li><strong>① AWS 최종 스냅샷</strong> — 삭제 시 자동 생성. AWS 콘솔에 보관됨. 단 RDS 인스턴스를 다시 만들어야 복원 가능.</li>
+    <li><strong>② 로컬 <code>pg_dump</code></strong> — 어디서든 복원 가능한 SQL 파일. SSM 으로 BE EC2 접속 후 실행.</li>
+  </ul>
+
+  <pre><code># BE EC2 에 SSM 으로 접속한 상태에서
+sudo su - ec2-user
+cd /home/ec2-user/OpenPoll/backend
+
+# Parameter Store 의 DATABASE_URL 값으로 덤프
+pg_dump "$DATABASE_URL" \
+  --no-owner --no-acl \
+  --format=custom \
+  --file=/tmp/openpoll-final-$(date +%F).dump
+
+# 로컬로 받으려면 S3 임시 업로드 → 다운로드, 또는 base64 로 콘솔 출력 복사</code></pre>
+
+  <h2 class="sub">Parameter Store — 환경변수</h2>
+  <p>Standard 등급은 무료라 그대로 둬도 되지만, 로컬에 한 번 떠두면 "AWS 계정과 무관한 자산" 이 된다.</p>
+
+  <pre><code># BE EC2 에서
+aws ssm get-parameters-by-path \
+  --path "/openpoll/prod" \
+  --with-decryption \
+  --region ap-northeast-2 \
+  --query "Parameters[].{Name:Name,Value:Value}" \
+  --output json &gt; /tmp/openpoll-params-$(date +%F).json</code></pre>
+
+  <div class="box warn">
+    <div class="label">취급 주의</div>
+    <p>이 JSON 에는 DB 비밀번호, JWT secret 등 민감정보가 평문으로 들어간다. 1Password / Bitwarden / 암호화 zip 같은 안전한 저장소로 옮기고, 다운로드 받은 EC2 임시 파일은 즉시 삭제한다.</p>
+  </div>
+
+  <h2 class="sub">서버 설정 파일</h2>
+  <p>EC2 에만 존재하고 git 에는 없는 설정들이 있다. 이것들을 잃으면 재배포가 "기억나는 대로 다시 만들기" 가 된다.</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th style="width:30%">파일 / 위치</th>
+        <th>왜 백업해야 하는가</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>/etc/nginx/conf.d/*</code></td>
+        <td>SPA 라우팅, 헬스체크 경로, 정적파일 처리. 한 번 디버깅했던 자산이 다 녹아있다.</td>
+      </tr>
+      <tr>
+        <td><code>/etc/redis6/redis6.conf</code></td>
+        <td>AOF 활성화 설정. 재구축 시 누락하면 재부팅마다 토큰/큐 날아간다.</td>
+      </tr>
+      <tr>
+        <td>PM2 ecosystem 파일</td>
+        <td>Node 프로세스 기동 옵션, 환경변수 매핑.</td>
+      </tr>
+      <tr>
+        <td>배포 스크립트 (<code>~/deploy.sh</code> 등)</td>
+        <td>GitHub Actions 가 SSM 으로 호출하는 실제 명령들. git 안에 없다면 반드시 복사.</td>
+      </tr>
+      <tr>
+        <td><code>~/.env</code> 또는 PM2 환경변수</td>
+        <td>Parameter Store 외에 별도로 박혀있는 값이 있을 수 있다.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2 class="sub">코드 / GitHub</h2>
+  <p>OpenPoll 의 모든 소스는 이미 GitHub 에 있으므로 별도 백업은 불필요하다. 단, 다음을 점검한다.</p>
+  <ul>
+    <li>모든 로컬 브랜치가 origin 에 push 돼 있는가</li>
+    <li>실수로 커밋된 <code>.env</code> · 키 파일이 git 히스토리에 없는가 (있다면 BFG / <code>git filter-repo</code> 로 제거 고려)</li>
+    <li>README 에 "이 프로젝트는 현재 종료된 상태이며, 재배포 가이드는 <code>docs/</code> 참조" 라고 한 줄 추가</li>
+  </ul>
+</section>
+
+<div class="page-break"></div>
+
+<!-- ===== 5장 ===== -->
+<section>
+  <h1 class="section"><span class="num">05</span>다시 올릴 때 — 재배포 가이드</h1>
+
+  <p>이 장은 "1년 뒤의 자신이 처음 보는 것처럼" 읽어도 막힘없이 따라할 수 있도록 쓴다. AWS 콘솔의 위치는 시간이 지나면 바뀌므로, "무엇을" 만들어야 하는지에 집중한다.</p>
+
+  <h2 class="sub">사전 준비물</h2>
+  <ul>
+    <li>이 문서 4장에서 백업한 <strong>RDS 덤프</strong>, <strong>Parameter Store JSON</strong>, <strong>nginx/PM2/deploy 설정 파일</strong></li>
+    <li>OpenPoll GitHub 저장소 접근 권한</li>
+    <li>도메인 <code>openpoll.co.kr</code> 의 소유권 (등록기관 로그인)</li>
+    <li>AWS 결제 정상 상태와 IAM 관리자 계정</li>
+  </ul>
+
+  <h2 class="sub">인프라 재구성 순서</h2>
+
+  <div class="step">
+    <div class="step-num">1</div>
+    <div class="step-body">
+      <div class="step-title">VPC / 서브넷 / 보안그룹 확인</div>
+      <p>이전 종료 때 무료 리소스들을 그대로 뒀다면 이 단계는 거의 건너뛸 수 있다. 새 계정에서 시작한다면 VPC 1개, public 서브넷 2개 (ALB 용), private 서브넷 2개 (EC2/RDS 용), 인터넷 게이트웨이, 라우팅 테이블을 다시 구성한다.</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">2</div>
+    <div class="step-body">
+      <div class="step-title">RDS 인스턴스 복원</div>
+      <p>RDS 콘솔 → Snapshots → <code>openpoll-final-*</code> 선택 → "Restore snapshot". 클래스는 <code>db.t3.micro</code> 또는 <code>db.t4g.micro</code> 부터 시작해 비용을 절감한다. private 서브넷, 자동 백업 7일 등으로 설정.</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">3</div>
+    <div class="step-body">
+      <div class="step-title">NAT Gateway 재생성</div>
+      <p>private 서브넷의 EC2 가 외부 인터넷에 나가야 하므로 필요하다. 비용을 더 줄이고 싶다면 NAT Instance (작은 EC2 1대) 로 대체하는 방안도 있지만 운영 부담은 커진다.</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">4</div>
+    <div class="step-body">
+      <div class="step-title">EC2 인스턴스 2대 기동</div>
+      <p>이전과 동일하게 BE / FE 2대. AMI 는 Amazon Linux 2023 권장. <strong>OpenPoll-EC2-Role</strong> 을 부착하면 Parameter Store 읽기 권한을 그대로 쓸 수 있다.</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">5</div>
+    <div class="step-body">
+      <div class="step-title">Parameter Store 값 복원</div>
+      <p>백업했던 JSON 을 보고 다시 <code>aws ssm put-parameter --name "/openpoll/prod/XXX" --type SecureString --value "..."</code> 형식으로 일괄 등록한다. <code>DATABASE_URL</code> 의 호스트는 새로 만든 RDS 엔드포인트로 갱신.</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">6</div>
+    <div class="step-body">
+      <div class="step-title">서버 셋업 (BE EC2)</div>
+      <pre><code># SSM 으로 접속 후
+sudo dnf install -y nodejs git redis6
+sudo systemctl enable --now redis6
+sudo su - ec2-user
+git clone https://github.com/P2P-J/OpenPoll.git
+cd OpenPoll/backend
+npm ci
+npx prisma migrate deploy
+npx pm2 start ecosystem.config.js
+npx pm2 save</code></pre>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">7</div>
+    <div class="step-body">
+      <div class="step-title">서버 셋업 (FE EC2)</div>
+      <pre><code>sudo dnf install -y nginx nodejs git
+sudo su - ec2-user
+git clone https://github.com/P2P-J/OpenPoll.git
+cd OpenPoll/frontend/openpoll
+npm ci
+npm run build
+# 빌드 결과물을 nginx 가 바라보는 경로로 복사
+sudo cp -r dist/* /usr/share/nginx/html/
+# 백업해뒀던 nginx conf.d 설정 복원
+sudo cp ~/nginx-backup/openpoll.conf /etc/nginx/conf.d/
+sudo systemctl enable --now nginx</code></pre>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">8</div>
+    <div class="step-body">
+      <div class="step-title">ALB + Target Group 생성</div>
+      <p>ALB 는 public 서브넷 2개에 걸쳐 생성. Target Group 2개 (FE 80, BE 4000 등)에 각 EC2 등록. 헬스체크 경로는 BE 가 <code>/api/health</code>, FE 는 <code>/</code> 가 일반적.</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">9</div>
+    <div class="step-body">
+      <div class="step-title">ACM 인증서 + HTTPS 리스너</div>
+      <p>ACM 에서 <code>openpoll.co.kr</code>, <code>www.openpoll.co.kr</code> SAN 인증서 발급 (DNS 검증). ALB 의 443 리스너에 부착, 80 은 443 으로 리다이렉트.</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">10</div>
+    <div class="step-body">
+      <div class="step-title">Route 53 A 레코드 갱신</div>
+      <p>호스팅 영역을 유지했다면 ALB Alias 레코드만 새 ALB 로 가리키도록 갱신. 새로 만들었다면 도메인 등록기관에서 네임서버 4개를 다시 지정.</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">11</div>
+    <div class="step-body">
+      <div class="step-title">GitHub Actions 재활성화</div>
+      <p>이전에 비활성화했던 워크플로우를 활성화. SSM 으로 호출하는 인스턴스 ID 가 바뀌었으므로 secret / workflow 안의 인스턴스 ID 도 새 값으로 갱신.</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">12</div>
+    <div class="step-body">
+      <div class="step-title">스모크 테스트</div>
+      <p><code>https://www.openpoll.co.kr</code> 접속 → 회원가입/로그인 → 투표 1건 → DOS 1회 → 채팅 1건. 가장 흔한 회귀는 CORS, 환경변수 누락, 헬스체크 경로 오타다.</p>
+    </div>
+  </div>
+
+  <h2 class="sub">흔한 함정</h2>
+
+  <div class="box warn">
+    <div class="label">함정 1 — 헬스체크 경로</div>
+    <p>과거에 <code>/api/healthy</code> 오타로 ALB 헬스체크가 장기간 404 를 쌓은 적이 있다. 새로 만들 때 반드시 <code>/api/health</code> 로 지정.</p>
+  </div>
+
+  <div class="box warn">
+    <div class="label">함정 2 — Prisma 마이그레이션 경로</div>
+    <p><code>npx prisma migrate deploy</code> 는 반드시 <strong><code>backend</code> 디렉터리에서</strong> 실행. 루트에서 실행하면 schema 경로를 못 찾고 에러난다.</p>
+  </div>
+
+  <div class="box warn">
+    <div class="label">함정 3 — nginx default server block 충돌</div>
+    <p>AL2023 기본 nginx 설치 시 <code>/etc/nginx/nginx.conf</code> 의 default server block 이 OpenPoll conf 와 충돌한 적이 있다. SPA 라우팅이 안 되면 default block 먼저 확인.</p>
+  </div>
+
+  <div class="box warn">
+    <div class="label">함정 4 — Parameter Store 권한</div>
+    <p>EC2 Role 에 <code>ssm:GetParameter</code>, <code>ssm:GetParametersByPath</code> 가 없으면 BE 부팅 자체가 안 된다. 새 IAM 으로 시작한다면 이 권한부터 부여.</p>
+  </div>
+
+  <div class="box info">
+    <div class="label">팁 — 비용을 더 낮추는 옵션</div>
+    <p>"이번엔 정말 가볍게" 라면 ALB 대신 단일 EC2 의 nginx 가 reverse proxy 역할까지 맡고, NAT Gateway 대신 모든 EC2 를 public 서브넷에 두는 구성도 가능하다. 보안은 SG / iptables / fail2ban 으로 보강. 월 비용은 EC2 1대 + RDS 1대 ≈ $30~40 수준까지 떨어진다.</p>
+  </div>
+</section>
+
+<div class="page-break"></div>
+
+<!-- ===== 6장 ===== -->
+<section>
+  <h1 class="section"><span class="num">06</span>부록</h1>
+
+  <h2 class="sub">AWS Budgets — 비용 알람</h2>
+  <p>종료 후 잔여 과금을 빠르게 포착하려면 Budgets 알람을 낮게 잡아두는 것이 가장 효과적이다.</p>
+
+  <pre><code># 콘솔: Billing → Budgets → Create budget
+- 유형: Cost budget
+- 기간: Monthly
+- 예산액: $5
+- 알림: 50% (실제 $2.5 도달 시), 100% ($5 도달 시) → 이메일 알림
+- 적용 대상: All AWS services</code></pre>
+
+  <p>$5 라는 숫자는 "정상 종료 후엔 절대 도달할 수 없어야 하는 금액" 이라는 의미를 갖는다. 알람이 울린다면 어딘가에 리소스가 살아있다는 신호다.</p>
+
+  <h2 class="sub">최종 점검 체크리스트</h2>
+
+  <table>
+    <thead>
+      <tr>
+        <th style="width:60%">항목</th>
+        <th style="width:15%" class="center">완료</th>
+        <th>비고</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>RDS 최종 스냅샷 생성 확인 (콘솔에서 보이는가)</td><td class="center">☐</td><td></td></tr>
+      <tr><td>RDS 인스턴스 삭제 완료</td><td class="center">☐</td><td></td></tr>
+      <tr><td>pg_dump 로 로컬에도 백업 보관</td><td class="center">☐</td><td>안전한 곳에 1부 더</td></tr>
+      <tr><td>Parameter Store 값 JSON 으로 백업 (암호화 저장소)</td><td class="center">☐</td><td></td></tr>
+      <tr><td>nginx · redis · PM2 설정 파일 백업</td><td class="center">☐</td><td></td></tr>
+      <tr><td>EC2 BE / FE Terminate</td><td class="center">☐</td><td></td></tr>
+      <tr><td>Elastic IP Release</td><td class="center">☐</td><td>모든 EIP</td></tr>
+      <tr><td>ALB · Target Group 삭제</td><td class="center">☐</td><td></td></tr>
+      <tr><td>NAT Gateway 삭제</td><td class="center">☐</td><td></td></tr>
+      <tr><td>Detached EBS 볼륨 / 오래된 스냅샷 정리</td><td class="center">☐</td><td></td></tr>
+      <tr><td>CloudWatch 로그 그룹 보존기간 단축 또는 삭제</td><td class="center">☐</td><td></td></tr>
+      <tr><td>Route 53 호스팅 영역 처리 결정 (유지 / 삭제)</td><td class="center">☐</td><td></td></tr>
+      <tr><td>GitHub Actions 워크플로우 비활성화</td><td class="center">☐</td><td></td></tr>
+      <tr><td>AWS Budgets $5 알람 설정</td><td class="center">☐</td><td></td></tr>
+      <tr><td>다음날 Cost Explorer 로 일일 비용 확인</td><td class="center">☐</td><td>≈ $0 인가</td></tr>
+    </tbody>
+  </table>
+
+  <h2 class="sub">한 줄 요약</h2>
+  <div class="box ok">
+    <div class="label">결론</div>
+    <p>OpenPoll 의 월 $200 청구서는 <strong>ALB · NAT Gateway · RDS · EC2 · EIP</strong> 라는 다섯 가지 "시간 과금 부품" 에서 거의 전부 나온다. 이 다섯을 정확한 순서로 삭제하고, <strong>RDS 스냅샷과 Parameter Store 백업</strong>만 안전하게 챙기면, 다음 달 청구서는 거의 $0 에 수렴하고 언제든 이 문서대로 다시 올릴 수 있다.</p>
+  </div>
+
+  <div class="footer-note">
+    <p>이 문서는 OpenPoll 프로젝트의 종료/재배포 시점 참고용으로 작성되었으며, AWS 콘솔 UI 의 명칭은 시간이 지남에 따라 변경될 수 있다. 명령어와 단계의 본질은 동일하게 유지될 것이다.</p>
+    <p style="margin-top: 6px;">— OpenPoll · 2026-05-11</p>
+  </div>
+</section>
+
+</body>
+</html>
