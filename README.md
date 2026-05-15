@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="frontend/openpoll/public/OPENPOLL-LARGE.png" alt="OpenPoll" width="120" />
+  <img src="frontend/openpoll/public/og-image.png" alt="OpenPoll" width="420" />
 </p>
 
 <h1 align="center">OpenPoll</h1>
