@@ -176,7 +176,7 @@ export const logout = async (userId) => {
 export const refreshAccessToken = async (refreshToken) => {
   let decoded;
   try {
-    decoded = jwt.verify(refreshToken, config.jwt.refreshSecret);
+    decoded = jwt.verify(refreshToken, config.jwt.refreshSecret, { algorithms: ['HS256'] });
   } catch (err) {
     throw AppError.unauthorized('유효하지 않은 Refresh Token입니다.');
   }
@@ -228,13 +228,13 @@ const generateTokens = async (userId) => {
   const accessToken = jwt.sign(
     { userId },
     config.jwt.secret,
-    { expiresIn: config.jwt.accessExpiresIn }
+    { expiresIn: config.jwt.accessExpiresIn, algorithm: 'HS256' }
   );
 
   const refreshToken = jwt.sign(
     { userId, tokenId: uuidv4() },
     config.jwt.refreshSecret,
-    { expiresIn: config.jwt.refreshExpiresIn }
+    { expiresIn: config.jwt.refreshExpiresIn, algorithm: 'HS256' }
   );
 
   await redis.setex(
@@ -248,7 +248,8 @@ const generateTokens = async (userId) => {
 
 
 const sanitizeUser = (user) => {
-  const { password, ...safeUser } = user;
+  // password 필드는 의도적으로 제외하고 반환
+  const { password: _password, ...safeUser } = user;
   return safeUser;
 };
 
@@ -318,7 +319,7 @@ export const handleOAuthCallback = async ({ providerName, code, state }) => {
         });
       }
       return existingAccount.user;
-    };
+    }
 
     if (!profile.email) {
       throw AppError.badRequest('이 OAuth 계정에서 이메일을 가져올 수 없습니다.');
@@ -408,8 +409,8 @@ export const withdrawUser = async (userId, currentProvider) => {
     },
   });
 
+  // 이미 삭제된 사용자면 멱등적으로 종료 (재시도 안전)
   if (!user) return;
-  // throw AppError.notFound('유저를 찾을 수 없습니다.');
 
   if (!currentProvider) {
     await prisma.$transaction(async (tx) => {
@@ -452,10 +453,11 @@ export const withdrawUser = async (userId, currentProvider) => {
       }
     }
   } catch (error) {
+    // revoke 실패는 로깅만 하고 탈퇴는 계속 진행한다.
+    // (외부 OAuth 제공자 장애로 탈퇴 자체가 막히면 안 되기 때문)
     console.error('OAUTH_REVOKE_FAILED:',
       currentProvider, error?.response?.data || error?.message
     );
-    // throw AppError.internal('서버 에러가 발생했습니다.');
   }
 
   await prisma.$transaction(async (tx) => {

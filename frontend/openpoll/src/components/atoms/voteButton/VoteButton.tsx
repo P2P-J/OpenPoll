@@ -24,8 +24,9 @@ export function VoteButton({
   const rippleTimersRef = useRef<Set<ReturnType<typeof setTimeout>>>(new Set());
 
   useEffect(() => {
+    const timers = rippleTimersRef.current;
     return () => {
-      rippleTimersRef.current.forEach(clearTimeout);
+      timers.forEach(clearTimeout);
     };
   }, []);
 

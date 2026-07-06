@@ -61,6 +61,23 @@ export const signupValidation = [
     .withMessage('인증 코드는 숫자만 포함해야 합니다.'),
 ];
 
+// 소셜 로그인 후 프로필 입력 완료 (email/password/인증코드는 불필요)
+export const completeProfileValidation = [
+  body('nickname')
+    .trim()
+    .isLength({ min: 2, max: 20 })
+    .withMessage('닉네임은 2~20자 사이여야 합니다.'),
+  body('age')
+    .isInt({ min: 18, max: 150 })
+    .withMessage('나이는 18세 이상이어야 합니다.'),
+  body('region')
+    .isIn(REGIONS)
+    .withMessage('유효한 지역을 선택해주세요.'),
+  body('gender')
+    .isIn(['MALE', 'FEMALE'])
+    .withMessage('유효한 성별을 선택해주세요.'),
+];
+
 export const loginValidation = [
   body('email')
     .isEmail()

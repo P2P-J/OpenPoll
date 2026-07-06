@@ -3,7 +3,7 @@ import config from '../../config/index.js';
 import AppError from '../../utils/AppError.js';
 import { POINT_TYPES, POINT_TYPE_DESCRIPTIONS } from '../../constants/pointTypes.js';
 
-// 얘는 목록 조회고
+// 밸런스 게임 목록 조회 (로그인 시 내 투표 여부 포함)
 export const getGames = async (userId = null) => {
   const games = await prisma.balanceGame.findMany({
     orderBy: { createdAt: 'desc' },
@@ -44,7 +44,7 @@ export const getGames = async (userId = null) => {
   });
 };
 
-// 얘는 상세 조회임(s 잘 보셈)
+// 밸런스 게임 상세 조회 (로그인 시 내 투표 여부 포함)
 export const getGame = async (gameId, userId = null) => {
   const game = await prisma.balanceGame.findUnique({
     where: { id: gameId },
@@ -167,9 +167,17 @@ export const updateGame = async (gameId, updateData) => {
     throw AppError.notFound('밸런스 게임을 찾을 수 없습니다.');
   }
 
+  // 허용된 필드만 반영 (mass assignment 방지 — agreeCount 등 조작 차단)
+  const { title, subtitle, description } = updateData;
+  const data = {
+    ...(title !== undefined && { title }),
+    ...(subtitle !== undefined && { subtitle }),
+    ...(description !== undefined && { description }),
+  };
+
   const updatedGame = await prisma.balanceGame.update({
     where: { id: gameId },
-    data: updateData,
+    data,
   });
 
   return updatedGame;

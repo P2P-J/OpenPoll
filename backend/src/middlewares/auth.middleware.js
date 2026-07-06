@@ -18,7 +18,7 @@ export const authenticate = catchAsyncError(async (req, res, next) => {
 
   let decoded;
   try {
-    decoded = jwt.verify(token, config.jwt.secret);
+    decoded = jwt.verify(token, config.jwt.secret, { algorithms: ['HS256'] });
   } catch (err) {
     if (err.name === 'TokenExpiredError') {
       throw AppError.unauthorized('토큰이 만료되었습니다.');
@@ -68,7 +68,7 @@ export const optionalAuth = async (req, res, next) => {
   }
 
   try {
-    const decoded = jwt.verify(token, config.jwt.secret);
+    const decoded = jwt.verify(token, config.jwt.secret, { algorithms: ['HS256'] });
     const user = await prisma.user.findUnique({
       where: { id: decoded.userId },
       select: {
@@ -82,7 +82,8 @@ export const optionalAuth = async (req, res, next) => {
     if (user) {
       req.user = user;
     }
-  } catch (err) {
+  } catch {
+    // optionalAuth: 토큰이 유효하지 않아도 에러 없이 비로그인으로 통과시킨다.
   }
 
   next();

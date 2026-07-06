@@ -116,7 +116,7 @@ export function AttendanceModal({ isOpen, onClose }: AttendanceModalProps) {
     }
   };
 
-  const calendarCells = useMemo(() => buildCalendar(), [isOpen]);
+  const calendarCells = useMemo(() => buildCalendar(), []);
 
   const attendedDays = useMemo(() => {
     if (!status?.recentAttendances) return new Set<number>();

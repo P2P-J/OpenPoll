@@ -1,6 +1,5 @@
 import prisma from '../../config/database.js';
 import AppError from '../../utils/AppError.js';
-import bcrypt from 'bcrypt';
 
 export const getMe = async (userId) => {
   const [user, totalEarnedStats] = await Promise.all([

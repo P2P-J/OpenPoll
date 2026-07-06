@@ -36,7 +36,7 @@ function decodeJWT(token: string): { userId: string; exp: number } | null {
  * Access Token이 만료되었거나 곧 만료되는지 확인
  * @param bufferSeconds 만료 전 여유 시간 (초) - 기본 60초
  */
-export function isTokenExpiringSoon(bufferSeconds = 60): boolean {
+function isTokenExpiringSoon(bufferSeconds = 60): boolean {
   const token = localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
   if (!token) return true;
 

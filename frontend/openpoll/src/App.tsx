@@ -81,9 +81,6 @@ const BlogList = lazy(() =>
 const BlogDetail = lazy(() =>
   import("@/pages/blog").then((m) => ({ default: m.BlogDetail })),
 );
-const Components = lazy(() =>
-  import("@/pages/components").then((m) => ({ default: m.Components })),
-);
 const NotFound = lazy(() =>
   import("@/pages/notFound").then((m) => ({ default: m.NotFound })),
 );
@@ -162,7 +159,6 @@ export default function App() {
                     <Route path="/disclaimer" element={<Disclaimer />} />
                     <Route path="/blog" element={<BlogList />} />
                     <Route path="/blog/:slug" element={<BlogDetail />} />
-                    <Route path="/components" element={<Components />} />
                   </Route>
                   {/* 404 catch-all */}
                   <Route path="*" element={<NotFound />} />

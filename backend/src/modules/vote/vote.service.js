@@ -1,5 +1,5 @@
 import prisma from '../../config/database.js';
-import redis, { CACHE_KEYS, CACHE_TTL } from '../../config/redis.js';
+import redis, { CACHE_KEYS } from '../../config/redis.js';
 import config from '../../config/index.js';
 import AppError from '../../utils/AppError.js';
 import { POINT_TYPES, POINT_TYPE_DESCRIPTIONS } from '../../constants/pointTypes.js';

@@ -7,5 +7,5 @@ export {
 } from "./useDosTest";
 export type { ToastState, UseDosQuestionsReturn } from "./useDosTest";
 
-export { useResultData, createAxisResults } from "./useDosResult";
-export type { AxisResult, UseResultDataReturn } from "./useDosResult";
+export { useResultData } from "./useDosResult";
+export type { UseResultDataReturn } from "./useDosResult";

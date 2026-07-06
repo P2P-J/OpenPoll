@@ -3,7 +3,6 @@ import { motion } from "motion/react";
 import { Share2, Download, RotateCcw, Home } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import type { Components } from "react-markdown";
-import type { AxisResult } from "../hooks/useDosResult";
 import { useTheme } from "@/contexts/ThemeContext";
 
 function getMarkdownComponents(isDark: boolean): Components {
@@ -83,103 +82,6 @@ export function ErrorState() {
         </Link>
       </div>
     </div>
-  );
-}
-
-interface ResultHeaderProps {
-  type: string;
-  name: string;
-  description: string;
-}
-
-export function ResultHeader({ type, name, description }: ResultHeaderProps) {
-  const { isDark } = useTheme();
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="text-center mb-8 sm:mb-12"
-    >
-      <div className={`inline-block mb-4 sm:mb-6 px-4 sm:px-6 py-1.5 sm:py-2 ${isDark ? 'bg-white/10' : 'bg-black/10'} rounded-full text-xs sm:text-sm font-semibold`}>
-        당신의 DOS 유형
-      </div>
-      <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold mb-3 sm:mb-4 tracking-tight">
-        {type}
-      </h1>
-      <h2 className={`text-2xl sm:text-3xl font-bold ${isDark ? 'text-gray-300' : 'text-gray-600'} mb-4 sm:mb-6`}>
-        {name}
-      </h2>
-      <p className={`text-base sm:text-lg ${isDark ? 'text-gray-400' : 'text-gray-500'} max-w-2xl mx-auto leading-relaxed px-4`}>
-        {description}
-      </p>
-    </motion.div>
-  );
-}
-
-function AxisResultItem({ axis, index }: { axis: AxisResult; index: number }) {
-  const { isDark } = useTheme();
-  return (
-    <motion.div
-      initial={{ opacity: 0, x: -20 }}
-      animate={{ opacity: 1, x: 0 }}
-      transition={{ delay: 0.3 + index * 0.1 }}
-    >
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-2 sm:mb-3 gap-1">
-        <span className="font-semibold text-base sm:text-lg">{axis.label}</span>
-        <span className={`text-xs sm:text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
-          {axis.left} {axis.leftScore}% · {axis.rightScore}% {axis.right}
-        </span>
-      </div>
-      <div className={`relative h-6 sm:h-8 ${isDark ? 'bg-white/10' : 'bg-black/10'} rounded-full overflow-hidden`}>
-        <motion.div
-          className={`absolute left-0 top-0 h-full ${isDark ? 'bg-white' : 'bg-black'}`}
-          initial={{ width: 0 }}
-          animate={{ width: `${axis.leftScore}%` }}
-          transition={{ delay: 0.5 + index * 0.1, duration: 0.8 }}
-        />
-        <div className="absolute inset-0 flex items-center justify-between px-3 sm:px-4">
-          <span className="text-xs sm:text-sm font-semibold relative z-10 mix-blend-difference">
-            {axis.left}
-          </span>
-          <span className="text-xs sm:text-sm font-semibold relative z-10 mix-blend-difference">
-            {axis.right}
-          </span>
-        </div>
-      </div>
-    </motion.div>
-  );
-}
-
-interface AxesResultsSectionProps {
-  axisResults: AxisResult[];
-  hasData: boolean;
-}
-
-export function AxesResultsSection({
-  axisResults,
-  hasData,
-}: AxesResultsSectionProps) {
-  const { isDark } = useTheme();
-  return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ delay: 0.2 }}
-      className={`${isDark ? 'bg-white/5 border-white/10' : 'bg-black/5 border-black/10'} backdrop-blur-sm rounded-2xl sm:rounded-3xl p-6 sm:p-8 border mb-6 sm:mb-8`}
-    >
-      <h3 className="text-xl sm:text-2xl font-bold mb-6 sm:mb-8">
-        당신의 정치 좌표
-      </h3>
-      {hasData && axisResults.length > 0 ? (
-        <div className="space-y-6 sm:space-y-8">
-          {axisResults.map((axis, index) => (
-            <AxisResultItem key={axis.label} axis={axis} index={index} />
-          ))}
-        </div>
-      ) : (
-        <p className={isDark ? 'text-gray-400' : 'text-gray-500'}>점수 데이터를 찾을 수 없습니다.</p>
-      )}
-    </motion.div>
   );
 }
 

@@ -1,7 +1,7 @@
 export const CATEGORIES = ["전체", "경제", "외교", "국회", "선거", "사회"] as const;
 export const ITEMS_PER_PAGE = 5;
 
-export const CATEGORY_TAG_MAP: Record<string, string> = {
+const CATEGORY_TAG_MAP: Record<string, string> = {
   경제: "경제",
   금리: "경제",
   수출: "경제",

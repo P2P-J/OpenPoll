@@ -224,12 +224,6 @@ function CTASection({ onStartTest }: { onStartTest: () => void }) {
   );
 }
 
-const useScrollToTop = () => {
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);
-};
-
 export function DosIntro() {
   usePageMeta("정치 성향 테스트 - 나의 정치 좌표 찾기", "32개 질문으로 나의 정치 성향을 분석하세요. 4가지 축 기반 16유형 정치 성향 테스트. 무료로 지금 바로 시작하세요.");
   useStructuredData({
@@ -242,8 +236,6 @@ export function DosIntro() {
   const navigate = useNavigate();
   const { isAuthenticated } = useUser();
   const [showToast, setShowToast] = useState(false);
-
-  useScrollToTop();
 
   const redirectTimer = useRef<number | null>(null);
   useEffect(() => () => { if (redirectTimer.current) clearTimeout(redirectTimer.current); }, []);

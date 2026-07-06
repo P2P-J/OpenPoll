@@ -13,7 +13,7 @@ export const ADMIN_EMAILS = new Set<string>([
   "admin@test.com",
 ]);
 
-export function getSessionLike(): SessionLike {
+function getSessionLike(): SessionLike {
   const raw = getSession();
   if (typeof raw === "object" && raw !== null) return raw as SessionLike;
   return {};
@@ -90,7 +90,7 @@ export function getDisagreeCountSafe(issue: BalanceDetail): number {
   return Math.max(0, total - agree);
 }
 
-export function getTotalVotesSafe(issue: BalanceDetail): number {
+function getTotalVotesSafe(issue: BalanceDetail): number {
   if (typeof issue.totalVotes === "number") return issue.totalVotes;
   const agree = typeof issue.agreeCount === "number" ? issue.agreeCount : 0;
   const disagree =

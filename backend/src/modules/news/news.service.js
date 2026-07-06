@@ -1,5 +1,4 @@
 import prisma from '../../config/database.js';
-import AppError from '../../utils/AppError.js';
 
 import { ensureQueueReady, getQueue } from './jobs/queueWorker.js';
 import { crawlPoliticsHeadlineUrls } from './jobs/crawler.js';

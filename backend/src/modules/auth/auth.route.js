@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
 import * as authController from './auth.controller.js';
-import { signupValidation, loginValidation, refreshTokenValidation, changePasswordValidation, sendVerificationCodeValidation, verifyCodeValidation, checkNicknameValidation } from './auth.validation.js';
+import { signupValidation, loginValidation, refreshTokenValidation, changePasswordValidation, sendVerificationCodeValidation, verifyCodeValidation, checkNicknameValidation, completeProfileValidation } from './auth.validation.js';
 import validate from '../../middlewares/validate.middleware.js';
 import { authenticate } from '../../middlewares/auth.middleware.js';
 
@@ -56,7 +56,7 @@ router.post('/refresh', authLimiter, refreshTokenValidation, validate, authContr
 router.patch('/password', authenticate, authLimiter, changePasswordValidation, validate, authController.changePassword);
 router.get('/oauth/:provider', authController.oauthStart);
 router.get('/oauth/:provider/callback', authController.oauthCallback);
-router.post('/profile/complete', authenticate, signupValidation, authController.completeProfile);
+router.post('/profile/complete', authenticate, completeProfileValidation, validate, authController.completeProfile);
 router.delete('/withdraw', authenticate, authController.withdraw);
 
 export default router;

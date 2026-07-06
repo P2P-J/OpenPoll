@@ -2,14 +2,14 @@ import * as balanceService from './balance.service.js';
 import { successResponse, createdResponse, noContentResponse } from '../../utils/response.js';
 import catchAsyncError from '../../utils/catchAsyncError.js';
 
-// 얘는 목록 조회고
+// 밸런스 게임 목록 조회
 export const getGames = catchAsyncError(async (req, res) => {
   const userId = req.user?.id || null;
   const games = await balanceService.getGames(userId);
   successResponse(res, games);
 });
 
-// 얘는 상세 조회임(s 잘 보셈)
+// 밸런스 게임 상세 조회
 export const getGame = catchAsyncError(async (req, res) => {
   const gameId = parseInt(req.params.id, 10);
   const userId = req.user?.id || null;

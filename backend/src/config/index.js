@@ -60,12 +60,15 @@ const config = {
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
       redirectUri: process.env.GOOGLE_REDIRECT_URI,
     },
-    naver : {
+    naver: {
       clientId: process.env.NAVER_CLIENT_ID,
       clientSecret: process.env.NAVER_CLIENT_SECRET,
       redirectUri: process.env.NAVER_REDIRECT_URI,
     },
   },
+
+  // OpenAI (뉴스 AI 요약)
+  openaiApiKey: process.env.OPENAI_API_KEY,
 };
 
 const requiredEnvVars = ['DATABASE_URL', 'JWT_SECRET', 'JWT_REFRESH_SECRET', 'SMTP_USER', 'SMTP_PASS'];

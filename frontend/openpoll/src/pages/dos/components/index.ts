@@ -9,8 +9,6 @@ export {
 export {
   LoadingState as DosResultLoadingState,
   ErrorState,
-  ResultHeader,
-  AxesResultsSection,
   DescriptionSection,
   CharacteristicsSection,
   NoticeSection,
