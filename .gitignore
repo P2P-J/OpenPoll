@@ -20,6 +20,18 @@ CLAUDE.md
 # Docs
 docs/superpowers/
 
+# 개인 이력서/포트폴리오/학습 자료 (git 관리 제외)
+.superpowers/
+docs/OpenPoll_기술공부_설명집.html
+docs/OpenPoll_기술공부_설명집.pdf
+docs/OpenPoll_면접대비_상세.html
+docs/OpenPoll_면접대비_상세.pdf
+docs/OpenPoll_정량지표_검증.html
+docs/OpenPoll_정량지표_검증.pdf
+docs/OpenPoll_포트폴리오_정리.html
+docs/OpenPoll_포트폴리오_정리.pdf
+docs/이력서-포트폴리오-정리.md
+
 # Playwright MCP
 .playwright-mcp/
 
