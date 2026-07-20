@@ -15,6 +15,21 @@
 
 ---
 
+## 미리보기
+
+> 라이브 서비스는 종료되었지만, 아래는 **실제 운영 화면**입니다. 라이트/다크 모드를 모두 지원합니다.
+
+| 화면 | 라이트 모드 | 다크 모드 |
+|---|---|---|
+| **홈 · 실시간 지지율 대시보드** | <img src="docs/screenshots/home-light.png" width="380" /> | <img src="docs/screenshots/home-dark.png" width="380" /> |
+| **DOS 정치 성향 테스트 · 결과 카드** | <img src="docs/screenshots/dos-result-light.png" width="380" /> | <img src="docs/screenshots/dos-result-dark.png" width="380" /> |
+| **밸런스 게임 · 찬반 투표** | <img src="docs/screenshots/balance-light.png" width="380" /> | <img src="docs/screenshots/balance-dark.png" width="380" /> |
+| **AI 중립 뉴스** | <img src="docs/screenshots/news-light.png" width="380" /> | <img src="docs/screenshots/news-dark.png" width="380" /> |
+
+> 🖼 **더 많은 화면이 궁금하다면** → [전체 캡처 모음 보기](docs/screenshots/전체캡처) — 로그인·회원가입·프로필·출석체크·중립뉴스·블로그·디자인 시스템 등 **전 페이지 50장 (라이트/다크 각 25장)** 을 담았습니다.
+
+---
+
 > ## 프로젝트 종료 안내
 >
 > **OpenPoll 서비스는 2026년 5월을 끝으로 운영을 종료했습니다.**
